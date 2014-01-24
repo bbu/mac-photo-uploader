@@ -1,4 +1,5 @@
 #import "AppDelegate.h"
+#import "Utils/ImageUtil.h"
 
 @interface AppDelegate () {
     IBOutlet NSMenu *statusBarMenu;
@@ -15,6 +16,11 @@
     statusBar.image = [NSImage imageNamed:@"UploadIcon"];
     statusBar.menu = statusBarMenu;
     statusBar.highlightMode = YES;
+    
+    //[ImageUtil setExif:@"/Users/blagovest/Downloads/EXIF_Orientation_Samples/left.jpg"];
+    //[ImageUtil exif:@"/Users/blagovest/Downloads/EXIF_Orientation_Samples/left.jpg"];
+    //NSImage *img = [[NSImage alloc] initWithContentsOfFile:@"/Users/blagovest/Downloads/DSC00381.JPG"];
+    //[ImageUtil generateThumbnailForImage:img atPath:@"/Users/blagovest/Downloads/result.JPG" forWidth:150];
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification

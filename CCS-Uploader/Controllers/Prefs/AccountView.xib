@@ -24,33 +24,17 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button id="QDD-29-e9c">
-                                <rect key="frame" x="30" y="50" width="118" height="18"/>
+                                <rect key="frame" x="19" y="50" width="118" height="18"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <buttonCell key="cell" type="check" title="QuicPost" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="XEI-Jk-Yku">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
                             </button>
-                            <button id="7Ce-KM-1Vk">
-                                <rect key="frame" x="274" y="50" width="118" height="18"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <buttonCell key="cell" type="check" title="QEMS" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="VWH-k7-Ysk">
-                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                    <font key="font" metaFont="system"/>
-                                </buttonCell>
-                            </button>
                             <button id="CAK-G9-iCw">
-                                <rect key="frame" x="152" y="50" width="118" height="18"/>
+                                <rect key="frame" x="141" y="50" width="118" height="18"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <buttonCell key="cell" type="check" title="CORE" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="8c0-yD-D7p">
-                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                    <font key="font" metaFont="system"/>
-                                </buttonCell>
-                            </button>
-                            <button id="ueS-hy-0on">
-                                <rect key="frame" x="396" y="50" width="118" height="18"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <buttonCell key="cell" type="check" title="QP2" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="EsT-Zv-5ig">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
@@ -97,12 +81,6 @@
                                                 <modifierMask key="keyEquivalentModifierMask"/>
                                             </menuItem>
                                             <menuItem title="CORE" id="mSx-iJ-nxl">
-                                                <modifierMask key="keyEquivalentModifierMask"/>
-                                            </menuItem>
-                                            <menuItem title="QEMS" id="IrF-Dh-24L">
-                                                <modifierMask key="keyEquivalentModifierMask"/>
-                                            </menuItem>
-                                            <menuItem title="QP2" id="y0S-OE-Ngf">
                                                 <modifierMask key="keyEquivalentModifierMask"/>
                                             </menuItem>
                                         </items>

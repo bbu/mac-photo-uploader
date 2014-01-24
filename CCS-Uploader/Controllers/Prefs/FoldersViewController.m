@@ -18,7 +18,7 @@
     }
     
     storedValue = [defaults objectForKey:@"defaultImageBrowseLocation"];
-    
+
     if (storedValue != nil) {
         txtDefaultImageBrowseLocation.stringValue = storedValue;
     }
@@ -41,7 +41,6 @@
     openPanel.canChooseFiles = NO;
     openPanel.allowsMultipleSelection = NO;
     openPanel.message = message;
-    //[openPanel setDirectoryURL:[NSURL fileURLWithPath:@"/Users/blagovest/Desktop"]];
 
     return openPanel;
 }
