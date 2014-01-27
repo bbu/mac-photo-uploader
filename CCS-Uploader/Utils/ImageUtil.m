@@ -60,7 +60,7 @@
     
     CGBitmapInfo bitmapInfo = (CGBitmapInfo)kCGImageAlphaPremultipliedLast;
     CGContextRef context = CGBitmapContextCreate(NULL, size.width, size.height, 8, size.width * 4, rgbColorspace, bitmapInfo);
-    NSGraphicsContext * graphicsContext = [NSGraphicsContext graphicsContextWithGraphicsPort:context flipped:NO];
+    NSGraphicsContext *graphicsContext = [NSGraphicsContext graphicsContextWithGraphicsPort:context flipped:NO];
     [NSGraphicsContext setCurrentContext:graphicsContext];
     
     [image drawInRect:NSMakeRect(0, 0, size.width, size.height) fromRect:NSMakeRect(0, 0, image.size.width, image.size.height) operation:NSCompositeCopy fraction:1.0];
@@ -70,7 +70,7 @@
     CGImageDestinationRef outDestination = CGImageDestinationCreateWithURL(outURL, kUTTypeJPEG, 1, NULL);
     CGImageDestinationAddImage(outDestination, outImage, NULL);
     
-    if(!CGImageDestinationFinalize(outDestination)) {
+    if (!CGImageDestinationFinalize(outDestination)) {
         NSLog(@"Failed to write image to %@", newFilePath);
     }
     

@@ -38,7 +38,7 @@ typedef NS_ENUM(NSUInteger, WindowResizingMode) {
 - (id)init
 {
     self = [super initWithWindowNibName:@"WizardWindow"];
-    
+
     if (self) {
         loadingViewController = [LoadingViewController new];
         loginViewController = [LoginViewController new];

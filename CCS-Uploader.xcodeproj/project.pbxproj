@@ -37,6 +37,7 @@
 		2B74BF141883D50B00D0B78B /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B74BF131883D50B00D0B78B /* AppDelegate.m */; };
 		2B74BF171883D50B00D0B78B /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2B74BF151883D50B00D0B78B /* MainMenu.xib */; };
 		2B758C5018929A460045DE48 /* ImageUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B758C4F18929A460045DE48 /* ImageUtil.m */; };
+		2B7943C21896810600DCD80D /* AuthService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B7943C11896810600DCD80D /* AuthService.m */; };
 		2B7ACBE118867AEE00C68B0B /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2B7ACBE018867AEE00C68B0B /* Images.xcassets */; };
 		2B7ACBE7188680D700C68B0B /* FoldersViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B7ACBE5188680D700C68B0B /* FoldersViewController.m */; };
 		2B7ACBE8188680D700C68B0B /* FoldersView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2B7ACBE6188680D700C68B0B /* FoldersView.xib */; };
@@ -92,6 +93,8 @@
 		2B74BF161883D50B00D0B78B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		2B758C4E18929A460045DE48 /* ImageUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageUtil.h; sourceTree = "<group>"; };
 		2B758C4F18929A460045DE48 /* ImageUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageUtil.m; sourceTree = "<group>"; };
+		2B7943C01896810600DCD80D /* AuthService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AuthService.h; sourceTree = "<group>"; };
+		2B7943C11896810600DCD80D /* AuthService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AuthService.m; sourceTree = "<group>"; };
 		2B7ACBE018867AEE00C68B0B /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		2B7ACBE4188680D700C68B0B /* FoldersViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FoldersViewController.h; sourceTree = "<group>"; };
 		2B7ACBE5188680D700C68B0B /* FoldersViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FoldersViewController.m; sourceTree = "<group>"; };
@@ -188,6 +191,7 @@
 		2B74BF061883D50B00D0B78B /* CCS-Uploader */ = {
 			isa = PBXGroup;
 			children = (
+				2B7943BF18967FD500DCD80D /* Services */,
 				2B758C4D18929A2D0045DE48 /* Utils */,
 				2B5E0B2818840F7E0023095C /* Controllers */,
 				2B74BF121883D50B00D0B78B /* AppDelegate.h */,
@@ -218,6 +222,15 @@
 				2B758C4F18929A460045DE48 /* ImageUtil.m */,
 			);
 			path = Utils;
+			sourceTree = "<group>";
+		};
+		2B7943BF18967FD500DCD80D /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				2B7943C01896810600DCD80D /* AuthService.h */,
+				2B7943C11896810600DCD80D /* AuthService.m */,
+			);
+			path = Services;
 			sourceTree = "<group>";
 		};
 		2B7ACBE31886807500C68B0B /* Prefs */ = {
@@ -324,6 +337,7 @@
 				2B7ACBE7188680D700C68B0B /* FoldersViewController.m in Sources */,
 				2B74BF0D1883D50B00D0B78B /* main.m in Sources */,
 				2B758C5018929A460045DE48 /* ImageUtil.m in Sources */,
+				2B7943C21896810600DCD80D /* AuthService.m in Sources */,
 				2B533ECB189002C600A4D8A2 /* EventsViewController.m in Sources */,
 				2B4766161887FEBC008DF1FD /* MarketSettingsViewController.m in Sources */,
 				2B5E0B33188415200023095C /* MainWindowController.m in Sources */,
