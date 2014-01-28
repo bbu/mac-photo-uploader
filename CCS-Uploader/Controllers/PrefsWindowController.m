@@ -86,6 +86,7 @@
     [imageUploadViewController saveState];
     [advancedViewController saveState];
     [marketSettingsViewController saveState];
+    [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 @end

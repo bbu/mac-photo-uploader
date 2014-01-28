@@ -15,6 +15,7 @@
 		2B4766121887E328008DF1FD /* AdvancedView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2B4766101887E328008DF1FD /* AdvancedView.xib */; };
 		2B4766161887FEBC008DF1FD /* MarketSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B4766141887FEBC008DF1FD /* MarketSettingsViewController.m */; };
 		2B4766171887FEBC008DF1FD /* MarketSettingsView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2B4766151887FEBC008DF1FD /* MarketSettingsView.xib */; };
+		2B51D15218979D2B0021AD20 /* ListEventsService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B51D15118979D2B0021AD20 /* ListEventsService.m */; };
 		2B533EBB188FB2AF00A4D8A2 /* WizardWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B533EB9188FB2AF00A4D8A2 /* WizardWindowController.m */; };
 		2B533EBC188FB2AF00A4D8A2 /* WizardWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2B533EBA188FB2AF00A4D8A2 /* WizardWindow.xib */; };
 		2B533EC1188FBF8500A4D8A2 /* LoginViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B533EBF188FBF8500A4D8A2 /* LoginViewController.m */; };
@@ -57,6 +58,8 @@
 		2B4766131887FEBC008DF1FD /* MarketSettingsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MarketSettingsViewController.h; sourceTree = "<group>"; };
 		2B4766141887FEBC008DF1FD /* MarketSettingsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MarketSettingsViewController.m; sourceTree = "<group>"; };
 		2B4766151887FEBC008DF1FD /* MarketSettingsView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MarketSettingsView.xib; sourceTree = "<group>"; };
+		2B51D15018979D2B0021AD20 /* ListEventsService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ListEventsService.h; sourceTree = "<group>"; };
+		2B51D15118979D2B0021AD20 /* ListEventsService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ListEventsService.m; sourceTree = "<group>"; };
 		2B533EB8188FB2AF00A4D8A2 /* WizardWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WizardWindowController.h; sourceTree = "<group>"; };
 		2B533EB9188FB2AF00A4D8A2 /* WizardWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WizardWindowController.m; sourceTree = "<group>"; };
 		2B533EBA188FB2AF00A4D8A2 /* WizardWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = WizardWindow.xib; sourceTree = "<group>"; };
@@ -229,6 +232,8 @@
 			children = (
 				2B7943C01896810600DCD80D /* AuthService.h */,
 				2B7943C11896810600DCD80D /* AuthService.m */,
+				2B51D15018979D2B0021AD20 /* ListEventsService.h */,
+				2B51D15118979D2B0021AD20 /* ListEventsService.m */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -332,6 +337,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2B51D15218979D2B0021AD20 /* ListEventsService.m in Sources */,
 				2B4766111887E328008DF1FD /* AdvancedViewController.m in Sources */,
 				2B74BF141883D50B00D0B78B /* AppDelegate.m in Sources */,
 				2B7ACBE7188680D700C68B0B /* FoldersViewController.m in Sources */,

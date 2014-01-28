@@ -1,6 +1,8 @@
 #import "LoginViewController.h"
 #import "../Prefs/AdvancedViewController.h"
+
 #import "../../Services/AuthService.h"
+#import "../../Services/ListEventsService.h"
 
 @interface LoginViewController ()
 
@@ -24,9 +26,10 @@
     NSPopover *popover = [AdvancedViewController popoverWithLabel:label size:NSMakeSize(220, 34)];
     [popover showRelativeToRect:[sender superview].bounds ofView:sender preferredEdge:NSMaxXEdge];
     
+    /*
     AuthService *a = [AuthService new];
     
-    [a start:@"ccsmacuploader" password:@"candid123" complete:^(AuthResult *result) {
+    [a startAuth:@"ccsmacuploader" password:@"candid123" complete:^(AuthResult *result) {
         if (result.error != nil) {
             NSLog(@"Auth error: %@", result.error.localizedDescription);
         } else {
@@ -37,6 +40,43 @@
             }
         }
     }];
+    */
+    
+    ListEventsService *l = [ListEventsService new];
+    
+    /*
+    [l startListEvents:@"ccsmacuploader" password:@"candid123" filterDateRange:YES
+        startDate:[NSDate dateWithNaturalLanguageString:@"1/1/2014"]
+        endDate:[NSDate dateWithNaturalLanguageString:@"1/1/2015"]
+        hideNullDates:YES hideActive:YES hideNonAssigned:YES hideNullOrderNumbers:YES
+        complete:^(ListEventsResult *result) {
+            if (result.error) {
+                NSLog(@"List events error: %@", result.error.localizedDescription);
+            } else {
+                if (result.loginSuccess && result.processSuccess) {
+                    NSLog(@"List events success: %lu events", result.events.count);
+                } else {
+                    NSLog(@"Service call failed.");
+                }
+            }
+        }
+    ];
+    */
+    [l startListEvent:@"ccsmacuploader" password:@"candid123" orderNumber:@"26709284"
+        complete:^(ListEventsResult *result) {
+            if (result.error) {
+                NSLog(@"List event error: %@", result.error.localizedDescription);
+            } else {
+                if (result.loginSuccess && result.processSuccess) {
+                    NSLog(@"List event success: %lu events", result.events.count);
+                } else if (result.loginSuccess) {
+                    NSLog(@"Event not found.");
+                } else {
+                    NSLog(@"Login failed.");
+                }
+            }
+        }
+    ];
 }
 
 @end

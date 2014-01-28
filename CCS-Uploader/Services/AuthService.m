@@ -10,7 +10,7 @@
 @implementation AuthResult
 @end
 
-@interface AuthService () {
+@interface AuthService () <NSURLConnectionDelegate, NSXMLParserDelegate> {
     NSMutableData *responseData;
     NSMutableString *lastValue;
     AuthResult *authResult;
@@ -40,10 +40,10 @@
     return [NSString stringWithFormat:@"http://%@/core/xml/CORECCSTransfer2.asmx/AuthenticateUser", coreDomain];
 }
 
-- (void)start:(NSString *)email password:(NSString *)password complete:(void (^)(AuthResult *result))block
+- (BOOL)startAuth:(NSString *)email password:(NSString *)password complete:(void (^)(AuthResult *result))block
 {
     if (started) {
-        return;
+        return NO;
     }
     
     NSURL *url = [NSURL URLWithString:[self serviceURL]];
@@ -61,6 +61,8 @@
     authResult = [AuthResult new];
     authFinished = block;
     [NSURLConnection connectionWithRequest:request delegate:self];
+
+    return started;
 }
 
 #pragma mark - NSURLConnectionDelegate
@@ -100,14 +102,14 @@
 
 #pragma mark - NSXMLParserDelegate
 
-- (void)parser:(NSXMLParser *)parser didStartElement:(NSString *)elementName namespaceURI:(NSString *)namespaceURI
-    qualifiedName:(NSString *)qName attributes:(NSDictionary *)attributeDict
+- (void)parser:(NSXMLParser *)parser didStartElement:(NSString *)elementName
+    namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qName attributes:(NSDictionary *)attributeDict
 {
     [lastValue setString:@""];
 }
 
-- (void)parser:(NSXMLParser *)parser didEndElement:(NSString *)elementName namespaceURI:(NSString *)namespaceURI
-    qualifiedName:(NSString *)qName
+- (void)parser:(NSXMLParser *)parser didEndElement:(NSString *)elementName
+    namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qName
 {
     if ([elementName isEqualToString:@"IntData"]) {
         authResult.accountID = [lastValue copy];
@@ -129,8 +131,6 @@
 
 - (void)parser:(NSXMLParser *)parser parseErrorOccurred:(NSError *)parseError
 {
-    NSLog(@"Parsing error: %@", parseError.localizedDescription);
-    
     authResult.error = parseError;
     authFinished(authResult);
 }
