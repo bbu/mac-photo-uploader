@@ -120,9 +120,7 @@
     NSURL *url = [NSURL URLWithString:[self serviceURL:NO]];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     
-    NSString *postBody = [NSString stringWithFormat:
-        @"Email=%@&Password=%@&OrderNumber=%@",
-                          
+    NSString *postBody = [NSString stringWithFormat:@"Email=%@&Password=%@&OrderNumber=%@",
         [email stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
         [password stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
         [orderNumber stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]
@@ -200,7 +198,7 @@
         return;
     }
     
-    EventRow *row = listEventsResult.events[listEventsResult.events.count - 1];
+    EventRow *row = listEventsResult.events.lastObject;
     
     if ([elementName isEqualToString:@"EventID"]) {
         row.eventID = [lastValue copy];

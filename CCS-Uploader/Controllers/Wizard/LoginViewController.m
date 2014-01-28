@@ -3,6 +3,8 @@
 
 #import "../../Services/AuthService.h"
 #import "../../Services/ListEventsService.h"
+#import "../../Services/ListPhotographersService.h"
+#import "../../Services/AddPhotographerService.h"
 
 @interface LoginViewController ()
 
@@ -28,7 +30,6 @@
     
     /*
     AuthService *a = [AuthService new];
-    
     [a startAuth:@"ccsmacuploader" password:@"candid123" complete:^(AuthResult *result) {
         if (result.error != nil) {
             NSLog(@"Auth error: %@", result.error.localizedDescription);
@@ -42,9 +43,8 @@
     }];
     */
     
-    ListEventsService *l = [ListEventsService new];
-    
     /*
+    ListEventsService *l = [ListEventsService new];
     [l startListEvents:@"ccsmacuploader" password:@"candid123" filterDateRange:YES
         startDate:[NSDate dateWithNaturalLanguageString:@"1/1/2014"]
         endDate:[NSDate dateWithNaturalLanguageString:@"1/1/2015"]
@@ -62,6 +62,8 @@
         }
     ];
     */
+    
+    /*
     [l startListEvent:@"ccsmacuploader" password:@"candid123" orderNumber:@"26709284"
         complete:^(ListEventsResult *result) {
             if (result.error) {
@@ -77,6 +79,41 @@
             }
         }
     ];
+    */
+    
+    /*
+    ListPhotographersService *p = [ListPhotographersService new];
+    [p startListPhotographers:@"11420" email:@"ccsmacuploader" password:@"candid123"
+        complete:^(ListPhotographersResult *result) {
+            if (result.error) {
+                NSLog(@"List event error: %@", result.error.localizedDescription);
+            } else {
+                if (result.loginSuccess && result.processSuccess) {
+                    NSLog(@"List photographers success: %lu photographers", result.photographers.count);
+                } else {
+                    NSLog(@"Service call failed.");
+                }
+            }
+        }
+    ];
+    */
+    
+    /*
+    AddPhotographerService *ap = [AddPhotographerService new];
+    [ap startAddPhotographer:@"ccsmacuploader" password:@"candid123" account:@"11420" photographerEmail:@"A mail" photographerName:@"A name"
+        complete:^(AddPhotographerResult *result) {
+            if (result.error) {
+                NSLog(@"Add photographer error: %@", result.error.localizedDescription);
+            } else {
+                if (result.loginSuccess && result.processSuccess) {
+                    NSLog(@"Add photographer success.");
+                } else {
+                    NSLog(@"Service call failed.");
+                }
+            }
+        }
+    ];
+    */
 }
 
 @end
