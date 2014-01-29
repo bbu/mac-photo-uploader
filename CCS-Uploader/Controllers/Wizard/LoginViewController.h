@@ -2,4 +2,6 @@
 
 @interface LoginViewController : NSViewController
 
+@property NSTextField *txtUsername, *txtPassword, *txtEventNumber;
+
 @end

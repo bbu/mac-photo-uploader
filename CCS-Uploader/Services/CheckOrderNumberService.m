@@ -1,25 +1,25 @@
-#import "AuthService.h"
+#import "CheckOrderNumberService.h"
 
-@interface AuthResult () {
+@interface CheckOrderNumberResult () {
     NSError *_error;
-    BOOL _success;
-    NSString *_accountID;
+    BOOL _loginSuccess, _processSuccess;
+    NSString *_ccsPassword;
 }
 @end
 
-@implementation AuthResult
+@implementation CheckOrderNumberResult
 @end
 
-@interface AuthService () <NSURLConnectionDelegate, NSXMLParserDelegate> {
+@interface CheckOrderNumberService () <NSURLConnectionDelegate, NSXMLParserDelegate> {
     NSMutableData *responseData;
     NSMutableString *lastValue;
-    AuthResult *authResult;
+    CheckOrderNumberResult *result;
     BOOL started;
-    void (^authFinished)(AuthResult *result);
+    void (^checkFinished)(CheckOrderNumberResult *result);
 }
 @end
 
-@implementation AuthService
+@implementation CheckOrderNumberService
 
 - (id)init
 {
@@ -35,12 +35,12 @@
 
 - (NSString *)serviceURL
 {
-    //return @"http://ccstransfer.candid.com/CCSTransferWeb/dev/CCSTransferQuicPost.asmx";
     NSString *coreDomain = @"coredemo.candid.com";
-    return [NSString stringWithFormat:@"http://%@/core/xml/CORECCSTransfer2.asmx/AuthenticateUser", coreDomain];
+    return [NSString stringWithFormat:@"http://%@/core/xml/CORECCSTransfer2.asmx/CheckOrderNumber", coreDomain];
 }
 
-- (BOOL)startAuth:(NSString *)email password:(NSString *)password complete:(void (^)(AuthResult *result))block
+- (BOOL)startCheckOrderNumber:(NSString *)email password:(NSString *)password orderNumber:(NSString *)orderNumber
+    complete:(void (^)(CheckOrderNumberResult *result))block
 {
     if (started) {
         return NO;
@@ -49,19 +49,20 @@
     NSURL *url = [NSURL URLWithString:[self serviceURL]];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     
-    NSString *postBody = [NSString stringWithFormat:@"Email=%@&Password=%@",
+    NSString *postBody = [NSString stringWithFormat:@"Email=%@&Password=%@&OrderNumber=%@",
         [email stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
-        [password stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]
+        [password stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
+        [orderNumber stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]
     ];
-
+    
     request.HTTPMethod = @"POST";
     request.HTTPBody = [postBody dataUsingEncoding:NSUTF8StringEncoding];
     
     started = YES;
-    authResult = [AuthResult new];
-    authFinished = block;
+    result = [CheckOrderNumberResult new];
+    checkFinished = block;
     [NSURLConnection connectionWithRequest:request delegate:self];
-
+    
     return started;
 }
 
@@ -79,47 +80,40 @@
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
-    //NSString *stringResponse = [[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding];
-    //NSLog(@"String response:\r%@", stringResponse);
-
     started = NO;
-
+    
     NSXMLParser *parser = [[NSXMLParser alloc] initWithData:responseData];
     parser.delegate = self;
     
     if ([parser parse]) {
-        authFinished(authResult);
+        checkFinished(result);
     }
 }
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
     started = NO;
-    authResult.error = error;
-    authFinished(authResult);
+    result.error = error;
+    checkFinished(result);
 }
 
 #pragma mark - NSXMLParserDelegate
 
 - (void)parser:(NSXMLParser *)parser didStartElement:(NSString *)elementName
-    namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qName attributes:(NSDictionary *)attributeDict
+  namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qName attributes:(NSDictionary *)attributeDict
 {
     [lastValue setString:@""];
 }
 
 - (void)parser:(NSXMLParser *)parser didEndElement:(NSString *)elementName
-    namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qName
+  namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qName
 {
-    if ([elementName isEqualToString:@"IntData"]) {
-        authResult.accountID = [lastValue copy];
-    } else if ([elementName isEqualToString:@"LoginResult"]) {
-        if ([lastValue isEqualToString:@"Failure"]) {
-            authResult.success = NO;
-        } else if ([lastValue isEqualToString:@"Success"]) {
-            authResult.success = YES;
-        } else {
-            authResult.success = NO;
-        }
+    if ([elementName isEqualToString:@"LoginResult"]) {
+        result.loginSuccess = [lastValue isEqualToString:@"Success"];
+    } else if ([elementName isEqualToString:@"ProcessResult"]) {
+        result.processSuccess = [lastValue isEqualToString:@"Success"];
+    } else if ([elementName isEqualToString:@"StringData"]) {
+        result.ccsPassword = [lastValue copy];
     }
 }
 
@@ -130,8 +124,8 @@
 
 - (void)parser:(NSXMLParser *)parser parseErrorOccurred:(NSError *)parseError
 {
-    authResult.error = parseError;
-    authFinished(authResult);
+    result.error = parseError;
+    checkFinished(result);
 }
 
 @end

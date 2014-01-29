@@ -5,8 +5,12 @@
 #import "../../Services/ListEventsService.h"
 #import "../../Services/ListPhotographersService.h"
 #import "../../Services/AddPhotographerService.h"
+#import "../../Services/ListDivisionsService.h"
+#import "../../Services/CheckOrderNumberService.h"
 
-@interface LoginViewController ()
+@interface LoginViewController () {
+    IBOutlet NSTextField *_txtUsername, *_txtPassword, *_txtEventNumber;
+}
 
 @end
 
@@ -114,6 +118,37 @@
         }
     ];
     */
+    /*
+    ListDivisionsService *ld = [ListDivisionsService new];
+    [ld startListDivisions:@"ccsmacuploader" password:@"candid123" eventID:@"1181116"
+        complete:^(ListDivisionsResult *result) {
+            if (result.error) {
+                NSLog(@"List divisions error: %@", result.error.localizedDescription);
+            } else {
+                if (result.loginSuccess && result.processSuccess) {
+                    NSLog(@"List divisions success: %lu divisions", result.divisions.count);
+                } else {
+                    NSLog(@"Service call failed.");
+                }
+            }
+        }
+    ];
+    */
+    
+    CheckOrderNumberService *co = [CheckOrderNumberService new];
+    [co startCheckOrderNumber:@"ccsmacuploader" password:@"candid123" orderNumber:@"26590752"
+        complete:^(CheckOrderNumberResult *result) {
+            if (result.error) {
+                NSLog(@"List event error: %@", result.error.localizedDescription);
+            } else {
+                if (result.loginSuccess && result.processSuccess) {
+                    NSLog(@"Check order number success: %@", result.ccsPassword);
+                } else {
+                    NSLog(@"Service call failed.");
+                }
+            }
+        }
+    ];
 }
 
 @end

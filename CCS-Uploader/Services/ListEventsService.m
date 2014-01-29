@@ -48,7 +48,7 @@
         responseData = [NSMutableData new];
         lastValue = [NSMutableString new];
         dateFormatter = [NSDateFormatter new];
-        dateFormatter.dateFormat = @"MM/DD/YYYY";
+        dateFormatter.dateFormat = @"MM/dd/Y";
     }
     
     return self;
@@ -152,10 +152,6 @@
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
-    //NSString *stringResponse = [[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding];
-    //NSLog(@"String response:\r%@", stringResponse);
-    //[responseData appendData:[@"abc" dataUsingEncoding:NSUTF8StringEncoding]];
-    
     started = NO;
     
     NSXMLParser *parser = [[NSXMLParser alloc] initWithData:responseData];

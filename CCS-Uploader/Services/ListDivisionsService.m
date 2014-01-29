@@ -1,36 +1,38 @@
-#import "ListPhotographersService.h"
+#import "ListDivisionsService.h"
 
-@interface PhotographerRow () {
-    NSString *_ccsPhotographerID;
-    NSString *_name;
-    NSString *_email;
-    NSString *_password;
+@interface DivisionRow () {
+NSString *_divisionID;
+NSString *_eventID;
+NSString *_name;
+NSString *_nameOverride;
+NSString *_nameWithModID;
+NSString *_modCode;
 }
 @end
 
-@implementation PhotographerRow
+@implementation DivisionRow
 @end
 
-@interface ListPhotographersResult () {
+@interface ListDivisionsResult () {
     NSError *_error;
     BOOL _loginSuccess, _processSuccess;
-    NSMutableArray *_photographers;
+    NSMutableArray *_divisions;
 }
 @end
 
-@implementation ListPhotographersResult
+@implementation ListDivisionsResult
 @end
 
-@interface ListPhotographersService () <NSURLConnectionDelegate, NSXMLParserDelegate> {
+@interface ListDivisionsService () <NSURLConnectionDelegate, NSXMLParserDelegate> {
     NSMutableData *responseData;
     NSMutableString *lastValue;
-    ListPhotographersResult *listPhotographersResult;
+    ListDivisionsResult *listDivisionsResult;
     BOOL started;
-    void (^listFinished)(ListPhotographersResult *result);
+    void (^listFinished)(ListDivisionsResult *result);
 }
 @end
 
-@implementation ListPhotographersService
+@implementation ListDivisionsService
 
 - (id)init
 {
@@ -47,11 +49,11 @@
 - (NSString *)serviceURL
 {
     NSString *coreDomain = @"coredemo.candid.com";
-    return [NSString stringWithFormat:@"http://%@/core/xml/CORECCSTransfer2.asmx/ListPhotographers", coreDomain];
+    return [NSString stringWithFormat:@"http://%@/core/xml/CORECCSTransfer2.asmx/ListDivisions", coreDomain];
 }
 
-- (BOOL)startListPhotographers:(NSString *)account email:(NSString *)email password:(NSString *)password
-    complete:(void (^)(ListPhotographersResult *result))block
+- (BOOL)startListDivisions:(NSString *)email password:(NSString *)password eventID:(NSString *)eventID
+    complete:(void (^)(ListDivisionsResult *result))block
 {
     if (started) {
         return NO;
@@ -60,18 +62,18 @@
     NSURL *url = [NSURL URLWithString:[self serviceURL]];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     
-    NSString *postBody = [NSString stringWithFormat:@"Account=%@&Email=%@&Password=%@",
-        [account stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
+    NSString *postBody = [NSString stringWithFormat:@"Email=%@&Password=%@&EventID=%@",
         [email stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
-        [password stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]
+        [password stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
+        [eventID stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]
     ];
     
     request.HTTPMethod = @"POST";
     request.HTTPBody = [postBody dataUsingEncoding:NSUTF8StringEncoding];
     
     started = YES;
-    listPhotographersResult = [ListPhotographersResult new];
-    listPhotographersResult.photographers = [NSMutableArray new];
+    listDivisionsResult = [ListDivisionsResult new];
+    listDivisionsResult.divisions = [NSMutableArray new];
     listFinished = block;
     [NSURLConnection connectionWithRequest:request delegate:self];
     
@@ -91,22 +93,25 @@
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
-{    
+{
+    NSString *stringResponse = [[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding];
+    NSLog(@"String response:\r%@", stringResponse);
+    
     started = NO;
     
     NSXMLParser *parser = [[NSXMLParser alloc] initWithData:responseData];
     parser.delegate = self;
     
     if ([parser parse]) {
-        listFinished(listPhotographersResult);
+        listFinished(listDivisionsResult);
     }
 }
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
     started = NO;
-    listPhotographersResult.error = error;
-    listFinished(listPhotographersResult);
+    listDivisionsResult.error = error;
+    listFinished(listDivisionsResult);
 }
 
 #pragma mark - NSXMLParserDelegate
@@ -116,8 +121,8 @@
 {
     [lastValue setString:@""];
     
-    if ([elementName isEqualToString:@"Table"]) {
-        [listPhotographersResult.photographers addObject:[PhotographerRow new]];
+    if ([elementName isEqualToString:@"Table1"]) {
+        [listDivisionsResult.divisions addObject:[DivisionRow new]];
     }
 }
 
@@ -125,25 +130,29 @@
   namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qName
 {
     if ([elementName isEqualToString:@"LoginResult"]) {
-        listPhotographersResult.loginSuccess = [lastValue isEqualToString:@"Success"];
+        listDivisionsResult.loginSuccess = [lastValue isEqualToString:@"Success"];
     } else if ([elementName isEqualToString:@"ProcessResult"]) {
-        listPhotographersResult.processSuccess = [lastValue isEqualToString:@"Success"];
+        listDivisionsResult.processSuccess = [lastValue isEqualToString:@"Success"];
     }
     
-    if (!listPhotographersResult.photographers.count) {
+    if (!listDivisionsResult.divisions.count) {
         return;
     }
-
-    PhotographerRow *row = listPhotographersResult.photographers.lastObject;
     
-    if ([elementName isEqualToString:@"CCSPhotographerID"]) {
-        row.ccsPhotographerID = [lastValue copy];
+    DivisionRow *row = listDivisionsResult.divisions.lastObject;
+    
+    if ([elementName isEqualToString:@"DivisionID"]) {
+        row.divisionID = [lastValue copy];
+    } else if ([elementName isEqualToString:@"EventID"]) {
+        row.eventID = [lastValue copy];
     } else if ([elementName isEqualToString:@"Name"]) {
         row.name = [lastValue copy];
-    } else if ([elementName isEqualToString:@"Email"]) {
-        row.email = [lastValue copy];
-    } else if ([elementName isEqualToString:@"Password"]) {
-        row.password = [lastValue copy];
+    } else if ([elementName isEqualToString:@"NameOverride"]) {
+        row.nameOverride = [lastValue copy];
+    } else if ([elementName isEqualToString:@"NameWithModID"]) {
+        row.nameWithModID = [lastValue copy];
+    } else if ([elementName isEqualToString:@"ModCode"]) {
+        row.modCode = [lastValue copy];
     }
 }
 
@@ -154,8 +163,8 @@
 
 - (void)parser:(NSXMLParser *)parser parseErrorOccurred:(NSError *)parseError
 {
-    listPhotographersResult.error = parseError;
-    listFinished(listPhotographersResult);
+    listDivisionsResult.error = parseError;
+    listFinished(listDivisionsResult);
 }
 
 @end
