@@ -10,27 +10,12 @@
 @end
 
 @interface AddPhotographerService () <NSURLConnectionDelegate, NSXMLParserDelegate> {
-    NSMutableData *responseData;
-    NSMutableString *lastValue;
     AddPhotographerResult *addPhotographerResult;
-    BOOL started;
     void (^addFinished)(AddPhotographerResult *result);
 }
 @end
 
 @implementation AddPhotographerService
-
-- (id)init
-{
-    self = [super init];
-    
-    if (self) {
-        responseData = [NSMutableData new];
-        lastValue = [NSMutableString new];
-    }
-    
-    return self;
-}
 
 - (NSString *)serviceURL
 {
@@ -46,9 +31,6 @@
         return NO;
     }
     
-    NSURL *url = [NSURL URLWithString:[self serviceURL]];
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-    
     NSString *postBody = [NSString stringWithFormat:
         @"Email=%@&Password=%@&Account=%@&PhotographerEmail=%@&PhotographerName=%@",
         [email stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
@@ -58,31 +40,20 @@
         [photographerName stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]
     ];
     
-    request.HTTPMethod = @"POST";
-    request.HTTPBody = [postBody dataUsingEncoding:NSUTF8StringEncoding];
+    NSMutableURLRequest *request = [Service postRequestWithURL:[self serviceURL] body:postBody];
     
-    started = YES;
     addPhotographerResult = [AddPhotographerResult new];
     addFinished = block;
-    [NSURLConnection connectionWithRequest:request delegate:self];
     
-    return started;
+    urlConnection = [NSURLConnection connectionWithRequest:request delegate:self];
+    return started = YES;
 }
 
 #pragma mark - NSURLConnectionDelegate
 
-- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
-{
-    [responseData setLength:0];
-}
-
-- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
-{
-    [responseData appendData:data];
-}
-
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
+    urlConnection = nil;
     started = NO;
     
     NSXMLParser *parser = [[NSXMLParser alloc] initWithData:responseData];
@@ -95,18 +66,14 @@
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
+    urlConnection = nil;
     started = NO;
+
     addPhotographerResult.error = error;
     addFinished(addPhotographerResult);
 }
 
 #pragma mark - NSXMLParserDelegate
-
-- (void)parser:(NSXMLParser *)parser didStartElement:(NSString *)elementName
-  namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qName attributes:(NSDictionary *)attributeDict
-{
-    [lastValue setString:@""];
-}
 
 - (void)parser:(NSXMLParser *)parser didEndElement:(NSString *)elementName
   namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qName
@@ -116,11 +83,6 @@
     } else if ([elementName isEqualToString:@"ProcessResult"]) {
         addPhotographerResult.processSuccess = [lastValue isEqualToString:@"Success"];
     }
-}
-
-- (void)parser:(NSXMLParser *)parser foundCharacters:(NSString *)string
-{
-    [lastValue appendString:string];
 }
 
 - (void)parser:(NSXMLParser *)parser parseErrorOccurred:(NSError *)parseError

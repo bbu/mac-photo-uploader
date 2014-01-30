@@ -31,6 +31,7 @@
 		2B5693C4188689E000E13C17 /* AccountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B5693C2188689E000E13C17 /* AccountViewController.m */; };
 		2B5693C5188689E000E13C17 /* AccountView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2B5693C3188689E000E13C17 /* AccountView.xib */; };
 		2B5693C71886AB2800E13C17 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B5693C61886AB2800E13C17 /* QuartzCore.framework */; };
+		2B58D637189A4452004D21CF /* Service.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B58D636189A4452004D21CF /* Service.m */; };
 		2B5E0B2E188410620023095C /* PrefsWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B5E0B2C188410620023095C /* PrefsWindowController.m */; };
 		2B5E0B2F188410620023095C /* PrefsWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2B5E0B2D188410620023095C /* PrefsWindow.xib */; };
 		2B5E0B33188415200023095C /* MainWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B5E0B31188415200023095C /* MainWindowController.m */; };
@@ -88,6 +89,8 @@
 		2B5693C2188689E000E13C17 /* AccountViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AccountViewController.m; sourceTree = "<group>"; };
 		2B5693C3188689E000E13C17 /* AccountView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = AccountView.xib; sourceTree = "<group>"; };
 		2B5693C61886AB2800E13C17 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		2B58D635189A4452004D21CF /* Service.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Service.h; sourceTree = "<group>"; };
+		2B58D636189A4452004D21CF /* Service.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Service.m; sourceTree = "<group>"; };
 		2B5E0B2C188410620023095C /* PrefsWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PrefsWindowController.m; sourceTree = "<group>"; };
 		2B5E0B2D188410620023095C /* PrefsWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PrefsWindow.xib; sourceTree = "<group>"; };
 		2B5E0B30188415200023095C /* MainWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MainWindowController.h; sourceTree = "<group>"; };
@@ -254,6 +257,8 @@
 				2B51D15A1897FCBA0021AD20 /* ListDivisionsService.m */,
 				2B2905AD18991548003C4345 /* CheckOrderNumberService.h */,
 				2B2905AE18991548003C4345 /* CheckOrderNumberService.m */,
+				2B58D635189A4452004D21CF /* Service.h */,
+				2B58D636189A4452004D21CF /* Service.m */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -374,6 +379,7 @@
 				2B533EBB188FB2AF00A4D8A2 /* WizardWindowController.m in Sources */,
 				2B533EC6188FE63300A4D8A2 /* LoadingViewController.m in Sources */,
 				2B5693C4188689E000E13C17 /* AccountViewController.m in Sources */,
+				2B58D637189A4452004D21CF /* Service.m in Sources */,
 				2B43135B189112B500580D54 /* BrowseViewController.m in Sources */,
 				2B31E7B31887D05E0089D868 /* ImageUploadViewController.m in Sources */,
 				2B533EC1188FBF8500A4D8A2 /* LoginViewController.m in Sources */,

@@ -1,7 +1,10 @@
 #import <Cocoa/Cocoa.h>
 
+@class WizardWindowController;
+
 @interface LoginViewController : NSViewController
 
-@property NSTextField *txtUsername, *txtPassword, *txtEventNumber;
+- (id)initWithWizardController:(WizardWindowController *)parent;
+- (void)startLogin;
 
 @end

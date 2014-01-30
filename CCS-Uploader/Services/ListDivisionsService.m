@@ -24,27 +24,12 @@ NSString *_modCode;
 @end
 
 @interface ListDivisionsService () <NSURLConnectionDelegate, NSXMLParserDelegate> {
-    NSMutableData *responseData;
-    NSMutableString *lastValue;
     ListDivisionsResult *listDivisionsResult;
-    BOOL started;
     void (^listFinished)(ListDivisionsResult *result);
 }
 @end
 
 @implementation ListDivisionsService
-
-- (id)init
-{
-    self = [super init];
-    
-    if (self) {
-        responseData = [NSMutableData new];
-        lastValue = [NSMutableString new];
-    }
-    
-    return self;
-}
 
 - (NSString *)serviceURL
 {
@@ -59,44 +44,27 @@ NSString *_modCode;
         return NO;
     }
     
-    NSURL *url = [NSURL URLWithString:[self serviceURL]];
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-    
     NSString *postBody = [NSString stringWithFormat:@"Email=%@&Password=%@&EventID=%@",
         [email stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
         [password stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
         [eventID stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]
     ];
+
+    NSMutableURLRequest *request = [Service postRequestWithURL:[self serviceURL] body:postBody];
     
-    request.HTTPMethod = @"POST";
-    request.HTTPBody = [postBody dataUsingEncoding:NSUTF8StringEncoding];
-    
-    started = YES;
     listDivisionsResult = [ListDivisionsResult new];
     listDivisionsResult.divisions = [NSMutableArray new];
     listFinished = block;
-    [NSURLConnection connectionWithRequest:request delegate:self];
     
-    return started;
+    urlConnection = [NSURLConnection connectionWithRequest:request delegate:self];
+    return started = YES;
 }
 
 #pragma mark - NSURLConnectionDelegate
 
-- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
-{
-    [responseData setLength:0];
-}
-
-- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
-{
-    [responseData appendData:data];
-}
-
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
-    NSString *stringResponse = [[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding];
-    NSLog(@"String response:\r%@", stringResponse);
-    
+    urlConnection = nil;
     started = NO;
     
     NSXMLParser *parser = [[NSXMLParser alloc] initWithData:responseData];
@@ -109,7 +77,9 @@ NSString *_modCode;
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
+    urlConnection = nil;
     started = NO;
+    
     listDivisionsResult.error = error;
     listFinished(listDivisionsResult);
 }
@@ -154,11 +124,6 @@ NSString *_modCode;
     } else if ([elementName isEqualToString:@"ModCode"]) {
         row.modCode = [lastValue copy];
     }
-}
-
-- (void)parser:(NSXMLParser *)parser foundCharacters:(NSString *)string
-{
-    [lastValue appendString:string];
 }
 
 - (void)parser:(NSXMLParser *)parser parseErrorOccurred:(NSError *)parseError

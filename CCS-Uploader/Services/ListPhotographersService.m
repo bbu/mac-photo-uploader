@@ -22,27 +22,12 @@
 @end
 
 @interface ListPhotographersService () <NSURLConnectionDelegate, NSXMLParserDelegate> {
-    NSMutableData *responseData;
-    NSMutableString *lastValue;
     ListPhotographersResult *listPhotographersResult;
-    BOOL started;
     void (^listFinished)(ListPhotographersResult *result);
 }
 @end
 
 @implementation ListPhotographersService
-
-- (id)init
-{
-    self = [super init];
-    
-    if (self) {
-        responseData = [NSMutableData new];
-        lastValue = [NSMutableString new];
-    }
-    
-    return self;
-}
 
 - (NSString *)serviceURL
 {
@@ -57,41 +42,27 @@
         return NO;
     }
     
-    NSURL *url = [NSURL URLWithString:[self serviceURL]];
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-    
     NSString *postBody = [NSString stringWithFormat:@"Account=%@&Email=%@&Password=%@",
         [account stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
         [email stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
         [password stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]
     ];
     
-    request.HTTPMethod = @"POST";
-    request.HTTPBody = [postBody dataUsingEncoding:NSUTF8StringEncoding];
+    NSMutableURLRequest *request = [Service postRequestWithURL:[self serviceURL] body:postBody];
     
-    started = YES;
     listPhotographersResult = [ListPhotographersResult new];
     listPhotographersResult.photographers = [NSMutableArray new];
     listFinished = block;
-    [NSURLConnection connectionWithRequest:request delegate:self];
-    
-    return started;
+
+    urlConnection = [NSURLConnection connectionWithRequest:request delegate:self];
+    return started = YES;
 }
 
 #pragma mark - NSURLConnectionDelegate
 
-- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
-{
-    [responseData setLength:0];
-}
-
-- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
-{
-    [responseData appendData:data];
-}
-
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
-{    
+{
+    urlConnection = nil;
     started = NO;
     
     NSXMLParser *parser = [[NSXMLParser alloc] initWithData:responseData];
@@ -104,7 +75,9 @@
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
+    urlConnection = nil;
     started = NO;
+    
     listPhotographersResult.error = error;
     listFinished(listPhotographersResult);
 }
@@ -145,11 +118,6 @@
     } else if ([elementName isEqualToString:@"Password"]) {
         row.password = [lastValue copy];
     }
-}
-
-- (void)parser:(NSXMLParser *)parser foundCharacters:(NSString *)string
-{
-    [lastValue appendString:string];
 }
 
 - (void)parser:(NSXMLParser *)parser parseErrorOccurred:(NSError *)parseError

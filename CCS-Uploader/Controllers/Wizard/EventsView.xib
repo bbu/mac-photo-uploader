@@ -8,6 +8,7 @@
         <customObject id="-2" userLabel="File's Owner" customClass="EventsViewController">
             <connections>
                 <outlet property="advancedSearchPopover" destination="hFa-tG-Lsn" id="5Uo-A5-f3U"/>
+                <outlet property="btnSearchType" destination="lZf-bk-oNb" id="mPq-qW-zWb"/>
                 <outlet property="chkFilterDateRange" destination="g8O-bp-pwc" id="KEE-fN-U6H"/>
                 <outlet property="chkHideActive" destination="XmP-nR-Kk7" id="t6m-vb-ygK"/>
                 <outlet property="chkHideNonAssigned" destination="4Sh-KL-fXq" id="TiF-fJ-e0e"/>
@@ -16,6 +17,7 @@
                 <outlet property="dpStartDate" destination="Quc-vU-kXQ" id="CGH-QD-xcT"/>
                 <outlet property="refreshIndicator" destination="60p-jd-WYQ" id="LAU-Rx-8gH"/>
                 <outlet property="tblEvents" destination="zZE-gs-Tzc" id="22b-or-3Ws"/>
+                <outlet property="txtSearch" destination="Puq-mz-Ine" id="cOo-uR-0f6"/>
                 <outlet property="view" destination="1" id="2"/>
             </connections>
         </customObject>
@@ -121,6 +123,9 @@
                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                     </searchFieldCell>
+                    <connections>
+                        <outlet property="delegate" destination="-2" id="P6D-D6-geD"/>
+                    </connections>
                 </searchField>
                 <popUpButton verticalHuggingPriority="750" id="lZf-bk-oNb">
                     <rect key="frame" x="-2" y="370" width="189" height="26"/>
@@ -131,7 +136,7 @@
                         <menu key="menu" title="OtherViews" id="q29-9N-VRt">
                             <items>
                                 <menuItem title="Filter by Event Number:" id="lJJ-VM-e3S"/>
-                                <menuItem title="Filter by Event Name:" id="l8k-HJ-07O"/>
+                                <menuItem title="Filter by Event Name:" tag="1" id="l8k-HJ-07O"/>
                             </items>
                         </menu>
                     </popUpButtonCell>

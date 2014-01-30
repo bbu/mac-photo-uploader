@@ -1,5 +1,7 @@
 #import <Foundation/Foundation.h>
 
+#import "Service.h"
+
 @interface EventRow : NSObject
 @property NSString *eventID;
 @property NSString *eventName;
@@ -20,7 +22,7 @@
 @property NSMutableArray *events;
 @end
 
-@interface ListEventsService : NSObject
+@interface ListEventsService : Service
 
 - (BOOL)startListEvents:(NSString *)email password:(NSString *)password
     filterDateRange:(BOOL)filterDateRange

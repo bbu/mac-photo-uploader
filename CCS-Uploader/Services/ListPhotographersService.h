@@ -1,5 +1,7 @@
 #import <Foundation/Foundation.h>
 
+#import "Service.h"
+
 @interface PhotographerRow : NSObject
 @property NSString *ccsPhotographerID;
 @property NSString *name;
@@ -13,7 +15,7 @@
 @property NSMutableArray *photographers;
 @end
 
-@interface ListPhotographersService : NSObject
+@interface ListPhotographersService : Service
 
 - (BOOL)startListPhotographers:(NSString *)account email:(NSString *)email password:(NSString *)password
     complete:(void (^)(ListPhotographersResult *result))block;

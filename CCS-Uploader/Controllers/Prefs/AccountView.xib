@@ -7,6 +7,11 @@
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="AccountViewController">
             <connections>
+                <outlet property="btnService" destination="Rjh-AG-Be7" id="cQk-9K-7Ou"/>
+                <outlet property="lblCoreDomain" destination="gZy-pW-S0j" id="grt-qb-0Ib"/>
+                <outlet property="txtCoreDomain" destination="fS6-ix-PY7" id="bzR-NL-5di"/>
+                <outlet property="txtPass" destination="hN4-cW-Z0N" id="QaD-qf-oSP"/>
+                <outlet property="txtUser" destination="xni-1Q-SAw" id="js3-5J-BiK"/>
                 <outlet property="view" destination="1" id="2"/>
             </connections>
         </customObject>
@@ -26,7 +31,7 @@
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="Upk-4Y-YK2">
                                 <rect key="frame" x="83" y="93" width="116" height="17"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Default login for:" id="sLJ-Uc-4fc">
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Default service:" id="sLJ-Uc-4fc">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
@@ -43,12 +48,15 @@
                                             <menuItem title="QuicPost" id="o43-Fv-TUe">
                                                 <modifierMask key="keyEquivalentModifierMask"/>
                                             </menuItem>
-                                            <menuItem title="CORE" id="mSx-iJ-nxl">
+                                            <menuItem title="CORE" tag="1" id="mSx-iJ-nxl">
                                                 <modifierMask key="keyEquivalentModifierMask"/>
                                             </menuItem>
                                         </items>
                                     </menu>
                                 </popUpButtonCell>
+                                <connections>
+                                    <action selector="serviceChanged:" target="-2" id="XOX-BH-eQI"/>
+                                </connections>
                             </popUpButton>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="UNE-R6-yZu">
                                 <rect key="frame" x="83" y="67" width="116" height="17"/>

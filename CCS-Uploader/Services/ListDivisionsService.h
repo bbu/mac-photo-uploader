@@ -1,5 +1,7 @@
 #import <Foundation/Foundation.h>
 
+#import "Service.h"
+
 @interface DivisionRow : NSObject
 @property NSString *divisionID;
 @property NSString *eventID;
@@ -15,7 +17,7 @@
 @property NSMutableArray *divisions;
 @end
 
-@interface ListDivisionsService : NSObject
+@interface ListDivisionsService : Service
 
 - (BOOL)startListDivisions:(NSString *)email password:(NSString *)password eventID:(NSString *)eventID
     complete:(void (^)(ListDivisionsResult *result))block;

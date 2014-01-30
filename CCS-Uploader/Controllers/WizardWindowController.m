@@ -1,13 +1,5 @@
 #import "WizardWindowController.h"
 
-#import "Wizard/LoadingViewController.h"
-#import "Wizard/LoginViewController.h"
-#import "Wizard/EventsViewController.h"
-#import "Wizard/BrowseViewController.h"
-
-#import "../Services/AuthService.h"
-#import "../Services/ListEventsService.h"
-
 typedef NS_ENUM(NSUInteger, WizardStep) {
     kWizardStepLoading,
     kWizardStepLogin,
@@ -32,14 +24,12 @@ typedef NS_ENUM(NSUInteger, WindowResizingMode) {
     EventsViewController *eventsViewController;
     BrowseViewController *browseViewController;
     
-    AuthService *authService;
-    ListEventsService *listEventsService;
-    
     WizardStep wizardStep;
 }
 @end
 
 @implementation WizardWindowController
+@synthesize btnCancel, btnBack, btnNext, loadingViewController, loginViewController, eventsViewController, browseViewController;
 
 - (id)init
 {
@@ -47,13 +37,9 @@ typedef NS_ENUM(NSUInteger, WindowResizingMode) {
 
     if (self) {
         loadingViewController = [LoadingViewController new];
-        loginViewController = [LoginViewController new];
-        eventsViewController = [EventsViewController new];
-        [eventsViewController loadView];
+        loginViewController = [[LoginViewController alloc] initWithWizardController:self];
+        eventsViewController = [[EventsViewController alloc] initWithWizardController:self];
         browseViewController = [BrowseViewController new];
-        
-        authService = [AuthService new];
-        listEventsService = [ListEventsService new];
     }
     
     return self;
@@ -87,44 +73,7 @@ typedef NS_ENUM(NSUInteger, WindowResizingMode) {
 {
     switch (wizardStep) {
         case kWizardStepLogin: {
-            loadingViewController.txtMessage.stringValue = @"Signing in...";
-            [self showLoadingStep];
-            
-            [authService startAuth:loginViewController.txtUsername.stringValue password:loginViewController.txtPassword.stringValue
-                complete:^(AuthResult *result) {
-                    if (result.error != nil) {
-                        NSAlert *alert = [NSAlert alertWithError:result.error];
-                        [self showLoginStep];
-                        [alert beginSheetModalForWindow:self.window completionHandler:nil];
-                    } else {
-                        if (result.success) {
-                            loadingViewController.txtMessage.stringValue = @"Retrieving events...";
-                            EventsViewController *evc = eventsViewController;
-                            
-                            [listEventsService startListEvents:loginViewController.txtUsername.stringValue
-                                password:loginViewController.txtPassword.stringValue
-                                filterDateRange:(evc.chkFilterDateRange.state == NSOnState ? YES : NO)
-                                startDate:evc.dpStartDate.dateValue
-                                endDate:evc.dpEndDate.dateValue
-                                hideNullDates:evc.chkHideNullDates.state == NSOnState ? YES : NO
-                                hideActive:evc.chkHideActive.state == NSOnState ? YES : NO
-                                hideNonAssigned:evc.chkHideNonAssigned.state == NSOnState ? YES : NO
-                                hideNullOrderNumbers:YES
-                                complete:^(ListEventsResult *result) {
-                                    eventsViewController.events = result.events;
-                                    [eventsViewController.tblEvents reloadData];
-                                    [self showEventsStep];
-                                }
-                            ];
-                        } else {
-                            NSAlert *alert = [NSAlert new];
-                            alert.messageText = @"Wrong username or password.";
-                            [self showLoginStep];
-                            [alert beginSheetModalForWindow:self.window completionHandler:nil];
-                        }
-                    }
-                }
-            ];
+            [loginViewController startLogin];
         } break;
             
         case kWizardStepEvents: {

@@ -7,6 +7,7 @@
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="LoginViewController">
             <connections>
+                <outlet property="btnService" destination="WhP-Sx-gSU" id="w8C-VB-iRh"/>
                 <outlet property="txtEventNumber" destination="NB4-0A-ney" id="dvT-tL-fXS"/>
                 <outlet property="txtPassword" destination="z4N-zG-P1A" id="t6d-zT-q4s"/>
                 <outlet property="txtUsername" destination="Tw9-S0-Bjj" id="lm4-b3-VuA"/>
@@ -108,16 +109,19 @@
                 <popUpButton verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="WhP-Sx-gSU">
                     <rect key="frame" x="241" y="99" width="165" height="26"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <popUpButtonCell key="cell" type="push" title="CORE" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="8oX-dV-mlz" id="59R-jV-2Em">
+                    <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" id="59R-jV-2Em">
                         <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="system"/>
+                        <font key="font" metaFont="menu"/>
                         <menu key="menu" title="OtherViews" id="Iz9-zz-Zzl">
                             <items>
                                 <menuItem title="QuicPost" id="GvF-1v-Rw5"/>
-                                <menuItem title="CORE" state="on" id="8oX-dV-mlz"/>
+                                <menuItem title="CORE" tag="1" id="8oX-dV-mlz"/>
                             </items>
                         </menu>
                     </popUpButtonCell>
+                    <connections>
+                        <action selector="serviceChanged:" target="-2" id="fkf-VF-jzC"/>
+                    </connections>
                 </popUpButton>
             </subviews>
         </customView>

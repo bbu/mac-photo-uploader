@@ -1,10 +1,10 @@
 #import <Cocoa/Cocoa.h>
 
+@class WizardWindowController;
+
 @interface EventsViewController : NSViewController
 
-@property NSMutableArray *events;
-@property NSButton *chkHideNonAssigned, *chkHideNullDates, *chkHideActive, *chkFilterDateRange;
-@property NSDatePicker *dpStartDate, *dpEndDate;
-@property NSTableView *tblEvents;
+- (id)initWithWizardController:(WizardWindowController *)parent;
+- (void)refreshEvents:(BOOL)fromWizard;
 
 @end

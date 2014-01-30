@@ -11,27 +11,12 @@
 @end
 
 @interface CheckOrderNumberService () <NSURLConnectionDelegate, NSXMLParserDelegate> {
-    NSMutableData *responseData;
-    NSMutableString *lastValue;
     CheckOrderNumberResult *result;
-    BOOL started;
     void (^checkFinished)(CheckOrderNumberResult *result);
 }
 @end
 
 @implementation CheckOrderNumberService
-
-- (id)init
-{
-    self = [super init];
-    
-    if (self) {
-        responseData = [NSMutableData new];
-        lastValue = [NSMutableString new];
-    }
-    
-    return self;
-}
 
 - (NSString *)serviceURL
 {
@@ -46,40 +31,26 @@
         return NO;
     }
     
-    NSURL *url = [NSURL URLWithString:[self serviceURL]];
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-    
     NSString *postBody = [NSString stringWithFormat:@"Email=%@&Password=%@&OrderNumber=%@",
         [email stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
         [password stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
         [orderNumber stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]
     ];
     
-    request.HTTPMethod = @"POST";
-    request.HTTPBody = [postBody dataUsingEncoding:NSUTF8StringEncoding];
+    NSMutableURLRequest *request = [Service postRequestWithURL:[self serviceURL] body:postBody];
     
-    started = YES;
     result = [CheckOrderNumberResult new];
     checkFinished = block;
-    [NSURLConnection connectionWithRequest:request delegate:self];
-    
-    return started;
+
+    urlConnection = [NSURLConnection connectionWithRequest:request delegate:self];
+    return started = YES;
 }
 
 #pragma mark - NSURLConnectionDelegate
 
-- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
-{
-    [responseData setLength:0];
-}
-
-- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
-{
-    [responseData appendData:data];
-}
-
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
+    urlConnection = nil;
     started = NO;
     
     NSXMLParser *parser = [[NSXMLParser alloc] initWithData:responseData];
@@ -92,18 +63,14 @@
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
+    urlConnection = nil;
     started = NO;
+    
     result.error = error;
     checkFinished(result);
 }
 
 #pragma mark - NSXMLParserDelegate
-
-- (void)parser:(NSXMLParser *)parser didStartElement:(NSString *)elementName
-  namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qName attributes:(NSDictionary *)attributeDict
-{
-    [lastValue setString:@""];
-}
 
 - (void)parser:(NSXMLParser *)parser didEndElement:(NSString *)elementName
   namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qName
@@ -115,11 +82,6 @@
     } else if ([elementName isEqualToString:@"StringData"]) {
         result.ccsPassword = [lastValue copy];
     }
-}
-
-- (void)parser:(NSXMLParser *)parser foundCharacters:(NSString *)string
-{
-    [lastValue appendString:string];
 }
 
 - (void)parser:(NSXMLParser *)parser parseErrorOccurred:(NSError *)parseError

@@ -29,11 +29,8 @@
 @end
 
 @interface ListEventsService () <NSURLConnectionDelegate, NSXMLParserDelegate> {
-    NSMutableData *responseData;
-    NSMutableString *lastValue;
     NSDateFormatter *dateFormatter;
     ListEventsResult *listEventsResult;
-    BOOL started;
     void (^listFinished)(ListEventsResult *result);
 }
 @end
@@ -45,8 +42,6 @@
     self = [super init];
     
     if (self) {
-        responseData = [NSMutableData new];
-        lastValue = [NSMutableString new];
         dateFormatter = [NSDateFormatter new];
         dateFormatter.dateFormat = @"MM/dd/Y";
     }
@@ -79,9 +74,6 @@
         return NO;
     }
     
-    NSURL *url = [NSURL URLWithString:[self serviceURL:YES]];
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-
     NSString *postBody = [NSString stringWithFormat:
         @"Email=%@&Password=%@&FilterDateRange=%@&StartDate=%@&EndDate=%@&"
         @"HideNullDates=%@&HideActive=%@&HideNonAssigned=%@&HideNullOrderNumbers=%@",
@@ -97,16 +89,14 @@
         hideNullOrderNumbers ? @"true" : @"false"
     ];
     
-    request.HTTPMethod = @"POST";
-    request.HTTPBody = [postBody dataUsingEncoding:NSUTF8StringEncoding];
+    NSMutableURLRequest *request = [Service postRequestWithURL:[self serviceURL:YES] body:postBody];
     
-    started = YES;
     listEventsResult = [ListEventsResult new];
     listEventsResult.events = [NSMutableArray new];
     listFinished = block;
-    [NSURLConnection connectionWithRequest:request delegate:self];
 
-    return started;
+    urlConnection = [NSURLConnection connectionWithRequest:request delegate:self];
+    return started = YES;
 }
 
 - (BOOL)startListEvent:(NSString *)email password:(NSString *)password
@@ -117,41 +107,27 @@
         return NO;
     }
     
-    NSURL *url = [NSURL URLWithString:[self serviceURL:NO]];
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-    
     NSString *postBody = [NSString stringWithFormat:@"Email=%@&Password=%@&OrderNumber=%@",
         [email stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
         [password stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
         [orderNumber stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]
     ];
     
-    request.HTTPMethod = @"POST";
-    request.HTTPBody = [postBody dataUsingEncoding:NSUTF8StringEncoding];
+    NSMutableURLRequest *request = [Service postRequestWithURL:[self serviceURL:NO] body:postBody];
     
-    started = YES;
     listEventsResult = [ListEventsResult new];
     listEventsResult.events = [NSMutableArray new];
     listFinished = block;
-    [NSURLConnection connectionWithRequest:request delegate:self];
-    
-    return started;
+
+    urlConnection = [NSURLConnection connectionWithRequest:request delegate:self];
+    return started = YES;
 }
 
 #pragma mark - NSURLConnectionDelegate
 
-- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
-{
-    [responseData setLength:0];
-}
-
-- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
-{
-    [responseData appendData:data];
-}
-
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
+    urlConnection = nil;
     started = NO;
     
     NSXMLParser *parser = [[NSXMLParser alloc] initWithData:responseData];
@@ -164,7 +140,9 @@
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
+    urlConnection = nil;
     started = NO;
+
     listEventsResult.error = error;
     listFinished(listEventsResult);
 }
@@ -219,11 +197,6 @@
     } else if ([elementName isEqualToString:@"AutoCategorizeImages"]) {
         row.autoCategorizeImages = [lastValue caseInsensitiveCompare:@"true"] == NSOrderedSame ? YES : NO;
     }
-}
-
-- (void)parser:(NSXMLParser *)parser foundCharacters:(NSString *)string
-{
-    [lastValue appendString:string];
 }
 
 - (void)parser:(NSXMLParser *)parser parseErrorOccurred:(NSError *)parseError
