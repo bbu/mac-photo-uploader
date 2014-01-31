@@ -5,48 +5,22 @@
     IBOutlet NSTextField *txtUser;
     IBOutlet NSSecureTextField *txtPass;
     IBOutlet NSTextField *lblCoreDomain, *txtCoreDomain;
-    
-    NSString *quicPostUser, *quicPostPass;
-    NSString *coreUser, *corePass, *coreDomain;
-    NSNumber *quicPostSelected;
 }
 
 @end
 
 @implementation AccountViewController
 
-- (void)loadView
+- (void)reloadAccounts
 {
-    [super loadView];
-    
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     
-    quicPostUser = [defaults objectForKey:@"quicPostUser"];
-    quicPostPass = [defaults objectForKey:@"quicPostPass"];
-    coreUser = [defaults objectForKey:@"coreUser"];
-    corePass = [defaults objectForKey:@"corePass"];
-    coreDomain = [defaults objectForKey:@"coreDomain"];
-    quicPostSelected = [defaults objectForKey:@"quicPostSelected"];
-    
-    if (!quicPostUser) {
-        quicPostUser = @"";
-    }
-    
-    if (!quicPostPass) {
-        quicPostPass = @"";
-    }
-    
-    if (!coreUser) {
-        coreUser = @"";
-    }
-    
-    if (!corePass) {
-        corePass = @"";
-    }
-    
-    if (!coreDomain) {
-        coreDomain = @"";
-    }
+    NSString *quicPostUser = [defaults objectForKey:kQuicPostUser];
+    NSString *quicPostPass = [defaults objectForKey:kQuicPostPass];
+    NSString *coreUser = [defaults objectForKey:kCoreUser];
+    NSString *corePass = [defaults objectForKey:kCorePass];
+    NSString *coreDomain = [defaults objectForKey:kCoreDomain];
+    NSNumber *quicPostSelected = [defaults objectForKey:kQuicPostSelected];
     
     if (!quicPostSelected) {
         quicPostSelected = [NSNumber numberWithBool:YES];
@@ -55,39 +29,64 @@
     }
     
     if (btnService.selectedTag == 0) {
-        txtUser.stringValue = quicPostUser;
-        txtPass.stringValue = quicPostPass;
+        txtUser.stringValue = quicPostUser ? [quicPostUser copy] : @"";
+        txtPass.stringValue = quicPostPass ? [quicPostPass copy] : @"";
         txtCoreDomain.stringValue = @"";
         lblCoreDomain.textColor = [NSColor disabledControlTextColor];
         [txtCoreDomain setEnabled:NO];
     } else {
-        txtUser.stringValue = coreUser;
-        txtPass.stringValue = corePass;
-        txtCoreDomain.stringValue = coreDomain;
+        txtUser.stringValue = coreUser ? [coreUser copy] : @"";
+        txtPass.stringValue = corePass ? [corePass copy] : @"";
+        txtCoreDomain.stringValue = coreDomain ? [coreDomain copy] : @"";
         lblCoreDomain.textColor = [NSColor textColor];
         [txtCoreDomain setEnabled:YES];
     }
 }
 
+- (void)loadView
+{
+    [super loadView];
+    [self reloadAccounts];
+}
+
+- (IBAction)saveClicked:(id)sender
+{
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
+    if (btnService.selectedTag == 0) {
+        [defaults setObject:txtUser.stringValue forKey:kQuicPostUser];
+        [defaults setObject:txtPass.stringValue forKey:kQuicPostPass];
+        [defaults setObject:[NSNumber numberWithBool:YES] forKey:kQuicPostSelected];
+    } else {
+        [defaults setObject:txtUser.stringValue forKey:kCoreUser];
+        [defaults setObject:txtPass.stringValue forKey:kCorePass];
+        [defaults setObject:txtCoreDomain.stringValue forKey:kCoreDomain];
+        [defaults setObject:[NSNumber numberWithBool:NO] forKey:kQuicPostSelected];
+    }
+    
+    [defaults synchronize];
+}
+
 - (IBAction)serviceChanged:(id)sender
 {
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    NSString *storedValue;
+    
     if (btnService.selectedTag == 0) {
-        coreUser = [txtUser.stringValue copy];
-        corePass = [txtPass.stringValue copy];
-        coreDomain = [txtCoreDomain.stringValue copy];
-        
-        txtUser.stringValue = quicPostUser;
-        txtPass.stringValue = quicPostPass;
+        storedValue = [defaults objectForKey:kQuicPostUser];
+        txtUser.stringValue = storedValue ? [storedValue copy] : @"";
+        storedValue = [defaults objectForKey:kQuicPostPass];
+        txtPass.stringValue = storedValue ? [storedValue copy] : @"";
         txtCoreDomain.stringValue = @"";
         lblCoreDomain.textColor = [NSColor disabledControlTextColor];
         [txtCoreDomain setEnabled:NO];
     } else {
-        quicPostUser = [txtUser.stringValue copy];
-        quicPostPass = [txtPass.stringValue copy];
-        
-        txtUser.stringValue = coreUser;
-        txtPass.stringValue = corePass;
-        txtCoreDomain.stringValue = coreDomain;
+        storedValue = [defaults objectForKey:kCoreUser];
+        txtUser.stringValue = storedValue ? [storedValue copy] : @"";
+        storedValue = [defaults objectForKey:kCorePass];
+        txtPass.stringValue = storedValue ? [storedValue copy] : @"";
+        storedValue = [defaults objectForKey:kCoreDomain];
+        txtCoreDomain.stringValue = storedValue ? [storedValue copy] : @"";
         lblCoreDomain.textColor = [NSColor textColor];
         [txtCoreDomain setEnabled:YES];
     }
@@ -95,23 +94,6 @@
 
 - (void)saveState
 {
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    
-    if (btnService.selectedTag == 0) {
-        [defaults setObject:txtUser.stringValue forKey:@"quicPostUser"];
-        [defaults setObject:txtPass.stringValue forKey:@"quicPostPass"];
-        [defaults setObject:coreUser forKey:@"coreUser"];
-        [defaults setObject:corePass forKey:@"corePass"];
-        [defaults setObject:coreDomain forKey:@"coreDomain"];
-        [defaults setObject:[NSNumber numberWithBool:YES] forKey:@"quicPostSelected"];
-    } else {
-        [defaults setObject:quicPostUser forKey:@"quicPostUser"];
-        [defaults setObject:quicPostPass forKey:@"quicPostPass"];
-        [defaults setObject:txtUser.stringValue forKey:@"coreUser"];
-        [defaults setObject:txtPass.stringValue forKey:@"corePass"];
-        [defaults setObject:txtCoreDomain.stringValue forKey:@"coreDomain"];
-        [defaults setObject:[NSNumber numberWithBool:NO] forKey:@"quicPostSelected"];
-    }
 }
 
 @end

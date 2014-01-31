@@ -18,7 +18,6 @@
     ListEventsService *listEventsService;
     WizardWindowController *wizardWindowController;
 }
-
 @end
 
 @implementation EventsViewController
@@ -42,8 +41,8 @@
 {
     [super loadView];
     
-    dpStartDate.dateValue = [NSDate dateWithTimeInterval:-60 * 60 * 24 * 30 * 3 sinceDate:[NSDate date]];
-    dpEndDate.dateValue = [NSDate dateWithTimeInterval:60 * 60 * 24 * 7 sinceDate:[NSDate date]];
+    dpStartDate.dateValue = [NSDate dateWithTimeInterval:-60 * 60 * 24 * 30 sinceDate:[NSDate date]];
+    dpEndDate.dateValue = [NSDate dateWithTimeInterval:60 * 60 sinceDate:[NSDate date]];
 }
 
 - (IBAction)advancedSearchClicked:(id)sender
@@ -92,8 +91,21 @@
     [self refreshEvents:NO];
 }
 
+- (IBAction)clickedSearchType:(id)sender
+{
+    [txtSearch becomeFirstResponder];
+}
+
 - (void)refreshEvents:(BOOL)fromWizard
 {
+    (void)self.view;
+    
+    if (fromWizard) {
+        chkFilterDateRange.state = NSOffState;
+        [dpStartDate setEnabled:NO];
+        [dpEndDate setEnabled:NO];
+    }
+    
     BOOL started = [listEventsService startListEvents:@"ccsmacuploader" password:@"candid123"
         filterDateRange:chkFilterDateRange.state == NSOnState ? YES : NO
         startDate:dpStartDate.dateValue

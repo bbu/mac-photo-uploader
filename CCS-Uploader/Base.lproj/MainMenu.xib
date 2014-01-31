@@ -112,13 +112,14 @@
         <customObject id="420" customClass="NSFontManager"/>
         <menu id="asr-D7-VR0">
             <items>
-                <menuItem title="Item 1" id="m4a-Gt-JA8">
+                <menuItem title="CCS Uploader" id="m4a-Gt-JA8">
                     <modifierMask key="keyEquivalentModifierMask"/>
                 </menuItem>
-                <menuItem title="Item 2" id="YHu-ve-rbl">
+                <menuItem isSeparatorItem="YES" id="SOV-mT-AKp"/>
+                <menuItem title="Open" id="YHu-ve-rbl">
                     <modifierMask key="keyEquivalentModifierMask"/>
                 </menuItem>
-                <menuItem title="Item 3" id="Pep-Ad-TYt">
+                <menuItem title="Exit" id="Pep-Ad-TYt">
                     <modifierMask key="keyEquivalentModifierMask"/>
                 </menuItem>
             </items>

@@ -1,3 +1,13 @@
 #ifdef __OBJC__
     #import <Cocoa/Cocoa.h>
 #endif
+
+#define kApplicationFolder @"applicationFolder"
+#define kDefaultImageBrowseLocation @"defaultImageBrowseLocation"
+
+#define kQuicPostUser @"quicPostUser"
+#define kQuicPostPass @"quicPostPass"
+#define kQuicPostSelected @"quicPostSelected"
+#define kCoreUser @"coreUser"
+#define kCorePass @"corePass"
+#define kCoreDomain @"coreDomain"

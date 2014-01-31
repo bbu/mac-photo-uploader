@@ -2,6 +2,7 @@
 
 @interface AccountViewController : NSViewController
 
+- (void)reloadAccounts;
 - (void)saveState;
 
 @end

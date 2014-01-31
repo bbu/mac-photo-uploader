@@ -14,7 +14,6 @@
     NSString *coreUser, *corePass, *coreDomain;
     NSNumber *quicPostSelected;
 }
-
 @end
 
 @implementation LoginViewController
@@ -31,38 +30,16 @@
     return self;
 }
 
-- (void)loadView
+- (void)reloadAccounts
 {
-    [super loadView];
-    
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     
-    quicPostUser = [defaults objectForKey:@"quicPostUser"];
-    quicPostPass = [defaults objectForKey:@"quicPostPass"];
-    coreUser = [defaults objectForKey:@"coreUser"];
-    corePass = [defaults objectForKey:@"corePass"];
-    coreDomain = [defaults objectForKey:@"coreDomain"];
-    quicPostSelected = [defaults objectForKey:@"quicPostSelected"];
-
-    if (!quicPostUser) {
-        quicPostUser = @"";
-    }
-    
-    if (!quicPostPass) {
-        quicPostPass = @"";
-    }
-    
-    if (!coreUser) {
-        coreUser = @"";
-    }
-    
-    if (!corePass) {
-        corePass = @"";
-    }
-    
-    if (!coreDomain) {
-        coreDomain = @"";
-    }
+    quicPostUser = [defaults objectForKey:kQuicPostUser];
+    quicPostPass = [defaults objectForKey:kQuicPostPass];
+    coreUser = [defaults objectForKey:kCoreUser];
+    corePass = [defaults objectForKey:kCorePass];
+    coreDomain = [defaults objectForKey:kCoreDomain];
+    quicPostSelected = [defaults objectForKey:kQuicPostSelected];
     
     if (!quicPostSelected) {
         quicPostSelected = [NSNumber numberWithBool:YES];
@@ -71,22 +48,36 @@
     }
     
     if (btnService.selectedTag == 0) {
-        txtUsername.stringValue = quicPostUser;
-        txtPassword.stringValue = quicPostPass;
+        txtUsername.stringValue = quicPostUser ? [quicPostUser copy] : @"";
+        txtPassword.stringValue = quicPostPass ? [quicPostPass copy] : @"";
     } else {
-        txtUsername.stringValue = coreUser;
-        txtPassword.stringValue = corePass;
+        txtUsername.stringValue = coreUser ? [coreUser copy] : @"";
+        txtPassword.stringValue = corePass ? [corePass copy] : @"";
     }
+}
+
+- (void)loadView
+{
+    [super loadView];
+    [self reloadAccounts];
 }
 
 - (IBAction)serviceChanged:(id)sender
 {
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
     if (btnService.selectedTag == 0) {
-        txtUsername.stringValue = quicPostUser;
-        txtPassword.stringValue = quicPostPass;
+        quicPostUser = [defaults objectForKey:kQuicPostUser];
+        quicPostPass = [defaults objectForKey:kQuicPostPass];
+
+        txtUsername.stringValue = quicPostUser ? [quicPostUser copy] : @"";
+        txtPassword.stringValue = quicPostPass ? [quicPostPass copy] : @"";
     } else {
-        txtUsername.stringValue = coreUser;
-        txtPassword.stringValue = corePass;
+        coreUser = [defaults objectForKey:kCoreUser];
+        corePass = [defaults objectForKey:kCorePass];
+
+        txtUsername.stringValue = coreUser ? [coreUser copy] : @"";
+        txtPassword.stringValue = corePass ? [corePass copy] : @"";
     }
 }
 
@@ -100,10 +91,21 @@
                 [alert beginSheetModalForWindow:wizardWindowController.window completionHandler:nil];
             } else {
                 if (result.success) {
+                    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
                     
+                    if (btnService.selectedTag == 0) {
+                        [defaults setObject:txtUsername.stringValue forKey:kQuicPostUser];
+                        [defaults setObject:txtPassword.stringValue forKey:kQuicPostPass];
+                        [defaults setObject:[NSNumber numberWithBool:YES] forKey:kQuicPostSelected];
+                    } else {
+                        [defaults setObject:txtUsername.stringValue forKey:kCoreUser];
+                        [defaults setObject:txtPassword.stringValue forKey:kCorePass];
+                        [defaults setObject:[NSNumber numberWithBool:NO] forKey:kQuicPostSelected];
+                    }
+                    
+                    [defaults synchronize];
                     
                     wizardWindowController.loadingViewController.txtMessage.stringValue = @"Retrieving events...";
-                    [wizardWindowController.eventsViewController loadView];
                     [wizardWindowController.eventsViewController refreshEvents:YES];
                 } else {
                     NSAlert *alert = [NSAlert new];

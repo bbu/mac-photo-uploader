@@ -115,10 +115,10 @@
                         <autoresizingMask key="autoresizingMask"/>
                     </tableHeaderView>
                 </scrollView>
-                <searchField focusRingType="none" verticalHuggingPriority="750" id="Puq-mz-Ine">
+                <searchField verticalHuggingPriority="750" id="Puq-mz-Ine">
                     <rect key="frame" x="192" y="372" width="174" height="22"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" focusRingType="none" usesSingleLineMode="YES" bezelStyle="round" id="yy6-z3-rXt">
+                    <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" id="yy6-z3-rXt">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -140,6 +140,9 @@
                             </items>
                         </menu>
                     </popUpButtonCell>
+                    <connections>
+                        <action selector="clickedSearchType:" target="-2" id="QhX-aE-UgM"/>
+                    </connections>
                 </popUpButton>
                 <button verticalHuggingPriority="750" id="C7w-hf-UaY">
                     <rect key="frame" x="630" y="366" width="126" height="32"/>

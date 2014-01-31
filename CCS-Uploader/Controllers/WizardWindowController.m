@@ -9,11 +9,6 @@ typedef NS_ENUM(NSUInteger, WizardStep) {
     kWizardStepSchedule,
 };
 
-typedef NS_ENUM(NSUInteger, WindowResizingMode) {
-    kWindowResizingDownwards,
-    kWindowResizingCenter,
-};
-
 @interface WizardWindowController () {
     IBOutlet NSView *contentView;
     IBOutlet NSTextField *txtStepTitle, *txtStepDescription;
@@ -39,7 +34,7 @@ typedef NS_ENUM(NSUInteger, WindowResizingMode) {
         loadingViewController = [LoadingViewController new];
         loginViewController = [[LoginViewController alloc] initWithWizardController:self];
         eventsViewController = [[EventsViewController alloc] initWithWizardController:self];
-        browseViewController = [BrowseViewController new];
+        browseViewController = [[BrowseViewController alloc] initWithWizardController:self];
     }
     
     return self;
@@ -48,6 +43,7 @@ typedef NS_ENUM(NSUInteger, WindowResizingMode) {
 - (IBAction)showWindow:(id)sender
 {
     [super showWindow:sender];
+    [loginViewController reloadAccounts];
     [self showLoginStep];
 }
 
@@ -95,7 +91,7 @@ typedef NS_ENUM(NSUInteger, WindowResizingMode) {
     txtStepTitle.stringValue = @"Sign In";
     txtStepDescription.stringValue = @"Choose a service and enter your username and password";
     
-    [self swapContentView:loginViewController.view mode:kWindowResizingCenter animate:YES];
+    [self swapContentView:loginViewController.view];
 }
 
 - (void)showLoadingStep
@@ -104,7 +100,7 @@ typedef NS_ENUM(NSUInteger, WindowResizingMode) {
     [btnNext setEnabled:NO];
 
     [loadingViewController.view setFrameSize:contentView.frame.size];    
-    [self swapContentView:loadingViewController.view mode:kWindowResizingCenter animate:YES];
+    [self swapContentView:loadingViewController.view];
 }
 
 - (void)showEventsStep
@@ -117,7 +113,7 @@ typedef NS_ENUM(NSUInteger, WindowResizingMode) {
     txtStepTitle.stringValue = @"Choose an Event";
     txtStepDescription.stringValue = @"Enter an event number or select an event from the list to continue";
     
-    [self swapContentView:eventsViewController.view mode:kWindowResizingCenter animate:YES];
+    [self swapContentView:eventsViewController.view];
 }
 
 - (void)showBrowseStep
@@ -130,10 +126,10 @@ typedef NS_ENUM(NSUInteger, WindowResizingMode) {
     txtStepTitle.stringValue = @"Browse for Images";
     txtStepDescription.stringValue = @"Add images to event \"My Test Event\" (12345678)";
     
-    [self swapContentView:browseViewController.view mode:kWindowResizingCenter animate:YES];
+    [self swapContentView:browseViewController.view];
 }
 
-- (void)swapContentView:(NSView *)newView mode:(WindowResizingMode)mode animate:(BOOL)animate
+- (void)swapContentView:(NSView *)newView
 {
     CGFloat widthDiff = newView.frame.size.width - contentView.frame.size.width;
     CGFloat heightDiff = newView.frame.size.height - contentView.frame.size.height;
@@ -146,13 +142,13 @@ typedef NS_ENUM(NSUInteger, WindowResizingMode) {
     windowFrame.size.width += widthDiff;
     windowFrame.size.height += heightDiff;
     windowFrame.origin.x -= widthDiff / 2;
-    windowFrame.origin.y -= heightDiff / (mode == kWindowResizingCenter ? 2 : 1);
+    windowFrame.origin.y -= heightDiff / 2;
     
     if (contentView.subviews.count) {
         [contentView.subviews[0] removeFromSuperview];
     }
     
-    [self.window setFrame:windowFrame display:YES animate:animate];
+    [self.window setFrame:windowFrame display:YES animate:YES];
     [contentView addSubview:newView];
 }
 

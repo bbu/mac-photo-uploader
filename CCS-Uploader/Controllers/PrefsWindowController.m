@@ -61,6 +61,7 @@
 
 - (IBAction)clickedAccount:(id)sender
 {
+    [accountViewController reloadAccounts];
     [self swapContentView:accountViewController.view];
 }
 

@@ -11,13 +11,13 @@
     [super loadView];
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    NSString *storedValue = [defaults objectForKey:@"applicationFolder"];
+    NSString *storedValue = [defaults objectForKey:kApplicationFolder];
     
     if (storedValue != nil) {
         txtApplicationFolder.stringValue = storedValue;
     }
     
-    storedValue = [defaults objectForKey:@"defaultImageBrowseLocation"];
+    storedValue = [defaults objectForKey:kDefaultImageBrowseLocation];
 
     if (storedValue != nil) {
         txtDefaultImageBrowseLocation.stringValue = storedValue;
@@ -28,8 +28,8 @@
 {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     
-    [defaults setObject:txtApplicationFolder.stringValue forKey:@"applicationFolder"];
-    [defaults setObject:txtDefaultImageBrowseLocation.stringValue forKey:@"defaultImageBrowseLocation"];
+    [defaults setObject:txtApplicationFolder.stringValue forKey:kApplicationFolder];
+    [defaults setObject:txtDefaultImageBrowseLocation.stringValue forKey:kDefaultImageBrowseLocation];
 }
 
 + (NSOpenPanel *)openPanelWithMessage:(NSString *)message
