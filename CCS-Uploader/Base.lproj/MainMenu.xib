@@ -60,7 +60,7 @@
                             </menuItem>
                             <menuItem title="Quit CCS Uploader" keyEquivalent="q" id="136">
                                 <connections>
-                                    <action selector="terminate:" target="-3" id="449"/>
+                                    <action selector="exitClicked:" target="494" id="kmW-l4-M91"/>
                                 </connections>
                             </menuItem>
                         </items>
@@ -82,11 +82,12 @@
                             <menuItem isSeparatorItem="YES" id="92">
                                 <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                             </menuItem>
-                            <menuItem title="Bring All to Front" id="5">
+                            <menuItem title="Bring All to Front" state="on" id="5">
                                 <connections>
                                     <action selector="arrangeInFront:" target="-1" id="39"/>
                                 </connections>
                             </menuItem>
+                            <menuItem isSeparatorItem="YES" id="2JX-Ec-cs3"/>
                         </items>
                     </menu>
                 </menuItem>
@@ -118,9 +119,15 @@
                 <menuItem isSeparatorItem="YES" id="SOV-mT-AKp"/>
                 <menuItem title="Open" id="YHu-ve-rbl">
                     <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="openMainWindow:" target="494" id="mmZ-dl-1Ca"/>
+                    </connections>
                 </menuItem>
                 <menuItem title="Exit" id="Pep-Ad-TYt">
                     <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="exitClicked:" target="494" id="DHj-KV-3Ap"/>
+                    </connections>
                 </menuItem>
             </items>
         </menu>

@@ -98,7 +98,7 @@
 
 - (void)refreshEvents:(BOOL)fromWizard
 {
-    (void)self.view;
+    [self view];
     
     if (fromWizard) {
         chkFilterDateRange.state = NSOffState;

@@ -1,9 +1,11 @@
+#import "../../Utils/FileUtil.h"
+
 #import "BrowseViewController.h"
 #import "../WizardWindowController.h"
 
 @interface BrowseViewController () <NSTableViewDelegate, NSTableViewDataSource> {
     IBOutlet NSTableView *tblRolls;
-    IBOutlet NSPopover *advancedOptionsPopover;
+    IBOutlet NSPopover *advancedOptionsPopover, *viewRollPopover;
     WizardWindowController *wizardWindowController;
 }
 
@@ -33,11 +35,20 @@
     openPanel.message = @"Select files or folders to upload:";
     [openPanel setDirectoryURL:[NSURL fileURLWithPath:defaultLocation]];
 
-    [openPanel beginWithCompletionHandler:^(NSInteger result){
-        if (result == NSFileHandlingPanelOKButton) {
-            
+    [openPanel beginSheetModalForWindow:wizardWindowController.window
+        completionHandler:^(NSInteger result) {
+            if (result == NSFileHandlingPanelOKButton) {
+                for (NSURL *url in openPanel.URLs) {
+                    
+                    NSMutableArray *contents = [FileUtil filesInDirectory:url.path extensionSet:[FileUtil extensionSetWithJpeg:YES withPng:YES] recursive:YES absolutePaths:YES];
+                    
+                    for (NSString *filename in contents) {
+                        NSLog(@"%@", filename);
+                    }
+                }
+            }
         }
-    }];
+    ];
 }
 
 - (IBAction)advancedOptionsClicked:(id)sender
@@ -76,7 +87,8 @@
         cell.textField.stringValue = [NSString stringWithFormat:@"%lu", row * 2];
     } else if ([columnID isEqualToString:@"GreenScreen"]) {
         NSTableCellView *cell = view;
-        cell.imageView.image = row % 2 ? nil : [NSImage imageNamed:@"NSStatusAvailable"];
+        //@"NSMenuOnStateTemplate"
+        cell.imageView.image = row % 2 ? [NSImage imageNamed:@"NSStatusNone"] : [NSImage imageNamed:@"NSStatusAvailable"];
     } else if ([columnID isEqualToString:@"CurrentTask"]) {
         NSTableCellView *cell = view;
         cell.textField.stringValue = @"Uploading";
@@ -104,6 +116,7 @@
 - (IBAction)changedPhotographer:(id)sender
 {
     NSLog(@"%lu", [tblRolls rowForView:sender]);
+    [tblRolls reloadData];
 }
 
 - (IBAction)clickedDeleteRoll:(id)sender
@@ -120,5 +133,12 @@
         }
     ];
 }
+
+- (IBAction)clickedViewRoll:(id)sender
+{
+    [viewRollPopover close];
+    [viewRollPopover showRelativeToRect:[sender superview].bounds ofView:sender preferredEdge:NSMaxXEdge];
+}
+
 
 @end

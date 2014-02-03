@@ -9,8 +9,6 @@
     PrefsWindowController *prefsWindowController;
 }
 
-@property (assign) IBOutlet NSWindow *window;
-
 -(IBAction)openPrefs:(id)sender;
 
 @end

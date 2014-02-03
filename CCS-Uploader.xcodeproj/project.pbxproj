@@ -10,6 +10,8 @@
 		2B2905AF18991548003C4345 /* CheckOrderNumberService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B2905AE18991548003C4345 /* CheckOrderNumberService.m */; };
 		2B31E7B31887D05E0089D868 /* ImageUploadViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B31E7B11887D05E0089D868 /* ImageUploadViewController.m */; };
 		2B31E7B41887D05E0089D868 /* ImageUploadView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2B31E7B21887D05E0089D868 /* ImageUploadView.xib */; };
+		2B3499BD189E852600A45D6C /* FileUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B3499BC189E852600A45D6C /* FileUtil.m */; };
+		2B3499C0189EDCC800A45D6C /* Base64.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B3499BF189EDCC800A45D6C /* Base64.m */; };
 		2B43135B189112B500580D54 /* BrowseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B431359189112B500580D54 /* BrowseViewController.m */; };
 		2B43135C189112B500580D54 /* BrowseView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2B43135A189112B500580D54 /* BrowseView.xib */; };
 		2B4766111887E328008DF1FD /* AdvancedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B47660F1887E328008DF1FD /* AdvancedViewController.m */; };
@@ -56,6 +58,10 @@
 		2B31E7B01887D05E0089D868 /* ImageUploadViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageUploadViewController.h; sourceTree = "<group>"; };
 		2B31E7B11887D05E0089D868 /* ImageUploadViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageUploadViewController.m; sourceTree = "<group>"; };
 		2B31E7B21887D05E0089D868 /* ImageUploadView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ImageUploadView.xib; sourceTree = "<group>"; };
+		2B3499BB189E852600A45D6C /* FileUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileUtil.h; sourceTree = "<group>"; };
+		2B3499BC189E852600A45D6C /* FileUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileUtil.m; sourceTree = "<group>"; };
+		2B3499BE189EDCC800A45D6C /* Base64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Base64.h; sourceTree = "<group>"; };
+		2B3499BF189EDCC800A45D6C /* Base64.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Base64.m; sourceTree = "<group>"; };
 		2B431358189112B500580D54 /* BrowseViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BrowseViewController.h; sourceTree = "<group>"; };
 		2B431359189112B500580D54 /* BrowseViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BrowseViewController.m; sourceTree = "<group>"; };
 		2B43135A189112B500580D54 /* BrowseView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = BrowseView.xib; sourceTree = "<group>"; };
@@ -236,8 +242,12 @@
 		2B758C4D18929A2D0045DE48 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				2B3499BE189EDCC800A45D6C /* Base64.h */,
+				2B3499BF189EDCC800A45D6C /* Base64.m */,
 				2B758C4E18929A460045DE48 /* ImageUtil.h */,
 				2B758C4F18929A460045DE48 /* ImageUtil.m */,
+				2B3499BB189E852600A45D6C /* FileUtil.h */,
+				2B3499BC189E852600A45D6C /* FileUtil.m */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -376,7 +386,9 @@
 				2B4766161887FEBC008DF1FD /* MarketSettingsViewController.m in Sources */,
 				2B5E0B33188415200023095C /* MainWindowController.m in Sources */,
 				2B51D1581897E6A90021AD20 /* AddPhotographerService.m in Sources */,
+				2B3499BD189E852600A45D6C /* FileUtil.m in Sources */,
 				2B533EBB188FB2AF00A4D8A2 /* WizardWindowController.m in Sources */,
+				2B3499C0189EDCC800A45D6C /* Base64.m in Sources */,
 				2B533EC6188FE63300A4D8A2 /* LoadingViewController.m in Sources */,
 				2B5693C4188689E000E13C17 /* AccountViewController.m in Sources */,
 				2B58D637189A4452004D21CF /* Service.m in Sources */,

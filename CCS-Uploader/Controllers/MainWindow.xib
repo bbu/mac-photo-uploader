@@ -8,12 +8,13 @@
             <connections>
                 <outlet property="tblFullSize" destination="4se-EP-ike" id="tax-a6-QAz"/>
                 <outlet property="tblThumbnails" destination="JY5-x5-eh4" id="wPG-Um-uic"/>
+                <outlet property="window" destination="MDX-NV-dqb" id="ZjA-35-8e1"/>
             </connections>
         </customObject>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
         <customObject id="-3" userLabel="Application"/>
         <window title="CCS Uploader" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" restorable="NO" releasedWhenClosed="NO" animationBehavior="documentWindow" id="MDX-NV-dqb">
-            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" unifiedTitleAndToolbar="YES"/>
             <windowCollectionBehavior key="collectionBehavior" fullScreenPrimary="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="440" y="267" width="1104" height="576"/>
@@ -171,6 +172,7 @@
                                                 <connections>
                                                     <outlet property="dataSource" destination="-2" id="bIf-hO-aUE"/>
                                                     <outlet property="delegate" destination="-2" id="U4s-C1-pCO"/>
+                                                    <outlet property="menu" destination="I1J-Lg-YJs" id="qqh-QG-gTn"/>
                                                 </connections>
                                             </tableView>
                                         </subviews>
@@ -188,9 +190,6 @@
                                         <rect key="frame" x="0.0" y="0.0" width="488" height="17"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                     </tableHeaderView>
-                                    <connections>
-                                        <outlet property="menu" destination="I1J-Lg-YJs" id="XRI-ui-VWd"/>
-                                    </connections>
                                 </scrollView>
                                 <popUpButton verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="mAt-2o-ZeI">
                                     <rect key="frame" x="16" y="241" width="182" height="26"/>

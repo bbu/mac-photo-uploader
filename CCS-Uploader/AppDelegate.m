@@ -1,9 +1,10 @@
 #import "AppDelegate.h"
 #import "Utils/ImageUtil.h"
+#import "Utils/FileUtil.h"
 
 @interface AppDelegate () {
     IBOutlet NSMenu *statusBarMenu;
-    NSStatusItem *statusBar;
+    NSStatusItem *statusItem;
 }
 
 @end
@@ -12,15 +13,14 @@
 
 - (void)awakeFromNib
 {
-    statusBar = [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
-    statusBar.image = [NSImage imageNamed:@"UploadIcon"];
-    statusBar.menu = statusBarMenu;
-    statusBar.highlightMode = YES;
+    statusItem = [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
+    statusItem.image = [NSImage imageNamed:@"UploadIcon"];
+    statusItem.menu = statusBarMenu;
+    statusItem.highlightMode = YES;
     
-    //[ImageUtil setExif:@"/Users/blagovest/Downloads/EXIF_Orientation_Samples/left.jpg"];
-    //[ImageUtil exif:@"/Users/blagovest/Downloads/EXIF_Orientation_Samples/left.jpg"];
-    //NSImage *img = [[NSImage alloc] initWithContentsOfFile:@"/Users/blagovest/Downloads/DSC00381.JPG"];
-    //[ImageUtil generateThumbnailForImage:img atPath:@"/Users/blagovest/Downloads/result.JPG" forWidth:150];
+    //[ImageUtil setExif:@"/Users/blagovest/Downloads/lotus.jpg" value:8];
+    [ImageUtil scaleAndRotateImage:@"/Users/blagovest/Downloads/lotus.jpg"];
+    [ImageUtil exif:@"/Users/blagovest/Downloads/lotus.jpg"];
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
@@ -29,12 +29,12 @@
         mainWindowController = [MainWindowController new];
     }
     
-    //[NSApp activateIgnoringOtherApps:YES];
+    [NSApp activateIgnoringOtherApps:YES];
     [mainWindowController showWindow:nil];
-    //[mainWindowController.window makeKeyAndOrderFront:nil];
+    [mainWindowController.window makeKeyAndOrderFront:nil];
 }
 
--(IBAction)openPrefs:(id)sender
+- (IBAction)openPrefs:(id)sender
 {
     if (prefsWindowController == nil) {
         prefsWindowController = [PrefsWindowController new];
@@ -43,9 +43,29 @@
     [prefsWindowController showWindow:nil];
 }
 
--(BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender
+- (IBAction)openMainWindow:(id)sender
 {
-    return YES;
+    [NSApp activateIgnoringOtherApps:YES];
+    [mainWindowController showWindow:nil];
+    [mainWindowController.window makeKeyAndOrderFront:nil];
+}
+
+- (IBAction)exitClicked:(id)sender
+{
+    NSAlert *alert = [NSAlert alertWithMessageText:@"Do you really want to quit?" defaultButton:@"Yes" alternateButton:@"No" otherButton:@"" informativeTextWithFormat:@""];
+
+    [alert beginSheetModalForWindow:mainWindowController.window
+        completionHandler:^(NSModalResponse response) {
+            if (response == NSModalResponseOK) {
+                [NSApp terminate:nil];
+            }
+        }
+    ];
+}
+
+- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender
+{
+    return NO;
 }
 
 @end

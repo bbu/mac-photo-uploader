@@ -139,11 +139,12 @@
 
 - (BOOL)windowShouldClose:(id)sender
 {
-    NSAlert *alert = [NSAlert alertWithMessageText:@"Do you really want to quit?"
+    /*NSAlert *alert = [NSAlert alertWithMessageText:@"Do you really want to quit?"
         defaultButton:@"Yes" alternateButton:@"No" otherButton:nil informativeTextWithFormat:@""];
     
     NSModalResponse response = [alert runModal];
-    return response == NSModalResponseOK ? YES : NO;
+    return response == NSModalResponseOK ? YES : NO;*/
+    return YES;
 }
 
 @end
