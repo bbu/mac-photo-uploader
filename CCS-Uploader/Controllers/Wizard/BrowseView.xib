@@ -61,7 +61,7 @@
                                                     <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" id="Fjf-WH-TIj">
                                                         <rect key="frame" x="25" y="-2" width="126" height="17"/>
                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                                                        <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="39e-BP-CCw">
+                                                        <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" title="Table View Cell" id="39e-BP-CCw">
                                                             <font key="font" metaFont="system"/>
                                                             <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
@@ -490,11 +490,11 @@
                         <rect key="frame" x="1" y="1" width="782" height="432"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <ikImageBrowserView autoresizesSubviews="NO" zoomValue="0.39009472727775574" id="4Ng-qR-G4T">
+                            <ikImageBrowserView autoresizesSubviews="NO" zoomValue="0.38659605383872986" id="4Ng-qR-G4T">
                                 <rect key="frame" x="0.0" y="0.0" width="782" height="432"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <autoresizingMask key="contentResizingMask" heightSizable="YES"/>
-                                <size key="cellSize" width="100" height="100"/>
+                                <size key="cellSize" width="99" height="99"/>
                             </ikImageBrowserView>
                         </subviews>
                     </clipView>

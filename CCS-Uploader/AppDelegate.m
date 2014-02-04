@@ -18,9 +18,21 @@
     statusItem.menu = statusBarMenu;
     statusItem.highlightMode = YES;
     
-    //[ImageUtil setExif:@"/Users/blagovest/Downloads/lotus.jpg" value:8];
-    [ImageUtil scaleAndRotateImage:@"/Users/blagovest/Downloads/lotus.jpg"];
-    [ImageUtil exif:@"/Users/blagovest/Downloads/lotus.jpg"];
+    /*
+    BOOL success;
+    CGSize imageSize = CGSizeZero;
+    NSMutableString *imageType = [NSMutableString new];
+    NSUInteger imageOrientation = 0;
+    
+    success = [ImageUtil getImageProperties:@"/Users/blagovest/Downloads/lotus5.jpg" size:&imageSize type:imageType orientation:&imageOrientation];
+    
+    if (success) {
+        NSLog(@"Properties: %lf x %lf, %@, %lu", imageSize.width, imageSize.height, imageType, imageOrientation);
+    }
+    
+    [ImageUtil resizeAndRotateImage:@"/Users/blagovest/Downloads/lotus5.jpg" outputImageFilename:@"/Users/blagovest/Downloads/lotus.jpg"
+        resizeToMaxSide:200 rotate:kDontRotate compressionQuality:1];
+    */
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification

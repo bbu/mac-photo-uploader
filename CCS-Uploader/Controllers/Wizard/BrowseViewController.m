@@ -7,6 +7,7 @@
     IBOutlet NSTableView *tblRolls;
     IBOutlet NSPopover *advancedOptionsPopover, *viewRollPopover;
     WizardWindowController *wizardWindowController;
+    NSMutableArray *rolls;
 }
 
 @end
@@ -19,6 +20,7 @@
     
     if (self) {
         wizardWindowController = parent;
+        rolls = [NSMutableArray new];
     }
     
     return self;
@@ -33,19 +35,32 @@
     openPanel.canChooseFiles = YES;
     openPanel.allowsMultipleSelection = YES;
     openPanel.message = @"Select files or folders to upload:";
-    [openPanel setDirectoryURL:[NSURL fileURLWithPath:defaultLocation]];
+    
+    if (defaultLocation) {
+        [openPanel setDirectoryURL:[NSURL fileURLWithPath:defaultLocation]];
+    }
 
     [openPanel beginSheetModalForWindow:wizardWindowController.window
         completionHandler:^(NSInteger result) {
             if (result == NSFileHandlingPanelOKButton) {
                 for (NSURL *url in openPanel.URLs) {
-                    
                     NSMutableArray *contents = [FileUtil filesInDirectory:url.path extensionSet:[FileUtil extensionSetWithJpeg:YES withPng:YES] recursive:YES absolutePaths:YES];
                     
                     for (NSString *filename in contents) {
                         NSLog(@"%@", filename);
                     }
+                    
+                    NSMutableDictionary *roll = [@{
+                        @"Name": @"My Roll",
+                        @"Photographer": @"abc",
+                        @"Count": @"10",
+                        @"Size": @"23232",
+                        } mutableCopy];
+                    
+                    [rolls addObject:roll];
                 }
+                
+                [tblRolls reloadData];
             }
         }
     ];
@@ -58,7 +73,7 @@
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
 {
-    return 45;
+    return rolls.count;
 }
 
 - (NSView *)tableView:(NSTableView *)tableView viewForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
@@ -68,9 +83,8 @@
     
     if ([columnID isEqualToString:@"Folder"]) {
         NSTableCellView *cell = view;
-        [cell.textField setEditable:YES];
         cell.imageView.image = [NSImage imageNamed:@"NSFolder"];
-        cell.textField.stringValue = @"Test name";
+        cell.textField.stringValue = rolls[row][@"Name"];
     } else if ([columnID isEqualToString:@"Photographer"]) {
         NSPopUpButton *btn = view;
         
@@ -81,14 +95,17 @@
         
     } else if ([columnID isEqualToString:@"Size"]) {
         NSTableCellView *cell = view;
-        cell.textField.stringValue = @"123";
+        //cell.textField.stringValue = rolls[row][@"Size"];
+        cell.textField.stringValue = [FileUtil humanFriendlyFilesize:531234];
+        
     } else if ([columnID isEqualToString:@"Count"]) {
         NSTableCellView *cell = view;
-        cell.textField.stringValue = [NSString stringWithFormat:@"%lu", row * 2];
+        cell.textField.stringValue = rolls[row][@"Count"];
     } else if ([columnID isEqualToString:@"GreenScreen"]) {
         NSTableCellView *cell = view;
-        //@"NSMenuOnStateTemplate"
-        cell.imageView.image = row % 2 ? [NSImage imageNamed:@"NSStatusNone"] : [NSImage imageNamed:@"NSStatusAvailable"];
+        //
+        //[NSImage imageNamed:@"NSStatusNone"] : [NSImage imageNamed:@"NSStatusAvailable"]
+        cell.imageView.image = row % 2 ? [NSImage imageNamed:@"NSStatusNone"] : [NSImage imageNamed:@"NSMenuOnStateTemplate"];
     } else if ([columnID isEqualToString:@"CurrentTask"]) {
         NSTableCellView *cell = view;
         cell.textField.stringValue = @"Uploading";
@@ -115,8 +132,8 @@
 
 - (IBAction)changedPhotographer:(id)sender
 {
-    NSLog(@"%lu", [tblRolls rowForView:sender]);
-    [tblRolls reloadData];
+    //NSLog(@"%lu", [tblRolls rowForView:sender]);
+    //[tblRolls reloadData];
 }
 
 - (IBAction)clickedDeleteRoll:(id)sender
@@ -128,6 +145,7 @@
     [alert beginSheetModalForWindow:wizardWindowController.window
         completionHandler:^(NSModalResponse response) {
             if (response == NSModalResponseOK) {
+                [rolls removeObjectAtIndex:row];
                 [tblRolls removeRowsAtIndexes:[NSIndexSet indexSetWithIndex:row] withAnimation:NSTableViewAnimationEffectNone];
             }
         }

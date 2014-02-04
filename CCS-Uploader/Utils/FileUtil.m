@@ -83,6 +83,21 @@
     return extension && [extensions containsObject:extension] ? YES : NO;
 }
 
++ (NSString *)humanFriendlyFilesize:(NSUInteger)value
+{
+    double convertedValue = value;
+    int multiplyFactor = 0;
+
+    NSArray *tokens = @[@"bytes", @"KB", @"MB", @"GB", @"TB"];
+    
+    while (convertedValue > 1024) {
+        convertedValue /= 1024;
+        multiplyFactor++;
+    }
+
+    return [NSString stringWithFormat:@"%4.2f %@", convertedValue, tokens[multiplyFactor]];
+}
+
 + (NSSet *)extensionSetWithJpeg:(BOOL)jpeg withPng:(BOOL)png
 {
     static NSSet *jpegAndPngSet, *jpegSet, *pngSet;

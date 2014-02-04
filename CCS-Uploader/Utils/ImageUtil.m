@@ -4,30 +4,42 @@
 
 @implementation ImageUtil
 
-+ (void)exif:(NSString *)imageFilename
++ (BOOL)getImageProperties:(NSString *)filename size:(CGSize *)size type:(NSMutableString *)imageType orientation:(NSUInteger *)orientation
 {
-    NSURL *imageFileURL = [NSURL fileURLWithPath:imageFilename];
+    NSURL *imageFileURL = [NSURL fileURLWithPath:filename];
     CGImageSourceRef imageSource = CGImageSourceCreateWithURL((__bridge CFURLRef)imageFileURL, NULL);
     
     if (imageSource == NULL) {
-        return;
+        NSLog(@"Could not create image source for %@", filename);
+        return NO;
     }
     
     NSDictionary *options = [NSDictionary dictionaryWithObjectsAndKeys:
         [NSNumber numberWithBool:NO], (NSString *)kCGImageSourceShouldCache,
         nil];
     
+    BOOL result = NO;
+    
+    [imageType setString:(__bridge NSString *)CGImageSourceGetType(imageSource)];
     CFDictionaryRef imageProperties = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, (__bridge CFDictionaryRef)options);
     
     if (imageProperties) {
         NSNumber *width = (NSNumber *)CFDictionaryGetValue(imageProperties, kCGImagePropertyPixelWidth);
         NSNumber *height = (NSNumber *)CFDictionaryGetValue(imageProperties, kCGImagePropertyPixelHeight);
-        NSNumber *orientation = (NSNumber *)CFDictionaryGetValue(imageProperties, kCGImagePropertyOrientation);
-        NSLog(@"Image dimensions: %@ x %@ px, orientation: %@", width, height, orientation);
+        NSNumber *orientationNumber = (NSNumber *)CFDictionaryGetValue(imageProperties, kCGImagePropertyOrientation);
+        
+        size->width = width.floatValue;
+        size->height = height.floatValue;
+        *orientation = orientationNumber.unsignedIntegerValue;
+        
         CFRelease(imageProperties);
+        result = YES;
+    } else {
+        NSLog(@"Could not get image properties for %@", filename);
     }
-    
+
     CFRelease(imageSource);
+    return result;
 }
 
 + (void)setExif:(NSString *)imageFilename value:(int)value
@@ -83,10 +95,28 @@
     CGColorSpaceRelease(rgbColorspace);
 }
 
++ (void)resizeToMaxSide:(CGFloat)maxSide imageSize:(CGSize)imageSize newSize:(CGSize *)newSize scaleRatio:(CGFloat *)scaleRatio
+{
+    if (imageSize.width > maxSide || imageSize.height > maxSide) {
+        CGFloat ratio = imageSize.width / imageSize.height;
+        
+        if (ratio > 1) {
+            *newSize = CGSizeMake(maxSide, roundf(maxSide / ratio));
+        } else {
+            *newSize = CGSizeMake(roundf(maxSide * ratio), maxSide);
+        }
+        
+        *scaleRatio = newSize->width / imageSize.width;
+    } else {
+        *newSize = imageSize;
+        *scaleRatio = 1.0;
+    }
+}
+
 + (CGAffineTransform)transformToHonourExifOrientation:(NSInteger)orientation imageSize:(CGSize)imageSize bounds:(CGSize *)bounds
 {
     CGAffineTransform transform;
-    CGFloat boundHeight;
+    BOOL swapWidthAndHeight = NO;
 
     switch (orientation) {
         case 1:
@@ -109,34 +139,26 @@
             break;
             
         case 5:
-            boundHeight = bounds->height;
-            bounds->height = bounds->width;
-            bounds->width = boundHeight;
+            swapWidthAndHeight = YES;
             transform = CGAffineTransformMakeTranslation(imageSize.height, imageSize.width);
             transform = CGAffineTransformScale(transform, -1.0, 1.0);
             transform = CGAffineTransformRotate(transform, 3.0 * M_PI / 2.0);
             break;
             
         case 6:
-            boundHeight = bounds->height;
-            bounds->height = bounds->width;
-            bounds->width = boundHeight;
+            swapWidthAndHeight = YES;
             transform = CGAffineTransformMakeTranslation(0.0, imageSize.width);
             transform = CGAffineTransformRotate(transform, 3.0 * M_PI / 2.0);
             break;
             
         case 7:
-            boundHeight = bounds->height;
-            bounds->height = bounds->width;
-            bounds->width = boundHeight;
+            swapWidthAndHeight = YES;
             transform = CGAffineTransformMakeScale(-1.0, 1.0);
             transform = CGAffineTransformRotate(transform, M_PI / 2.0);
             break;
             
         case 8:
-            boundHeight = bounds->height;
-            bounds->height = bounds->width;
-            bounds->width = boundHeight;
+            swapWidthAndHeight = YES;
             transform = CGAffineTransformMakeTranslation(imageSize.height, 0.0);
             transform = CGAffineTransformRotate(transform, M_PI / 2.0);
             break;
@@ -145,66 +167,91 @@
             transform = CGAffineTransformIdentity;
     }
     
+    if (swapWidthAndHeight) {
+        CGFloat temp = bounds->height;
+        bounds->height = bounds->width;
+        bounds->width = temp;
+    }
+    
     return transform;
 }
 
-+ (void)scaleAndRotateImage:(NSString *)imageFilename
++ (CGAffineTransform)transformToRotate:(IURotation)rotation imageSize:(CGSize)imageSize bounds:(CGSize *)bounds
 {
-    int kMaxResolution = 400;
+    CGAffineTransform transform = CGAffineTransformIdentity;
     
-    CFURLRef imageFileURL = (__bridge CFURLRef)[NSURL fileURLWithPath:imageFilename];
+    if (rotation != kDontRotate) {
+        if (rotation == kRotateCCW90 || rotation == kRotateCW270) {
+            transform = CGAffineTransformTranslate(transform, imageSize.height, 0);
+        } else if (rotation == kRotateCW90 || rotation == kRotateCCW270) {
+            transform = CGAffineTransformTranslate(transform, 0, imageSize.width);
+        } else if (rotation == kRotateCCW180 || rotation == kRotateCW180) {
+            transform = CGAffineTransformTranslate(transform, imageSize.width, imageSize.height);
+        }
+        
+        transform = CGAffineTransformRotate(transform, -rotation * (M_PI / 2.0));
+        
+        if (labs(rotation) % 2 == 1) {
+            CGFloat temp = bounds->width;
+            bounds->width = bounds->height;
+            bounds->height = temp;
+        }
+    }
+
+    return transform;
+}
+
++ (BOOL)resizeAndRotateImage:(NSString *)inputImageFilename outputImageFilename:(NSString *)outputImageFilename
+    resizeToMaxSide:(CGFloat)maxSide rotate:(IURotation)rotation compressionQuality:(float)compressionQuality
+{
+    BOOL result = NO;
     
+    CFURLRef imageFileURL = (__bridge CFURLRef)[NSURL fileURLWithPath:inputImageFilename];
     CGImageSourceRef inputImageSource = CGImageSourceCreateWithURL(imageFileURL, NULL);
     
     if (inputImageSource == NULL) {
-        NSLog(@"Could not create image source for %@", imageFilename);
-        return;
-    }
-    
-    CFStringRef inputImageType = CGImageSourceGetType(inputImageSource);
-    CGImageRef inputImage = CGImageSourceCreateImageAtIndex(inputImageSource, 0, NULL);
-    
-    if (inputImage == NULL) {
-        NSLog(@"Could not create image for %@", imageFilename);
-        CFRelease(inputImageSource);
-        return;
+        NSLog(@"Could not create image source for %@", inputImageFilename);
+        return NO;
     }
     
     NSDictionary *options = [NSDictionary dictionaryWithObjectsAndKeys:
-        [NSNumber numberWithBool:NO], (NSString *)kCGImageSourceShouldCache,
-        nil];
+        [NSNumber numberWithBool:NO], (NSString *)kCGImageSourceShouldCache, nil];
     
-    NSMutableDictionary *newProperties = [NSMutableDictionary new];
-    NSMutableDictionary *properties =
+    NSMutableDictionary *outputImageProperties = [NSMutableDictionary new];
+    NSMutableDictionary *inputImageProperties =
         [(__bridge NSDictionary *)CGImageSourceCopyPropertiesAtIndex(inputImageSource, 0, (__bridge CFDictionaryRef)options) mutableCopy];
     
-    CGSize inputImageSize = CGSizeMake(CGImageGetWidth(inputImage), CGImageGetHeight(inputImage));
-    CGSize outputImageSize = inputImageSize;
-    
-    if (inputImageSize.width > kMaxResolution || inputImageSize.height > kMaxResolution) {
-        CGFloat ratio = inputImageSize.width / inputImageSize.height;
-        
-        if (ratio > 1) {
-            outputImageSize.width = kMaxResolution;
-            outputImageSize.height = roundf(outputImageSize.width / ratio);
-        } else {
-            outputImageSize.height = kMaxResolution;
-            outputImageSize.width = roundf(outputImageSize.height * ratio);
-        }
+    CFStringRef inputImageType = CGImageSourceGetType(inputImageSource);
+    CGImageRef inputImage = CGImageSourceCreateImageAtIndex(inputImageSource, 0, NULL);
+
+    if (inputImage == NULL) {
+        NSLog(@"Could not create image for %@", inputImageFilename);
+        goto releaseInputImageSource;
     }
     
-    CGFloat scaleRatio = outputImageSize.width / inputImageSize.width;
+    CGSize inputImageSize = CGSizeMake(CGImageGetWidth(inputImage), CGImageGetHeight(inputImage));
+    CGSize outputImageSize;
+    CGFloat scaleRatio;
     
-    NSNumber *orientation = [properties objectForKey:(NSString *)kCGImagePropertyOrientation];
-    NSInteger exifOrientationValue = orientation.integerValue;
+    if (maxSide != 0) {
+        [ImageUtil resizeToMaxSide:maxSide imageSize:inputImageSize newSize:&outputImageSize scaleRatio:&scaleRatio];
+    } else {
+        outputImageSize = inputImageSize;
+        scaleRatio = 1.0;
+    }
     
-    CGAffineTransform transform = [ImageUtil transformToHonourExifOrientation:exifOrientationValue
+    NSInteger exifOrientationValue = ((NSNumber *)[inputImageProperties objectForKey:(NSString *)kCGImagePropertyOrientation]).integerValue;
+    
+    CGAffineTransform exifTransform = [ImageUtil transformToHonourExifOrientation:exifOrientationValue
+        imageSize:inputImageSize bounds:&outputImageSize];
+    
+    CGAffineTransform rotationTransform = [ImageUtil transformToRotate:rotation
         imageSize:inputImageSize bounds:&outputImageSize];
     
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
     
     if (colorSpace == NULL) {
-        NSLog(@"Could not create color space for %@", imageFilename);
+        NSLog(@"Could not create color space for %@", inputImageFilename);
         goto releaseInputImage;
     }
 
@@ -212,42 +259,52 @@
         outputImageSize.width * 4, colorSpace, (CGBitmapInfo)kCGImageAlphaPremultipliedLast);
     
     if (drawingContext == NULL) {
-        NSLog(@"Could not create drawing context for %@", imageFilename);
+        NSLog(@"Could not create drawing context for %@", inputImageFilename);
         goto releaseColorSpace;
     }
 
     CGContextScaleCTM(drawingContext, scaleRatio, scaleRatio);
     CGContextTranslateCTM(drawingContext, 0, 0);
-
-    CGContextConcatCTM(drawingContext, transform);
+    CGContextConcatCTM(drawingContext, exifTransform);
+    CGContextConcatCTM(drawingContext, rotationTransform);
     CGContextDrawImage(drawingContext, CGRectMake(0, 0, inputImageSize.width, inputImageSize.height), inputImage);
     
     CGImageRef outputImage = CGBitmapContextCreateImage(drawingContext);
     
     if (outputImage == NULL) {
-        NSLog(@"Could not create output image for %@", imageFilename);
+        NSLog(@"Could not create output image for %@", inputImageFilename);
         goto releaseDrawingContext;
     }
 
+    if (outputImageFilename != nil) {
+        imageFileURL = (__bridge CFURLRef)[NSURL fileURLWithPath:outputImageFilename];
+    }
+    
     CGImageDestinationRef outputImageDestination = CGImageDestinationCreateWithURL(imageFileURL, inputImageType, 1, NULL);
     
     if (outputImageDestination == NULL) {
-        NSLog(@"Could not create output image destination for %@", imageFilename);
+        NSLog(@"Could not create output image destination for %@",
+            outputImageFilename ? outputImageFilename : inputImageFilename);
+        
         goto releaseOutputImage;
     }
 
-    [newProperties setObject:[NSNumber numberWithInt:1] forKey:(NSString *)kCGImagePropertyOrientation];
+    [outputImageProperties setObject:[NSNumber numberWithInt:1]
+        forKey:(NSString *)kCGImagePropertyOrientation];
 
     if (!CFStringCompare(inputImageType, kUTTypeJPEG, 0)) {
-        [newProperties setObject:[NSNumber numberWithFloat:1.0] forKey:(NSString *)kCGImageDestinationLossyCompressionQuality];
+        [outputImageProperties setObject:[NSNumber numberWithFloat:compressionQuality]
+            forKey:(NSString *)kCGImageDestinationLossyCompressionQuality];
     }
     
-    CGImageDestinationAddImage(outputImageDestination, outputImage, (__bridge CFDictionaryRef)newProperties);
+    CGImageDestinationAddImage(outputImageDestination, outputImage, (__bridge CFDictionaryRef)outputImageProperties);
 
     if (!CGImageDestinationFinalize(outputImageDestination)) {
-        NSLog(@"Failed to write image to %@", imageFilename);
+        NSLog(@"Failed to write image to %@", inputImageFilename);
+    } else {
+        result = YES;
     }
-
+    
 releaseOutputImageDestination:
     CFRelease(outputImageDestination);
 releaseOutputImage:
@@ -258,7 +315,10 @@ releaseColorSpace:
     CGColorSpaceRelease(colorSpace);
 releaseInputImage:
     CGImageRelease(inputImage);
+releaseInputImageSource:
     CFRelease(inputImageSource);
+    
+    return result;
 }
 
 @end
