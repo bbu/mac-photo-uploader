@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2B1D706F18A228100021230E /* FullSizePostedService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B1D706E18A228100021230E /* FullSizePostedService.m */; };
+		2B1D707218A231890021230E /* ActivateFullSizeService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B1D707118A231890021230E /* ActivateFullSizeService.m */; };
+		2B1D707518A238300021230E /* FullSizeImageDimensionsByRollService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B1D707418A238300021230E /* FullSizeImageDimensionsByRollService.m */; };
+		2B1D707818A243C30021230E /* MissingFullSizeImagesByRollService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B1D707718A243C30021230E /* MissingFullSizeImagesByRollService.m */; };
 		2B2905AF18991548003C4345 /* CheckOrderNumberService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B2905AE18991548003C4345 /* CheckOrderNumberService.m */; };
 		2B31E7B31887D05E0089D868 /* ImageUploadViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B31E7B11887D05E0089D868 /* ImageUploadViewController.m */; };
 		2B31E7B41887D05E0089D868 /* ImageUploadView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2B31E7B21887D05E0089D868 /* ImageUploadView.xib */; };
@@ -49,9 +53,20 @@
 		2B7ACBE118867AEE00C68B0B /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2B7ACBE018867AEE00C68B0B /* Images.xcassets */; };
 		2B7ACBE7188680D700C68B0B /* FoldersViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B7ACBE5188680D700C68B0B /* FoldersViewController.m */; };
 		2B7ACBE8188680D700C68B0B /* FoldersView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2B7ACBE6188680D700C68B0B /* FoldersView.xib */; };
+		2B7D7F0918A25B4F000BF66B /* EventSettingsService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B7D7F0818A25B4F000BF66B /* EventSettingsService.m */; };
+		2BF6D27D18A297AA00F3929F /* UploadExtensionsService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BF6D27C18A297AA00F3929F /* UploadExtensionsService.m */; };
+		2BF6D28018A29BC300F3929F /* ActivatePreviewsAndThumbsService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BF6D27F18A29BC300F3929F /* ActivatePreviewsAndThumbsService.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		2B1D706D18A228100021230E /* FullSizePostedService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FullSizePostedService.h; sourceTree = "<group>"; };
+		2B1D706E18A228100021230E /* FullSizePostedService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FullSizePostedService.m; sourceTree = "<group>"; };
+		2B1D707018A231890021230E /* ActivateFullSizeService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ActivateFullSizeService.h; sourceTree = "<group>"; };
+		2B1D707118A231890021230E /* ActivateFullSizeService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ActivateFullSizeService.m; sourceTree = "<group>"; };
+		2B1D707318A238300021230E /* FullSizeImageDimensionsByRollService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FullSizeImageDimensionsByRollService.h; sourceTree = "<group>"; };
+		2B1D707418A238300021230E /* FullSizeImageDimensionsByRollService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FullSizeImageDimensionsByRollService.m; sourceTree = "<group>"; };
+		2B1D707618A243C30021230E /* MissingFullSizeImagesByRollService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MissingFullSizeImagesByRollService.h; sourceTree = "<group>"; };
+		2B1D707718A243C30021230E /* MissingFullSizeImagesByRollService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MissingFullSizeImagesByRollService.m; sourceTree = "<group>"; };
 		2B2905AD18991548003C4345 /* CheckOrderNumberService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CheckOrderNumberService.h; sourceTree = "<group>"; };
 		2B2905AE18991548003C4345 /* CheckOrderNumberService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CheckOrderNumberService.m; sourceTree = "<group>"; };
 		2B30999218895CDE00714D48 /* PrefsWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PrefsWindowController.h; path = "CCS-Uploader/Controllers/PrefsWindowController.h"; sourceTree = SOURCE_ROOT; };
@@ -123,6 +138,12 @@
 		2B7ACBE4188680D700C68B0B /* FoldersViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FoldersViewController.h; sourceTree = "<group>"; };
 		2B7ACBE5188680D700C68B0B /* FoldersViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FoldersViewController.m; sourceTree = "<group>"; };
 		2B7ACBE6188680D700C68B0B /* FoldersView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = FoldersView.xib; sourceTree = "<group>"; };
+		2B7D7F0718A25B4F000BF66B /* EventSettingsService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EventSettingsService.h; sourceTree = "<group>"; };
+		2B7D7F0818A25B4F000BF66B /* EventSettingsService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EventSettingsService.m; sourceTree = "<group>"; };
+		2BF6D27B18A297AA00F3929F /* UploadExtensionsService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UploadExtensionsService.h; sourceTree = "<group>"; };
+		2BF6D27C18A297AA00F3929F /* UploadExtensionsService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UploadExtensionsService.m; sourceTree = "<group>"; };
+		2BF6D27E18A29BC300F3929F /* ActivatePreviewsAndThumbsService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ActivatePreviewsAndThumbsService.h; sourceTree = "<group>"; };
+		2BF6D27F18A29BC300F3929F /* ActivatePreviewsAndThumbsService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ActivatePreviewsAndThumbsService.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -269,6 +290,20 @@
 				2B2905AE18991548003C4345 /* CheckOrderNumberService.m */,
 				2B58D635189A4452004D21CF /* Service.h */,
 				2B58D636189A4452004D21CF /* Service.m */,
+				2B1D706D18A228100021230E /* FullSizePostedService.h */,
+				2B1D706E18A228100021230E /* FullSizePostedService.m */,
+				2B1D707018A231890021230E /* ActivateFullSizeService.h */,
+				2B1D707118A231890021230E /* ActivateFullSizeService.m */,
+				2BF6D27E18A29BC300F3929F /* ActivatePreviewsAndThumbsService.h */,
+				2BF6D27F18A29BC300F3929F /* ActivatePreviewsAndThumbsService.m */,
+				2B1D707318A238300021230E /* FullSizeImageDimensionsByRollService.h */,
+				2B1D707418A238300021230E /* FullSizeImageDimensionsByRollService.m */,
+				2B1D707618A243C30021230E /* MissingFullSizeImagesByRollService.h */,
+				2B1D707718A243C30021230E /* MissingFullSizeImagesByRollService.m */,
+				2B7D7F0718A25B4F000BF66B /* EventSettingsService.h */,
+				2B7D7F0818A25B4F000BF66B /* EventSettingsService.m */,
+				2BF6D27B18A297AA00F3929F /* UploadExtensionsService.h */,
+				2BF6D27C18A297AA00F3929F /* UploadExtensionsService.m */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -372,6 +407,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2B1D707218A231890021230E /* ActivateFullSizeService.m in Sources */,
+				2B7D7F0918A25B4F000BF66B /* EventSettingsService.m in Sources */,
+				2BF6D27D18A297AA00F3929F /* UploadExtensionsService.m in Sources */,
 				2B51D15218979D2B0021AD20 /* ListEventsService.m in Sources */,
 				2B4766111887E328008DF1FD /* AdvancedViewController.m in Sources */,
 				2B2905AF18991548003C4345 /* CheckOrderNumberService.m in Sources */,
@@ -382,10 +420,14 @@
 				2B74BF0D1883D50B00D0B78B /* main.m in Sources */,
 				2B758C5018929A460045DE48 /* ImageUtil.m in Sources */,
 				2B7943C21896810600DCD80D /* AuthService.m in Sources */,
+				2B1D707518A238300021230E /* FullSizeImageDimensionsByRollService.m in Sources */,
 				2B533ECB189002C600A4D8A2 /* EventsViewController.m in Sources */,
 				2B4766161887FEBC008DF1FD /* MarketSettingsViewController.m in Sources */,
+				2B1D707818A243C30021230E /* MissingFullSizeImagesByRollService.m in Sources */,
 				2B5E0B33188415200023095C /* MainWindowController.m in Sources */,
 				2B51D1581897E6A90021AD20 /* AddPhotographerService.m in Sources */,
+				2BF6D28018A29BC300F3929F /* ActivatePreviewsAndThumbsService.m in Sources */,
+				2B1D706F18A228100021230E /* FullSizePostedService.m in Sources */,
 				2B3499BD189E852600A45D6C /* FileUtil.m in Sources */,
 				2B533EBB188FB2AF00A4D8A2 /* WizardWindowController.m in Sources */,
 				2B3499C0189EDCC800A45D6C /* Base64.m in Sources */,

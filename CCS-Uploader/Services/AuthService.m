@@ -1,7 +1,6 @@
 #import "AuthService.h"
 
 @interface AuthResult () {
-    NSError *_error;
     BOOL _success;
     NSString *_accountID;
 }
@@ -12,7 +11,6 @@
 
 @interface AuthService () <NSURLConnectionDelegate, NSXMLParserDelegate> {
     AuthResult *authResult;
-    void (^authFinished)(AuthResult *result);
 }
 @end
 
@@ -20,9 +18,8 @@
 
 - (NSString *)serviceURL
 {
-    //return @"http://ccstransfer.candid.com/CCSTransferWeb/dev/CCSTransferQuicPost.asmx";
-    NSString *coreDomain = @"coredemo.candid.com";
-    return [NSString stringWithFormat:@"http://%@/core/xml/CORECCSTransfer2.asmx/AuthenticateUser", coreDomain];
+    NSString *coreDomain = kDefaultCoreDomain;
+    return [NSString stringWithFormat:kCoreServiceRoot @"AuthenticateUser", coreDomain];
 }
 
 - (BOOL)startAuth:(NSString *)email password:(NSString *)password complete:(void (^)(AuthResult *result))block
@@ -40,7 +37,7 @@
     
     started = YES;
     authResult = [AuthResult new];
-    authFinished = block;
+    finished = block;
     urlConnection = [NSURLConnection connectionWithRequest:request delegate:self];
 
     return started;
@@ -52,24 +49,20 @@
 {
     //NSString *stringResponse = [[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding];
     //NSLog(@"String response:\r%@", stringResponse);
-    urlConnection = nil;
-    started = NO;
+    urlConnection = nil, started = NO;
 
     NSXMLParser *parser = [[NSXMLParser alloc] initWithData:responseData];
     parser.delegate = self;
     
     if ([parser parse]) {
-        authFinished(authResult);
+        finished(authResult);
     }
 }
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
-    urlConnection = nil;
-    started = NO;
-    
-    authResult.error = error;
-    authFinished(authResult);
+    urlConnection = nil, started = NO, authResult.error = error;
+    finished(authResult);
 }
 
 #pragma mark - NSXMLParserDelegate
@@ -93,7 +86,7 @@
 - (void)parser:(NSXMLParser *)parser parseErrorOccurred:(NSError *)parseError
 {
     authResult.error = parseError;
-    authFinished(authResult);
+    finished(authResult);
 }
 
 @end

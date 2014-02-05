@@ -9,8 +9,7 @@
 @property NSString *password;
 @end
 
-@interface ListPhotographersResult : NSObject
-@property NSError *error;
+@interface ListPhotographersResult : ServiceResult
 @property BOOL loginSuccess, processSuccess;
 @property NSMutableArray *photographers;
 @end

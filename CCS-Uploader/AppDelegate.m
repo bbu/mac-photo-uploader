@@ -2,6 +2,8 @@
 #import "Utils/ImageUtil.h"
 #import "Utils/FileUtil.h"
 
+#import "Services/ActivatePreviewsAndThumbsService.h"
+
 @interface AppDelegate () {
     IBOutlet NSMenu *statusBarMenu;
     NSStatusItem *statusItem;
@@ -18,6 +20,15 @@
     statusItem.menu = statusBarMenu;
     statusItem.highlightMode = YES;
     
+    
+    
+    ActivatePreviewsAndThumbsService *s = [ActivatePreviewsAndThumbsService new];
+    
+    [s startActivatePreviewsAndThumbs:@"11420" password:@"11420" orderNumber:@"26710294" complete:^(ActivatePreviewsAndThumbsResult *result) {
+            NSLog(@"complete");
+        }
+    ];
+
     /*
     BOOL success;
     CGSize imageSize = CGSizeZero;

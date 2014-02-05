@@ -11,8 +11,7 @@
 @property NSString *modCode;
 @end
 
-@interface ListDivisionsResult : NSObject
-@property NSError *error;
+@interface ListDivisionsResult : ServiceResult
 @property BOOL loginSuccess, processSuccess;
 @property NSMutableArray *divisions;
 @end

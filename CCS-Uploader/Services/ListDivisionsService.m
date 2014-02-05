@@ -1,12 +1,12 @@
 #import "ListDivisionsService.h"
 
 @interface DivisionRow () {
-NSString *_divisionID;
-NSString *_eventID;
-NSString *_name;
-NSString *_nameOverride;
-NSString *_nameWithModID;
-NSString *_modCode;
+    NSString *_divisionID;
+    NSString *_eventID;
+    NSString *_name;
+    NSString *_nameOverride;
+    NSString *_nameWithModID;
+    NSString *_modCode;
 }
 @end
 
@@ -14,7 +14,6 @@ NSString *_modCode;
 @end
 
 @interface ListDivisionsResult () {
-    NSError *_error;
     BOOL _loginSuccess, _processSuccess;
     NSMutableArray *_divisions;
 }
@@ -25,7 +24,6 @@ NSString *_modCode;
 
 @interface ListDivisionsService () <NSURLConnectionDelegate, NSXMLParserDelegate> {
     ListDivisionsResult *listDivisionsResult;
-    void (^listFinished)(ListDivisionsResult *result);
 }
 @end
 
@@ -33,8 +31,8 @@ NSString *_modCode;
 
 - (NSString *)serviceURL
 {
-    NSString *coreDomain = @"coredemo.candid.com";
-    return [NSString stringWithFormat:@"http://%@/core/xml/CORECCSTransfer2.asmx/ListDivisions", coreDomain];
+    NSString *coreDomain = kDefaultCoreDomain;
+    return [NSString stringWithFormat:kCoreServiceRoot @"ListDivisions", coreDomain];
 }
 
 - (BOOL)startListDivisions:(NSString *)email password:(NSString *)password eventID:(NSString *)eventID
@@ -54,7 +52,7 @@ NSString *_modCode;
     
     listDivisionsResult = [ListDivisionsResult new];
     listDivisionsResult.divisions = [NSMutableArray new];
-    listFinished = block;
+    finished = block;
     
     urlConnection = [NSURLConnection connectionWithRequest:request delegate:self];
     return started = YES;
@@ -64,24 +62,20 @@ NSString *_modCode;
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
-    urlConnection = nil;
-    started = NO;
+    urlConnection = nil, started = NO;
     
     NSXMLParser *parser = [[NSXMLParser alloc] initWithData:responseData];
     parser.delegate = self;
     
     if ([parser parse]) {
-        listFinished(listDivisionsResult);
+        finished(listDivisionsResult);
     }
 }
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
-    urlConnection = nil;
-    started = NO;
-    
-    listDivisionsResult.error = error;
-    listFinished(listDivisionsResult);
+    urlConnection = nil, started = NO, listDivisionsResult.error = error;
+    finished(listDivisionsResult);
 }
 
 #pragma mark - NSXMLParserDelegate
@@ -129,7 +123,7 @@ NSString *_modCode;
 - (void)parser:(NSXMLParser *)parser parseErrorOccurred:(NSError *)parseError
 {
     listDivisionsResult.error = parseError;
-    listFinished(listDivisionsResult);
+    finished(listDivisionsResult);
 }
 
 @end

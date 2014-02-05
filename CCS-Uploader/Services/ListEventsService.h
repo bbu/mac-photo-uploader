@@ -16,8 +16,7 @@
 @property BOOL autoCategorizeImages;
 @end
 
-@interface ListEventsResult : NSObject
-@property NSError *error;
+@interface ListEventsResult : ServiceResult
 @property BOOL loginSuccess, processSuccess;
 @property NSMutableArray *events;
 @end

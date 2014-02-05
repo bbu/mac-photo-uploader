@@ -1,5 +1,13 @@
 #import "Service.h"
 
+@interface ServiceResult () {
+    NSError *_error;
+}
+@end
+
+@implementation ServiceResult
+@end
+
 @interface Service () <NSURLConnectionDelegate, NSXMLParserDelegate>
 @end
 
@@ -12,9 +20,15 @@
     if (self) {
         responseData = [NSMutableData new];
         lastValue = [NSMutableString new];
+        numberFormatter = [NSNumberFormatter new];
     }
     
     return self;
+}
+
+- (BOOL)isRunning
+{
+    return started;
 }
 
 - (void)cancel

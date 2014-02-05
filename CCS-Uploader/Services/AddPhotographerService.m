@@ -1,7 +1,6 @@
 #import "AddPhotographerService.h"
 
 @interface AddPhotographerResult () {
-    NSError *_error;
     BOOL _loginSuccess, _processSuccess;
 }
 @end
@@ -11,7 +10,6 @@
 
 @interface AddPhotographerService () <NSURLConnectionDelegate, NSXMLParserDelegate> {
     AddPhotographerResult *addPhotographerResult;
-    void (^addFinished)(AddPhotographerResult *result);
 }
 @end
 
@@ -19,8 +17,8 @@
 
 - (NSString *)serviceURL
 {
-    NSString *coreDomain = @"coredemo.candid.com";
-    return [NSString stringWithFormat:@"http://%@/core/xml/CORECCSTransfer2.asmx/AddPhotographer", coreDomain];
+    NSString *coreDomain = kDefaultCoreDomain;
+    return [NSString stringWithFormat:kCoreServiceRoot @"AddPhotographer", coreDomain];
 }
 
 - (BOOL)startAddPhotographer:(NSString *)email password:(NSString *)password account:(NSString *)account
@@ -43,7 +41,7 @@
     NSMutableURLRequest *request = [Service postRequestWithURL:[self serviceURL] body:postBody];
     
     addPhotographerResult = [AddPhotographerResult new];
-    addFinished = block;
+    finished = block;
     
     urlConnection = [NSURLConnection connectionWithRequest:request delegate:self];
     return started = YES;
@@ -53,24 +51,20 @@
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
-    urlConnection = nil;
-    started = NO;
+    urlConnection = nil, started = NO;
     
     NSXMLParser *parser = [[NSXMLParser alloc] initWithData:responseData];
     parser.delegate = self;
     
     if ([parser parse]) {
-        addFinished(addPhotographerResult);
+        finished(addPhotographerResult);
     }
 }
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
-    urlConnection = nil;
-    started = NO;
-
-    addPhotographerResult.error = error;
-    addFinished(addPhotographerResult);
+    urlConnection = nil, started = NO, addPhotographerResult.error = error;
+    finished(addPhotographerResult);
 }
 
 #pragma mark - NSXMLParserDelegate
@@ -88,7 +82,7 @@
 - (void)parser:(NSXMLParser *)parser parseErrorOccurred:(NSError *)parseError
 {
     addPhotographerResult.error = parseError;
-    addFinished(addPhotographerResult);
+    finished(addPhotographerResult);
 }
 
 @end

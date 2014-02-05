@@ -2,8 +2,7 @@
 
 #import "Service.h"
 
-@interface AddPhotographerResult : NSObject
-@property NSError *error;
+@interface AddPhotographerResult : ServiceResult
 @property BOOL loginSuccess, processSuccess;
 @end
 

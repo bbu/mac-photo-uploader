@@ -12,7 +12,6 @@
 @end
 
 @interface ListPhotographersResult () {
-    NSError *_error;
     BOOL _loginSuccess, _processSuccess;
     NSMutableArray *_photographers;
 }
@@ -23,7 +22,6 @@
 
 @interface ListPhotographersService () <NSURLConnectionDelegate, NSXMLParserDelegate> {
     ListPhotographersResult *listPhotographersResult;
-    void (^listFinished)(ListPhotographersResult *result);
 }
 @end
 
@@ -31,8 +29,8 @@
 
 - (NSString *)serviceURL
 {
-    NSString *coreDomain = @"coredemo.candid.com";
-    return [NSString stringWithFormat:@"http://%@/core/xml/CORECCSTransfer2.asmx/ListPhotographers", coreDomain];
+    NSString *coreDomain = kDefaultCoreDomain;
+    return [NSString stringWithFormat:kCoreServiceRoot @"ListPhotographers", coreDomain];
 }
 
 - (BOOL)startListPhotographers:(NSString *)account email:(NSString *)email password:(NSString *)password
@@ -52,7 +50,7 @@
     
     listPhotographersResult = [ListPhotographersResult new];
     listPhotographersResult.photographers = [NSMutableArray new];
-    listFinished = block;
+    finished = block;
 
     urlConnection = [NSURLConnection connectionWithRequest:request delegate:self];
     return started = YES;
@@ -62,24 +60,20 @@
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
-    urlConnection = nil;
-    started = NO;
+    urlConnection = nil, started = NO;
     
     NSXMLParser *parser = [[NSXMLParser alloc] initWithData:responseData];
     parser.delegate = self;
     
     if ([parser parse]) {
-        listFinished(listPhotographersResult);
+        finished(listPhotographersResult);
     }
 }
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
-    urlConnection = nil;
-    started = NO;
-    
-    listPhotographersResult.error = error;
-    listFinished(listPhotographersResult);
+    urlConnection = nil, started = NO, listPhotographersResult.error = error;
+    finished(listPhotographersResult);
 }
 
 #pragma mark - NSXMLParserDelegate
@@ -123,7 +117,7 @@
 - (void)parser:(NSXMLParser *)parser parseErrorOccurred:(NSError *)parseError
 {
     listPhotographersResult.error = parseError;
-    listFinished(listPhotographersResult);
+    finished(listPhotographersResult);
 }
 
 @end

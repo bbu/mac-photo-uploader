@@ -19,7 +19,6 @@
 @end
 
 @interface ListEventsResult () {
-    NSError *_error;
     BOOL _loginSuccess, _processSuccess;
     NSMutableArray *_events;
 }
@@ -31,7 +30,6 @@
 @interface ListEventsService () <NSURLConnectionDelegate, NSXMLParserDelegate> {
     NSDateFormatter *dateFormatter;
     ListEventsResult *listEventsResult;
-    void (^listFinished)(ListEventsResult *result);
 }
 @end
 
@@ -51,12 +49,12 @@
 
 - (NSString *)serviceURL:(BOOL)multipleEvents
 {
-    NSString *coreDomain = @"coredemo.candid.com";
+    NSString *coreDomain = kDefaultCoreDomain;
     
     if (multipleEvents) {
-        return [NSString stringWithFormat:@"http://%@/core/xml/CORECCSTransfer2.asmx/ListEvents2", coreDomain];
+        return [NSString stringWithFormat:kCoreServiceRoot @"ListEvents2", coreDomain];
     } else {
-        return [NSString stringWithFormat:@"http://%@/core/xml/CORECCSTransfer2.asmx/ListEvent", coreDomain];
+        return [NSString stringWithFormat:kCoreServiceRoot @"ListEvent", coreDomain];
     }
 }
 
@@ -93,7 +91,7 @@
     
     listEventsResult = [ListEventsResult new];
     listEventsResult.events = [NSMutableArray new];
-    listFinished = block;
+    finished = block;
 
     urlConnection = [NSURLConnection connectionWithRequest:request delegate:self];
     return started = YES;
@@ -117,7 +115,7 @@
     
     listEventsResult = [ListEventsResult new];
     listEventsResult.events = [NSMutableArray new];
-    listFinished = block;
+    finished = block;
 
     urlConnection = [NSURLConnection connectionWithRequest:request delegate:self];
     return started = YES;
@@ -127,24 +125,20 @@
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
-    urlConnection = nil;
-    started = NO;
+    urlConnection = nil, started = NO;
     
     NSXMLParser *parser = [[NSXMLParser alloc] initWithData:responseData];
     parser.delegate = self;
     
     if ([parser parse]) {
-        listFinished(listEventsResult);
+        finished(listEventsResult);
     }
 }
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
-    urlConnection = nil;
-    started = NO;
-
-    listEventsResult.error = error;
-    listFinished(listEventsResult);
+    urlConnection = nil, started = NO, listEventsResult.error = error;
+    finished(listEventsResult);
 }
 
 #pragma mark - NSXMLParserDelegate
@@ -202,7 +196,7 @@
 - (void)parser:(NSXMLParser *)parser parseErrorOccurred:(NSError *)parseError
 {
     listEventsResult.error = parseError;
-    listFinished(listEventsResult);
+    finished(listEventsResult);
 }
 
 @end

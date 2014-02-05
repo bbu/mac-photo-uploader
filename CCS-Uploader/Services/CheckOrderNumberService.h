@@ -2,8 +2,7 @@
 
 #import "Service.h"
 
-@interface CheckOrderNumberResult : NSObject
-@property NSError *error;
+@interface CheckOrderNumberResult : ServiceResult
 @property BOOL loginSuccess, processSuccess;
 @property NSString *ccsPassword;
 @end

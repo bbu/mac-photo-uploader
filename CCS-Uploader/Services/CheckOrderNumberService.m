@@ -1,7 +1,6 @@
 #import "CheckOrderNumberService.h"
 
 @interface CheckOrderNumberResult () {
-    NSError *_error;
     BOOL _loginSuccess, _processSuccess;
     NSString *_ccsPassword;
 }
@@ -11,8 +10,7 @@
 @end
 
 @interface CheckOrderNumberService () <NSURLConnectionDelegate, NSXMLParserDelegate> {
-    CheckOrderNumberResult *result;
-    void (^checkFinished)(CheckOrderNumberResult *result);
+    CheckOrderNumberResult *checkOrderNumberResult;
 }
 @end
 
@@ -20,8 +18,8 @@
 
 - (NSString *)serviceURL
 {
-    NSString *coreDomain = @"coredemo.candid.com";
-    return [NSString stringWithFormat:@"http://%@/core/xml/CORECCSTransfer2.asmx/CheckOrderNumber", coreDomain];
+    NSString *coreDomain = kDefaultCoreDomain;
+    return [NSString stringWithFormat:kCoreServiceRoot @"CheckOrderNumber", coreDomain];
 }
 
 - (BOOL)startCheckOrderNumber:(NSString *)email password:(NSString *)password orderNumber:(NSString *)orderNumber
@@ -39,8 +37,8 @@
     
     NSMutableURLRequest *request = [Service postRequestWithURL:[self serviceURL] body:postBody];
     
-    result = [CheckOrderNumberResult new];
-    checkFinished = block;
+    checkOrderNumberResult = [CheckOrderNumberResult new];
+    finished = block;
 
     urlConnection = [NSURLConnection connectionWithRequest:request delegate:self];
     return started = YES;
@@ -50,24 +48,20 @@
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
-    urlConnection = nil;
-    started = NO;
+    urlConnection = nil, started = NO;
     
     NSXMLParser *parser = [[NSXMLParser alloc] initWithData:responseData];
     parser.delegate = self;
     
     if ([parser parse]) {
-        checkFinished(result);
+        finished(checkOrderNumberResult);
     }
 }
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
-    urlConnection = nil;
-    started = NO;
-    
-    result.error = error;
-    checkFinished(result);
+    urlConnection = nil, started = NO, checkOrderNumberResult.error = error;
+    finished(checkOrderNumberResult);
 }
 
 #pragma mark - NSXMLParserDelegate
@@ -76,18 +70,18 @@
   namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qName
 {
     if ([elementName isEqualToString:@"LoginResult"]) {
-        result.loginSuccess = [lastValue isEqualToString:@"Success"];
+        checkOrderNumberResult.loginSuccess = [lastValue isEqualToString:@"Success"];
     } else if ([elementName isEqualToString:@"ProcessResult"]) {
-        result.processSuccess = [lastValue isEqualToString:@"Success"];
+        checkOrderNumberResult.processSuccess = [lastValue isEqualToString:@"Success"];
     } else if ([elementName isEqualToString:@"StringData"]) {
-        result.ccsPassword = [lastValue copy];
+        checkOrderNumberResult.ccsPassword = [lastValue copy];
     }
 }
 
 - (void)parser:(NSXMLParser *)parser parseErrorOccurred:(NSError *)parseError
 {
-    result.error = parseError;
-    checkFinished(result);
+    checkOrderNumberResult.error = parseError;
+    finished(checkOrderNumberResult);
 }
 
 @end
