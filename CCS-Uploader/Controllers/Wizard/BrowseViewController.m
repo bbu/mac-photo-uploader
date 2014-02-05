@@ -103,9 +103,9 @@
         cell.textField.stringValue = rolls[row][@"Count"];
     } else if ([columnID isEqualToString:@"GreenScreen"]) {
         NSTableCellView *cell = view;
+        //[NSImage imageNamed:@"NSStatusNone"] : [NSImage imageNamed:@"NSMenuOnStateTemplate"]
         //
-        //[NSImage imageNamed:@"NSStatusNone"] : [NSImage imageNamed:@"NSStatusAvailable"]
-        cell.imageView.image = row % 2 ? [NSImage imageNamed:@"NSStatusNone"] : [NSImage imageNamed:@"NSMenuOnStateTemplate"];
+        cell.imageView.image = row % 2 ? [NSImage imageNamed:@"NSStatusNone"] : [NSImage imageNamed:@"NSStatusAvailable"];
     } else if ([columnID isEqualToString:@"CurrentTask"]) {
         NSTableCellView *cell = view;
         cell.textField.stringValue = @"Uploading";

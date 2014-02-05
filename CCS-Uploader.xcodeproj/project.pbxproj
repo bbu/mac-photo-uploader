@@ -16,6 +16,10 @@
 		2B31E7B41887D05E0089D868 /* ImageUploadView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2B31E7B21887D05E0089D868 /* ImageUploadView.xib */; };
 		2B3499BD189E852600A45D6C /* FileUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B3499BC189E852600A45D6C /* FileUtil.m */; };
 		2B3499C0189EDCC800A45D6C /* Base64.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B3499BF189EDCC800A45D6C /* Base64.m */; };
+		2B35F96018A2E121005199CA /* PostImageDataService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B35F95F18A2E121005199CA /* PostImageDataService.m */; };
+		2B35F96318A2F246005199CA /* UpdateVisibleService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B35F96218A2F246005199CA /* UpdateVisibleService.m */; };
+		2B35F96618A2F50B005199CA /* VerifyOrderService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B35F96518A2F50B005199CA /* VerifyOrderService.m */; };
+		2B35F96B18A2FA48005199CA /* OrderModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B35F96A18A2FA48005199CA /* OrderModel.m */; };
 		2B43135B189112B500580D54 /* BrowseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B431359189112B500580D54 /* BrowseViewController.m */; };
 		2B43135C189112B500580D54 /* BrowseView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2B43135A189112B500580D54 /* BrowseView.xib */; };
 		2B4766111887E328008DF1FD /* AdvancedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B47660F1887E328008DF1FD /* AdvancedViewController.m */; };
@@ -77,6 +81,14 @@
 		2B3499BC189E852600A45D6C /* FileUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileUtil.m; sourceTree = "<group>"; };
 		2B3499BE189EDCC800A45D6C /* Base64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Base64.h; sourceTree = "<group>"; };
 		2B3499BF189EDCC800A45D6C /* Base64.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Base64.m; sourceTree = "<group>"; };
+		2B35F95E18A2E121005199CA /* PostImageDataService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PostImageDataService.h; sourceTree = "<group>"; };
+		2B35F95F18A2E121005199CA /* PostImageDataService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PostImageDataService.m; sourceTree = "<group>"; };
+		2B35F96118A2F246005199CA /* UpdateVisibleService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UpdateVisibleService.h; sourceTree = "<group>"; };
+		2B35F96218A2F246005199CA /* UpdateVisibleService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UpdateVisibleService.m; sourceTree = "<group>"; };
+		2B35F96418A2F50B005199CA /* VerifyOrderService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VerifyOrderService.h; sourceTree = "<group>"; };
+		2B35F96518A2F50B005199CA /* VerifyOrderService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VerifyOrderService.m; sourceTree = "<group>"; };
+		2B35F96918A2FA48005199CA /* OrderModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OrderModel.h; sourceTree = "<group>"; };
+		2B35F96A18A2FA48005199CA /* OrderModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OrderModel.m; sourceTree = "<group>"; };
 		2B431358189112B500580D54 /* BrowseViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BrowseViewController.h; sourceTree = "<group>"; };
 		2B431359189112B500580D54 /* BrowseViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BrowseViewController.m; sourceTree = "<group>"; };
 		2B43135A189112B500580D54 /* BrowseView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = BrowseView.xib; sourceTree = "<group>"; };
@@ -159,6 +171,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		2B35F96818A2FA39005199CA /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				2B35F96918A2FA48005199CA /* OrderModel.h */,
+				2B35F96A18A2FA48005199CA /* OrderModel.m */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
 		2B533EBD188FBF6A00A4D8A2 /* Wizard */ = {
 			isa = PBXGroup;
 			children = (
@@ -236,6 +257,7 @@
 		2B74BF061883D50B00D0B78B /* CCS-Uploader */ = {
 			isa = PBXGroup;
 			children = (
+				2B35F96818A2FA39005199CA /* Models */,
 				2B7943BF18967FD500DCD80D /* Services */,
 				2B758C4D18929A2D0045DE48 /* Utils */,
 				2B5E0B2818840F7E0023095C /* Controllers */,
@@ -304,6 +326,12 @@
 				2B7D7F0818A25B4F000BF66B /* EventSettingsService.m */,
 				2BF6D27B18A297AA00F3929F /* UploadExtensionsService.h */,
 				2BF6D27C18A297AA00F3929F /* UploadExtensionsService.m */,
+				2B35F95E18A2E121005199CA /* PostImageDataService.h */,
+				2B35F95F18A2E121005199CA /* PostImageDataService.m */,
+				2B35F96118A2F246005199CA /* UpdateVisibleService.h */,
+				2B35F96218A2F246005199CA /* UpdateVisibleService.m */,
+				2B35F96418A2F50B005199CA /* VerifyOrderService.h */,
+				2B35F96518A2F50B005199CA /* VerifyOrderService.m */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -412,15 +440,19 @@
 				2BF6D27D18A297AA00F3929F /* UploadExtensionsService.m in Sources */,
 				2B51D15218979D2B0021AD20 /* ListEventsService.m in Sources */,
 				2B4766111887E328008DF1FD /* AdvancedViewController.m in Sources */,
+				2B35F96018A2E121005199CA /* PostImageDataService.m in Sources */,
 				2B2905AF18991548003C4345 /* CheckOrderNumberService.m in Sources */,
 				2B51D15B1897FCBA0021AD20 /* ListDivisionsService.m in Sources */,
 				2B74BF141883D50B00D0B78B /* AppDelegate.m in Sources */,
 				2B7ACBE7188680D700C68B0B /* FoldersViewController.m in Sources */,
 				2B51D1551897E6830021AD20 /* ListPhotographersService.m in Sources */,
+				2B35F96618A2F50B005199CA /* VerifyOrderService.m in Sources */,
 				2B74BF0D1883D50B00D0B78B /* main.m in Sources */,
+				2B35F96318A2F246005199CA /* UpdateVisibleService.m in Sources */,
 				2B758C5018929A460045DE48 /* ImageUtil.m in Sources */,
 				2B7943C21896810600DCD80D /* AuthService.m in Sources */,
 				2B1D707518A238300021230E /* FullSizeImageDimensionsByRollService.m in Sources */,
+				2B35F96B18A2FA48005199CA /* OrderModel.m in Sources */,
 				2B533ECB189002C600A4D8A2 /* EventsViewController.m in Sources */,
 				2B4766161887FEBC008DF1FD /* MarketSettingsViewController.m in Sources */,
 				2B1D707818A243C30021230E /* MissingFullSizeImagesByRollService.m in Sources */,

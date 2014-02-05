@@ -2,7 +2,7 @@
 #import "Utils/ImageUtil.h"
 #import "Utils/FileUtil.h"
 
-#import "Services/ActivatePreviewsAndThumbsService.h"
+#import "Services/VerifyOrderService.h"
 
 @interface AppDelegate () {
     IBOutlet NSMenu *statusBarMenu;
@@ -20,28 +20,28 @@
     statusItem.menu = statusBarMenu;
     statusItem.highlightMode = YES;
     
+    /*
+    VerifyOrderService *s = [VerifyOrderService new];
     
-    
-    ActivatePreviewsAndThumbsService *s = [ActivatePreviewsAndThumbsService new];
-    
-    [s startActivatePreviewsAndThumbs:@"11420" password:@"11420" orderNumber:@"26710294" complete:^(ActivatePreviewsAndThumbsResult *result) {
+    [s startVerifyOrder:@"11420" password:@"11420" orderNumber:@"26710294" version:@"CCSTransfer 999" bypassPassword:NO complete:^(VerifyOrderResult *result) {
             NSLog(@"complete");
         }
     ];
-
+    */
+    
     /*
     BOOL success;
     CGSize imageSize = CGSizeZero;
     NSMutableString *imageType = [NSMutableString new];
     NSUInteger imageOrientation = 0;
     
-    success = [ImageUtil getImageProperties:@"/Users/blagovest/Downloads/lotus5.jpg" size:&imageSize type:imageType orientation:&imageOrientation];
+    success = [ImageUtil getImageProperties:@"/Users/blagovest/Downloads/lotus7.jpg" size:&imageSize type:imageType orientation:&imageOrientation];
     
     if (success) {
         NSLog(@"Properties: %lf x %lf, %@, %lu", imageSize.width, imageSize.height, imageType, imageOrientation);
     }
     
-    [ImageUtil resizeAndRotateImage:@"/Users/blagovest/Downloads/lotus5.jpg" outputImageFilename:@"/Users/blagovest/Downloads/lotus.jpg"
+    [ImageUtil resizeAndRotateImage:@"/Users/blagovest/Downloads/lotus8.jpg" outputImageFilename:@"/Users/blagovest/Downloads/lotus.jpg"
         resizeToMaxSide:200 rotate:kDontRotate compressionQuality:1];
     */
 }

@@ -23,7 +23,7 @@
 @property NSInteger watermarkID;
 @property NSString *description;
 @property NSString *hFile, *vFile;
-@property NSString *hFileData, *vFileData;
+@property NSData *hFileData, *vFileData;
 @end
 
 @interface EventSettingsResult : ServiceResult

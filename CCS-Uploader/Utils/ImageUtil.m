@@ -258,6 +258,9 @@
     CGContextRef drawingContext = CGBitmapContextCreate(NULL, outputImageSize.width, outputImageSize.height, 8,
         outputImageSize.width * 4, colorSpace, (CGBitmapInfo)kCGImageAlphaPremultipliedLast);
     
+    //CGContextRef drawingContext = CGBitmapContextCreate(NULL, outputImageSize.width, outputImageSize.height,
+    //    CGImageGetBitsPerComponent(inputImage), 0, CGImageGetColorSpace(inputImage), CGImageGetBitmapInfo(inputImage));
+    
     if (drawingContext == NULL) {
         NSLog(@"Could not create drawing context for %@", inputImageFilename);
         goto releaseColorSpace;
@@ -268,7 +271,6 @@
     CGContextConcatCTM(drawingContext, exifTransform);
     CGContextConcatCTM(drawingContext, rotationTransform);
     CGContextDrawImage(drawingContext, CGRectMake(0, 0, inputImageSize.width, inputImageSize.height), inputImage);
-    
     CGImageRef outputImage = CGBitmapContextCreateImage(drawingContext);
     
     if (outputImage == NULL) {

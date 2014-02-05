@@ -1,4 +1,5 @@
 #import "EventSettingsService.h"
+#import "../Utils/Base64.h"
 
 @interface EventSettingsTransferRow () {
     NSInteger _createPreview;
@@ -29,7 +30,7 @@
     NSInteger _watermarkID;
     NSString *_description;
     NSString *_hFile, *_vFile;
-    NSString *_hFileData, *_vFileData;
+    NSData *_hFileData, *_vFileData;
 }
 @end
 
@@ -178,9 +179,9 @@
     } else if ([elementName isEqualToString:@"VFile"]) {
         eventSettingsResult.watermarkSettings.vFile = [lastValue copy];
     } else if ([elementName isEqualToString:@"HFileData"]) {
-        eventSettingsResult.watermarkSettings.hFileData = [lastValue copy];
+        eventSettingsResult.watermarkSettings.hFileData = [NSData dataWithBase64EncodedString:lastValue];
     } else if ([elementName isEqualToString:@"VFileData"]) {
-        eventSettingsResult.watermarkSettings.vFileData = [lastValue copy];
+        eventSettingsResult.watermarkSettings.vFileData = [NSData dataWithBase64EncodedString:lastValue];
     }
 }
 
