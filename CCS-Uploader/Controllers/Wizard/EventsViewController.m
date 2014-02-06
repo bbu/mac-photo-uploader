@@ -78,6 +78,14 @@
     return nil;
 }
 
+- (EventRow *)selectedEventRow
+{
+    if (tblEvents.selectedRow == -1)
+        return nil;
+    
+    return filteredEvents[tblEvents.selectedRow];
+}
+
 - (IBAction)clickedDateRange:(id)sender
 {
     BOOL enabled = chkFilterDateRange.state == NSOnState ? YES : NO;
@@ -99,6 +107,8 @@
 - (void)refreshEvents:(BOOL)fromWizard
 {
     [self view];
+    
+    [tblEvents deselectAll:nil];
     
     if (fromWizard) {
         chkFilterDateRange.state = NSOffState;
@@ -189,6 +199,7 @@
         }
     }
     
+    [tblEvents deselectAll:nil];
     [tblEvents reloadData];
 }
 

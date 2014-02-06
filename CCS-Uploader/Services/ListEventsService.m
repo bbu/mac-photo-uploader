@@ -16,6 +16,43 @@
 @end
 
 @implementation EventRow
+
+- (void)encodeWithCoder:(NSCoder *)encoder
+{
+    [encoder encodeObject:_eventID forKey:@"eventID"];
+    [encoder encodeObject:_eventName forKey:@"eventName"];
+    [encoder encodeObject:_orderNumber forKey:@"orderNumber"];
+    [encoder encodeObject:_ccsAccount forKey:@"ccsAccount"];
+    [encoder encodeObject:_eventDate forKey:@"eventDate"];
+    [encoder encodeObject:_marketID forKey:@"marketID"];
+    [encoder encodeObject:_market forKey:@"market"];
+    [encoder encodeObject:_location forKey:@"location"];
+    [encoder encodeObject:_hostGroup forKey:@"hostGroup"];
+    [encoder encodeBool:_isQuicPost forKey:@"isQuicPost"];
+    [encoder encodeBool:_autoCategorizeImages forKey:@"autoCategorizeImages"];
+}
+
+- (id)initWithCoder:(NSCoder *)decoder
+{
+    self = [super init];
+
+    if (self) {
+        _eventID = [decoder decodeObjectForKey:@"eventID"];
+        _eventName = [decoder decodeObjectForKey:@"eventName"];
+        _orderNumber = [decoder decodeObjectForKey:@"orderNumber"];
+        _ccsAccount = [decoder decodeObjectForKey:@"ccsAccount"];
+        _eventDate = [decoder decodeObjectForKey:@"eventDate"];
+        _marketID = [decoder decodeObjectForKey:@"marketID"];
+        _market = [decoder decodeObjectForKey:@"market"];
+        _location = [decoder decodeObjectForKey:@"location"];
+        _hostGroup = [decoder decodeObjectForKey:@"hostGroup"];
+        _isQuicPost = [decoder decodeBoolForKey:@"isQuicPost"];
+        _autoCategorizeImages = [decoder decodeBoolForKey:@"autoCategorizeImages"];
+    }
+    
+    return self;
+}
+
 @end
 
 @interface ListEventsResult () {

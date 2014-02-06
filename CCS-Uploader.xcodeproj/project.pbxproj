@@ -11,6 +11,8 @@
 		2B1D707218A231890021230E /* ActivateFullSizeService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B1D707118A231890021230E /* ActivateFullSizeService.m */; };
 		2B1D707518A238300021230E /* FullSizeImageDimensionsByRollService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B1D707418A238300021230E /* FullSizeImageDimensionsByRollService.m */; };
 		2B1D707818A243C30021230E /* MissingFullSizeImagesByRollService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B1D707718A243C30021230E /* MissingFullSizeImagesByRollService.m */; };
+		2B229E6318A38162000B19DD /* RollModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B229E6218A38162000B19DD /* RollModel.m */; };
+		2B229E6618A38176000B19DD /* FrameModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B229E6518A38176000B19DD /* FrameModel.m */; };
 		2B2905AF18991548003C4345 /* CheckOrderNumberService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B2905AE18991548003C4345 /* CheckOrderNumberService.m */; };
 		2B31E7B31887D05E0089D868 /* ImageUploadViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B31E7B11887D05E0089D868 /* ImageUploadViewController.m */; };
 		2B31E7B41887D05E0089D868 /* ImageUploadView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2B31E7B21887D05E0089D868 /* ImageUploadView.xib */; };
@@ -71,6 +73,10 @@
 		2B1D707418A238300021230E /* FullSizeImageDimensionsByRollService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FullSizeImageDimensionsByRollService.m; sourceTree = "<group>"; };
 		2B1D707618A243C30021230E /* MissingFullSizeImagesByRollService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MissingFullSizeImagesByRollService.h; sourceTree = "<group>"; };
 		2B1D707718A243C30021230E /* MissingFullSizeImagesByRollService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MissingFullSizeImagesByRollService.m; sourceTree = "<group>"; };
+		2B229E6118A38162000B19DD /* RollModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RollModel.h; sourceTree = "<group>"; };
+		2B229E6218A38162000B19DD /* RollModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RollModel.m; sourceTree = "<group>"; };
+		2B229E6418A38176000B19DD /* FrameModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FrameModel.h; sourceTree = "<group>"; };
+		2B229E6518A38176000B19DD /* FrameModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FrameModel.m; sourceTree = "<group>"; };
 		2B2905AD18991548003C4345 /* CheckOrderNumberService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CheckOrderNumberService.h; sourceTree = "<group>"; };
 		2B2905AE18991548003C4345 /* CheckOrderNumberService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CheckOrderNumberService.m; sourceTree = "<group>"; };
 		2B30999218895CDE00714D48 /* PrefsWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PrefsWindowController.h; path = "CCS-Uploader/Controllers/PrefsWindowController.h"; sourceTree = SOURCE_ROOT; };
@@ -176,6 +182,10 @@
 			children = (
 				2B35F96918A2FA48005199CA /* OrderModel.h */,
 				2B35F96A18A2FA48005199CA /* OrderModel.m */,
+				2B229E6118A38162000B19DD /* RollModel.h */,
+				2B229E6218A38162000B19DD /* RollModel.m */,
+				2B229E6418A38176000B19DD /* FrameModel.h */,
+				2B229E6518A38176000B19DD /* FrameModel.m */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -465,8 +475,10 @@
 				2B3499C0189EDCC800A45D6C /* Base64.m in Sources */,
 				2B533EC6188FE63300A4D8A2 /* LoadingViewController.m in Sources */,
 				2B5693C4188689E000E13C17 /* AccountViewController.m in Sources */,
+				2B229E6618A38176000B19DD /* FrameModel.m in Sources */,
 				2B58D637189A4452004D21CF /* Service.m in Sources */,
 				2B43135B189112B500580D54 /* BrowseViewController.m in Sources */,
+				2B229E6318A38162000B19DD /* RollModel.m in Sources */,
 				2B31E7B31887D05E0089D868 /* ImageUploadViewController.m in Sources */,
 				2B533EC1188FBF8500A4D8A2 /* LoginViewController.m in Sources */,
 				2B5E0B2E188410620023095C /* PrefsWindowController.m in Sources */,

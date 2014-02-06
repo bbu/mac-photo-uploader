@@ -2,7 +2,7 @@
 
 #import "Service.h"
 
-@interface EventRow : NSObject
+@interface EventRow : NSObject <NSCoding>
 @property NSString *eventID;
 @property NSString *eventName;
 @property NSString *orderNumber;

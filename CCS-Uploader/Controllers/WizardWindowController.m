@@ -18,6 +18,7 @@ typedef NS_ENUM(NSUInteger, WizardStep) {
     LoginViewController *loginViewController;
     EventsViewController *eventsViewController;
     BrowseViewController *browseViewController;
+    NSAlert *alert;
     
     WizardStep wizardStep;
 }
@@ -35,6 +36,7 @@ typedef NS_ENUM(NSUInteger, WizardStep) {
         loginViewController = [[LoginViewController alloc] initWithWizardController:self];
         eventsViewController = [[EventsViewController alloc] initWithWizardController:self];
         browseViewController = [[BrowseViewController alloc] initWithWizardController:self];
+        alert = [NSAlert new];
     }
     
     return self;
@@ -73,7 +75,15 @@ typedef NS_ENUM(NSUInteger, WizardStep) {
         } break;
             
         case kWizardStepEvents: {
-            [self showBrowseStep];
+            EventRow *selectedEvent = [eventsViewController selectedEventRow];
+            
+            if (selectedEvent == nil) {
+                alert.messageText = @"You must select an event.";
+                [alert beginSheetModalForWindow:self.window completionHandler:nil];
+            } else {
+                [self showBrowseStep];
+            }
+            
         } break;
     }
     

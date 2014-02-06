@@ -57,7 +57,7 @@
     NSFileManager *fileMgr = [NSFileManager defaultManager];
     NSError *error = nil;
     
-    NSString *dir = [@"~/Library/Application Support/CCS Uploader/" stringByExpandingTildeInPath];
+    NSString *dir = [kAppDataRoot stringByExpandingTildeInPath];
     
     BOOL dirExists = [fileMgr fileExistsAtPath:dir];
     BOOL dirCreated = NO;
@@ -70,6 +70,29 @@
         return [dir stringByAppendingPathComponent:filename];
     }
     
+    NSLog(@"Could not create application directory!");
+    return nil;
+}
+
++ (NSString *)pathForDataDir:(NSString *)dirname
+{
+    NSFileManager *fileMgr = [NSFileManager defaultManager];
+    NSError *error = nil;
+    
+    NSString *dir = [[kAppDataRoot stringByExpandingTildeInPath] stringByAppendingPathComponent:dirname];
+    
+    BOOL dirExists = [fileMgr fileExistsAtPath:dir];
+    BOOL dirCreated = NO;
+    
+    if (!dirExists) {
+        dirCreated = [fileMgr createDirectoryAtPath:dir withIntermediateDirectories:YES attributes:nil error:&error];
+    }
+    
+    if (dirExists || dirCreated) {
+        return dir;
+    }
+    
+    NSLog(@"Could not create application data directory!");
     return nil;
 }
 
