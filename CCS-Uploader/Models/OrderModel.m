@@ -25,9 +25,6 @@
     NSInteger rollAutoIncrementCount;
 }
 
-@property (readonly) NSString *rootDir;
-@property (readonly) NSMutableArray *rolls;
-
 @end
 
 @implementation OrderModel

@@ -14,5 +14,7 @@
 }
 
 @property EventRow *eventRow;
+@property (readonly) NSString *rootDir;
+@property (readonly) NSMutableArray *rolls;
 
 @end

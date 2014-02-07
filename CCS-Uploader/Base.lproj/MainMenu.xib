@@ -123,7 +123,13 @@
                         <action selector="openMainWindow:" target="494" id="mmZ-dl-1Ca"/>
                     </connections>
                 </menuItem>
-                <menuItem title="Exit" id="Pep-Ad-TYt">
+                <menuItem title="Preferences" id="JAl-Ih-r8z">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="openPrefs:" target="494" id="M3z-Dh-h3e"/>
+                    </connections>
+                </menuItem>
+                <menuItem title="Quit" id="Pep-Ad-TYt">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="exitClicked:" target="494" id="DHj-KV-3Ap"/>

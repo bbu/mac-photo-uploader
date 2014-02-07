@@ -83,11 +83,18 @@
 
 - (void)startLogin
 {
+    if (!txtUsername.stringValue.length || !txtPassword.stringValue.length) {
+        NSAlert *alert = [NSAlert new];
+        alert.messageText = !txtUsername.stringValue.length ? @"You must enter a username." : @"You must enter a password.";
+        [alert beginSheetModalForWindow:wizardWindowController.window completionHandler:nil];
+        return;
+    }
+    
     BOOL started = [authService startAuth:txtUsername.stringValue password:txtPassword.stringValue
         complete:^(AuthResult *result) {
             if (result.error != nil) {
                 NSAlert *alert = [NSAlert alertWithError:result.error];
-                [wizardWindowController showLoginStep];
+                [wizardWindowController showStep:kWizardStepLogin];
                 [alert beginSheetModalForWindow:wizardWindowController.window completionHandler:nil];
             } else {
                 if (result.success) {
@@ -110,7 +117,7 @@
                 } else {
                     NSAlert *alert = [NSAlert new];
                     alert.messageText = @"Wrong username or password.";
-                    [wizardWindowController showLoginStep];
+                    [wizardWindowController showStep:kWizardStepLogin];
                     [alert beginSheetModalForWindow:wizardWindowController.window completionHandler:nil];
                 }
             }
@@ -119,7 +126,7 @@
     
     if (started) {
         wizardWindowController.loadingViewController.txtMessage.stringValue = @"Signing in...";
-        [wizardWindowController showLoadingStep];
+        [wizardWindowController showStep:kWizardStepLoading];
     }
 }
 

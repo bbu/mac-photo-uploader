@@ -42,28 +42,44 @@
     return result;
 }
 
-+ (void)setExif:(NSString *)imageFilename value:(int)value
++ (BOOL)setExif:(NSString *)imageFilename value:(NSInteger)value
 {
     NSURL *imageFileURL = [NSURL fileURLWithPath:imageFilename];
     CGImageSourceRef source = CGImageSourceCreateWithURL((__bridge CFURLRef)imageFileURL, NULL);
     
+    if (source == NULL) {
+        NSLog(@"Could not create image source for '%@' to set EXIF orientation.", imageFilename);
+        return NO;
+    }
+    
     NSDictionary *metadata = (__bridge NSDictionary *) CGImageSourceCopyPropertiesAtIndex(source, 0, NULL);
     NSMutableDictionary *metadataAsMutable = [metadata mutableCopy];
     
-    [metadataAsMutable setObject:[NSNumber numberWithInt:value] forKey:(NSString *)kCGImagePropertyOrientation];
+    [metadataAsMutable setObject:[NSNumber numberWithInteger:value] forKey:(NSString *)kCGImagePropertyOrientation];
     
     CFStringRef UTI = CGImageSourceGetType(source);
     NSMutableData *data = [NSMutableData data];
+    BOOL result = NO;
+    
     CGImageDestinationRef destination = CGImageDestinationCreateWithData((__bridge CFMutableDataRef) data, UTI, 1, NULL);
+    
+    if (destination == NULL) {
+        NSLog(@"Could not create image destination for '%@' to set EXIF orientation.", imageFilename);
+        goto releaseSource;
+    }
     
     CGImageDestinationAddImageFromSource(destination, source, 0, (__bridge CFDictionaryRef) metadataAsMutable);
 
-    BOOL success = NO;
-    success = CGImageDestinationFinalize(destination);
-    [data writeToURL:imageFileURL atomically:YES];
+    if ((result = CGImageDestinationFinalize(destination))) {
+        result = [data writeToURL:imageFileURL atomically:YES];
+    }
     
+releaseDestination:
     CFRelease(destination);
+releaseSource:
     CFRelease(source);
+
+    return result;
 }
 
 + (void)generateThumbnailForImage:(NSImage *)image atPath:(NSString *)newFilePath forWidth:(int)width

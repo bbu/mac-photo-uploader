@@ -80,8 +80,12 @@
 
 - (EventRow *)selectedEventRow
 {
-    if (tblEvents.selectedRow == -1)
+    if (tblEvents.selectedRow == -1) {
+        NSAlert *alert = [NSAlert new];
+        alert.messageText = @"You must select an event.";
+        [alert beginSheetModalForWindow:wizardWindowController.window completionHandler:nil];
         return nil;
+    }
     
     return filteredEvents[tblEvents.selectedRow];
 }
@@ -136,7 +140,7 @@
                 NSAlert *alert = [NSAlert alertWithError:result.error];
                 
                 if (fromWizard) {
-                    [wizardWindowController showLoginStep];
+                    [wizardWindowController showStep:kWizardStepLogin];
                 }
                 
                 [alert beginSheetModalForWindow:wizardWindowController.window completionHandler:nil];
@@ -144,7 +148,7 @@
                 events = filteredEvents = result.events;
                 
                 if (fromWizard) {
-                    [wizardWindowController showEventsStep];
+                    [wizardWindowController showStep:kWizardStepEvents];
                 }
                 
                 [tblEvents reloadData];
@@ -153,7 +157,7 @@
                 alert.messageText = @"The list of events could not be obtained from the server.";
                 
                 if (fromWizard) {
-                    [wizardWindowController showLoginStep];
+                    [wizardWindowController showStep:kWizardStepLogin];
                 }
                 
                 [alert beginSheetModalForWindow:wizardWindowController.window completionHandler:nil];

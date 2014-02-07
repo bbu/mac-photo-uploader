@@ -13,7 +13,7 @@ typedef NS_ENUM(NSInteger, IURotation) {
 @interface ImageUtil : NSObject
 
 + (BOOL)getImageProperties:(NSString *)filename size:(CGSize *)size type:(NSMutableString *)imageType orientation:(NSUInteger *)orientation;
-+ (void)setExif:(NSString *)imageFilename value:(int)value;
++ (BOOL)setExif:(NSString *)imageFilename value:(NSInteger)value;
 + (void)generateThumbnailForImage:(NSImage *)image atPath:(NSString *)newFilePath forWidth:(int)width;
 
 + (BOOL)resizeAndRotateImage:(NSString *)inputImageFilename outputImageFilename:(NSString *)outputImageFilename

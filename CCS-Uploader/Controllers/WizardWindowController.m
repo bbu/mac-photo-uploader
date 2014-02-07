@@ -1,14 +1,5 @@
 #import "WizardWindowController.h"
 
-typedef NS_ENUM(NSUInteger, WizardStep) {
-    kWizardStepLoading,
-    kWizardStepLogin,
-    kWizardStepEvents,
-    kWizardStepBrowse,
-    kWizardStepReview,
-    kWizardStepSchedule,
-};
-
 @interface WizardWindowController () {
     IBOutlet NSView *contentView;
     IBOutlet NSTextField *txtStepTitle, *txtStepDescription;
@@ -25,7 +16,15 @@ typedef NS_ENUM(NSUInteger, WizardStep) {
 @end
 
 @implementation WizardWindowController
-@synthesize btnCancel, btnBack, btnNext, loadingViewController, loginViewController, eventsViewController, browseViewController;
+
+@synthesize txtStepTitle, txtStepDescription;
+@synthesize btnCancel, btnBack, btnNext;
+
+@synthesize
+    loadingViewController,
+    loginViewController,
+    eventsViewController,
+    browseViewController;
 
 - (id)init
 {
@@ -46,7 +45,7 @@ typedef NS_ENUM(NSUInteger, WizardStep) {
 {
     [super showWindow:sender];
     [loginViewController reloadAccounts];
-    [self showLoginStep];
+    [self showStep:kWizardStepLogin];
 }
 
 - (IBAction)btnCancelClicked:(id)sender
@@ -57,13 +56,25 @@ typedef NS_ENUM(NSUInteger, WizardStep) {
 - (IBAction)btnBackClicked:(id)sender
 {
     switch (wizardStep) {
-        case kWizardStepEvents:
-            [self showLoginStep];
+        case kWizardStepLogin:
+        case kWizardStepLoading:
             break;
+            
+        case kWizardStepEvents: {
+            [self showStep:kWizardStepLogin];
+        } break;
 
-        case kWizardStepBrowse:
-            [self showEventsStep];
-            break;
+        case kWizardStepBrowse: {
+            [self showStep:kWizardStepEvents];
+        } break;
+            
+        case kWizardStepReview: {
+            [self showStep:kWizardStepBrowse];
+        } break;
+            
+        case kWizardStepSchedule: {
+            [self showStep:kWizardStepReview];
+        } break;
     }
 }
 
@@ -73,70 +84,78 @@ typedef NS_ENUM(NSUInteger, WizardStep) {
         case kWizardStepLogin: {
             [loginViewController startLogin];
         } break;
-            
+
         case kWizardStepEvents: {
             EventRow *selectedEvent = [eventsViewController selectedEventRow];
             
-            if (selectedEvent == nil) {
-                alert.messageText = @"You must select an event.";
-                [alert beginSheetModalForWindow:self.window completionHandler:nil];
-            } else {
-                [self showBrowseStep];
+            if (selectedEvent) {
+                [browseViewController startLoadEvent:selectedEvent fromWizard:YES];
             }
+        } break;
+
+        case kWizardStepBrowse: {
             
         } break;
+            
+        case kWizardStepReview: {
+            
+        } break;
+            
+        case kWizardStepSchedule: {
+            
+        } break;
+            
+        case kWizardStepLoading: break;
+    }
+}
+
+- (void)showStep:(WizardStep)step
+{
+    static NSString *titles[] = {
+        @"",
+        @"Sign In",
+        @"Choose an Event",
+        @"",
+        @"Review Event Images",
+        @"Schedule Upload",
+    };
+    
+    static NSString *descriptions[] = {
+        @"",
+        @"Choose a service and enter your username and password",
+        @"Select an event from the list to continue",
+        @"",
+        @"",
+        @"",
+    };
+    
+    wizardStep = step;
+    
+    [btnBack setEnabled:step == kWizardStepLoading || step == kWizardStepLogin ? NO : YES];
+    [btnNext setEnabled:step == kWizardStepLoading ? NO : YES];
+    
+    if (step != kWizardStepLoading && titles[step].length) {
+        txtStepTitle.stringValue = titles[step];
     }
     
-    //[loadingViewController.view setFrameSize:NSMakeSize(700, 400)];
-    //[self swapContentView:loadingViewController.view mode:kWindowResizingCenter animate:YES];
-}
-
-- (void)showLoginStep
-{
-    wizardStep = kWizardStepLogin;
+    if (step != kWizardStepLoading && descriptions[step].length) {
+        txtStepDescription.stringValue = descriptions[step];
+    }
     
-    [btnBack setEnabled:NO];
-    [btnNext setEnabled:YES];
+    NSViewController *controller = @[
+        loadingViewController,
+        loginViewController,
+        eventsViewController,
+        browseViewController,
+        loadingViewController,
+        loadingViewController,
+    ][step];
     
-    txtStepTitle.stringValue = @"Sign In";
-    txtStepDescription.stringValue = @"Choose a service and enter your username and password";
+    if (step == kWizardStepLoading) {
+        [loadingViewController.view setFrameSize:contentView.frame.size];
+    }
     
-    [self swapContentView:loginViewController.view];
-}
-
-- (void)showLoadingStep
-{
-    [btnBack setEnabled:NO];
-    [btnNext setEnabled:NO];
-
-    [loadingViewController.view setFrameSize:contentView.frame.size];    
-    [self swapContentView:loadingViewController.view];
-}
-
-- (void)showEventsStep
-{
-    wizardStep = kWizardStepEvents;
-    
-    [btnBack setEnabled:YES];
-    [btnNext setEnabled:YES];
-    
-    txtStepTitle.stringValue = @"Choose an Event";
-    txtStepDescription.stringValue = @"Enter an event number or select an event from the list to continue";
-    
-    [self swapContentView:eventsViewController.view];
-}
-
-- (void)showBrowseStep
-{
-    wizardStep = kWizardStepBrowse;
-    
-    [btnBack setEnabled:YES];
-    [btnNext setEnabled:YES];
-    
-    txtStepTitle.stringValue = @"Browse for Images";
-    txtStepDescription.stringValue = @"Add images to event \"My Test Event\" (12345678)";
-    
-    [self swapContentView:browseViewController.view];
+    [self swapContentView:controller.view];
 }
 
 - (void)swapContentView:(NSView *)newView
@@ -149,15 +168,12 @@ typedef NS_ENUM(NSUInteger, WizardStep) {
     [contentView setFrameSize:NSMakeSize(newView.frame.size.width, newView.frame.size.height)];
     [newView setFrameOrigin:NSZeroPoint];
     
+    windowFrame.origin.x -= roundf(widthDiff / 2);
+    windowFrame.origin.y -= roundf(heightDiff / 2);
     windowFrame.size.width += widthDiff;
     windowFrame.size.height += heightDiff;
-    windowFrame.origin.x -= widthDiff / 2;
-    windowFrame.origin.y -= heightDiff / 2;
-    
-    if (contentView.subviews.count) {
-        [contentView.subviews[0] removeFromSuperview];
-    }
-    
+
+    contentView.subviews = [NSArray array];
     [self.window setFrame:windowFrame display:YES animate:YES];
     [contentView addSubview:newView];
 }

@@ -28,19 +28,19 @@
         }
     ];
     */
+    //[ImageUtil setExif:@"/Users/blagovest/Downloads/test.png" value:3];
     
-    /*
-    BOOL success;
+    /*BOOL success;
     CGSize imageSize = CGSizeZero;
     NSMutableString *imageType = [NSMutableString new];
     NSUInteger imageOrientation = 0;
     
-    success = [ImageUtil getImageProperties:@"/Users/blagovest/Downloads/lotus7.jpg" size:&imageSize type:imageType orientation:&imageOrientation];
+    success = [ImageUtil getImageProperties:@"/Users/blagovest/Downloads/test.png" size:&imageSize type:imageType orientation:&imageOrientation];
     
     if (success) {
         NSLog(@"Properties: %lf x %lf, %@, %lu", imageSize.width, imageSize.height, imageType, imageOrientation);
-    }
-    
+    }*/
+    /*
     [ImageUtil resizeAndRotateImage:@"/Users/blagovest/Downloads/lotus8.jpg" outputImageFilename:@"/Users/blagovest/Downloads/lotus.jpg"
         resizeToMaxSide:200 rotate:kDontRotate compressionQuality:1];
     */
@@ -55,6 +55,15 @@
     [NSApp activateIgnoringOtherApps:YES];
     [mainWindowController showWindow:nil];
     [mainWindowController.window makeKeyAndOrderFront:nil];
+}
+
+- (BOOL)applicationShouldHandleReopen:(NSApplication *)theApplication hasVisibleWindows:(BOOL)flag
+{
+    if (!flag) {
+        [self openMainWindow:nil];
+    }
+    
+    return NO;
 }
 
 - (IBAction)openPrefs:(id)sender

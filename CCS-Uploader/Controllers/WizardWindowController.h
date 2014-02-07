@@ -5,14 +5,21 @@
 #import "Wizard/EventsViewController.h"
 #import "Wizard/BrowseViewController.h"
 
+typedef NS_ENUM(NSUInteger, WizardStep) {
+    kWizardStepLoading = 0,
+    kWizardStepLogin,
+    kWizardStepEvents,
+    kWizardStepBrowse,
+    kWizardStepReview,
+    kWizardStepSchedule,
+};
+
 @interface WizardWindowController : NSWindowController
 
-- (void)showLoadingStep;
-- (void)showLoginStep;
-- (void)showEventsStep;
-- (void)showBrowseStep;
+- (void)showStep:(WizardStep)step;
 
-@property NSButton *btnCancel, *btnBack, *btnNext;
+@property (readonly) NSTextField *txtStepTitle, *txtStepDescription;
+@property (readonly) NSButton *btnCancel, *btnBack, *btnNext;
 @property LoadingViewController *loadingViewController;
 @property LoginViewController *loginViewController;
 @property EventsViewController *eventsViewController;

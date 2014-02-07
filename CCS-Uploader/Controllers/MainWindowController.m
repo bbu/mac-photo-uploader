@@ -23,9 +23,9 @@
     NSInteger rowCount = 0;
     
     if (tableView == tblThumbnails) {
-        rowCount = 50;
+        rowCount = 2;
     } else if (tableView == tblFullSize) {
-        rowCount = 15;
+        rowCount = 2;
     }
     
     return rowCount;
