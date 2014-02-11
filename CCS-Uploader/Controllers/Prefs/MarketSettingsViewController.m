@@ -51,7 +51,7 @@
         [NSMutableDictionary dictionaryWithObjectsAndKeys:
             @"RACE",                        @"Market",
             [NSNumber numberWithInt:100],   @"Images",
-            [NSNumber numberWithBool:NO],   @"UsePreloader", nil],
+            [NSNumber numberWithBool:YES],   @"UsePreloader", nil],
 
         [NSMutableDictionary dictionaryWithObjectsAndKeys:
             @"SCHL",                        @"Market",

@@ -180,6 +180,7 @@
         <popover behavior="t" id="hFa-tG-Lsn">
             <connections>
                 <outlet property="contentViewController" destination="3mz-z1-gzp" id="qhs-sk-tNV"/>
+                <outlet property="delegate" destination="-2" id="erm-FM-GYo"/>
             </connections>
         </popover>
         <customView id="EPI-3f-56G">

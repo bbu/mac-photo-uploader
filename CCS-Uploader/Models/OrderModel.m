@@ -19,6 +19,8 @@
     EventRow *eventRow;
     NSString *rootDir;
     NSMutableArray *rolls;
+    
+    NSString *ccsPassword;
     NSNumberFormatter *numberFormatter;
     NSFileManager *fileMgr;
     NSUserDefaults *defaults;
@@ -46,7 +48,7 @@
     return self;
 }
 
-- (id)initWithEventRow:(EventRow *)event error:(NSError **)error
+- (id)initWithEventRow:(EventRow *)event ccsPassword:(NSString *)password error:(NSError **)error
 {
     if (!(self = [super init])) {
         return nil;
@@ -104,7 +106,8 @@
             return FAIL(nil, @"Could not create order root directory: %@", dirError.localizedDescription);
         }
     }
-
+    
+    ccsPassword = password;
     return self;
 }
 

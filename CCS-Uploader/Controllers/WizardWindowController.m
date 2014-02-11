@@ -12,6 +12,10 @@
     NSAlert *alert;
     
     WizardStep wizardStep;
+    
+    NSString *effectiveUser, *effectivePass;
+    NSInteger effectiveService;
+    NSString *effectiveCoreDomain;
 }
 @end
 
@@ -19,6 +23,9 @@
 
 @synthesize txtStepTitle, txtStepDescription;
 @synthesize btnCancel, btnBack, btnNext;
+@synthesize effectiveUser, effectivePass;
+@synthesize effectiveService;
+@synthesize effectiveCoreDomain;
 
 @synthesize
     loadingViewController,

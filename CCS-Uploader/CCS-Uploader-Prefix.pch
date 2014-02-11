@@ -13,6 +13,9 @@
 #define kCoreDomain @"coreDomain"
 
 #define kCandidServiceRoot @"http://webservices.candid.com/CCSTransferWebService/service2.asmx/"
-#define kDefaultCoreDomain @"coredemo.candid.com"
-#define kCoreServiceRoot @"http://%@/core/xml/CORECCSTransfer2.asmx/"
+#define kCandidEventServiceRoot @"http://webservices.candid.com/eventwebservice/Service1.asmx/"
+
+#define kDefaultCoreDomain @"http://coredemo.candid.com/CORE"
+#define kCoreServiceRoot @"%@/xml/CORECCSTransfer2.asmx/"
+
 #define kQuicPostServiceRoot @"http://ccstransfer.candid.com/CCSTransferWeb/dev/CCSTransferQuicPost.asmx/"

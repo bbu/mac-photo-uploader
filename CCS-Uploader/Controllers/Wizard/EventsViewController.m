@@ -17,6 +17,7 @@
     NSDateFormatter *dateFormatter;
     ListEventsService *listEventsService;
     WizardWindowController *wizardWindowController;
+    NSUInteger popoverState;
 }
 @end
 
@@ -68,7 +69,7 @@
     if ([columnID isEqualToString:@"EventName"]) {
         return event.eventName;
     } else if ([columnID isEqualToString:@"EventNumber"]) {
-        return event.eventID;
+        return event.orderNumber;
     } else if ([columnID isEqualToString:@"EventDate"]) {
         return [dateFormatter stringFromDate:event.eventDate];
     } else if ([columnID isEqualToString:@"EventType"]) {
@@ -120,7 +121,12 @@
         [dpEndDate setEnabled:NO];
     }
     
-    BOOL started = [listEventsService startListEvents:@"ccsmacuploader" password:@"candid123"
+    [listEventsService setEffectiveServiceRoot:wizardWindowController.effectiveService
+        coreDomain:wizardWindowController.effectiveCoreDomain];
+    
+    BOOL started = [listEventsService
+        startListEvents:wizardWindowController.effectiveUser
+        password:wizardWindowController.effectivePass
         filterDateRange:chkFilterDateRange.state == NSOnState ? YES : NO
         startDate:dpStartDate.dateValue
         endDate:dpEndDate.dateValue
@@ -176,6 +182,25 @@
     }
 }
 
+- (void)popoverWillShow:(NSNotification *)notification
+{
+    popoverState = dpStartDate.dateValue.hash + dpEndDate.dateValue.hash +
+        chkHideNonAssigned.state + chkHideNullDates.state +
+        chkHideActive.state + chkFilterDateRange.state;
+}
+
+- (void)popoverWillClose:(NSNotification *)notification
+{
+    NSUInteger oldPopoverState = popoverState;
+    popoverState = dpStartDate.dateValue.hash + dpEndDate.dateValue.hash +
+        chkHideNonAssigned.state + chkHideNullDates.state +
+        chkHideActive.state + chkFilterDateRange.state;
+    
+    if (oldPopoverState != popoverState) {
+        [self clickedRefresh:nil];
+    }
+}
+
 - (void)controlTextDidChange:(NSNotification *)obj
 {
     NSString *needle = txtSearch.stringValue;
@@ -188,7 +213,7 @@
         
         for (EventRow *event in events) {
             if (btnSearchType.selectedTag == 0) {
-                range = [event.eventID rangeOfString:needle options:NSCaseInsensitiveSearch];
+                range = [event.orderNumber rangeOfString:needle options:NSCaseInsensitiveSearch];
                 
                 if (range.location != NSNotFound && range.location == 0) {
                     [filteredEvents addObject:event];

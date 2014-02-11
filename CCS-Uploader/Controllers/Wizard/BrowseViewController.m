@@ -108,13 +108,11 @@
         cell.imageView.image = [NSImage imageNamed:@"NSFolder"];
         cell.textField.stringValue = rolls[row][@"Name"];
     } else if ([columnID isEqualToString:@"Photographer"]) {
-        NSPopUpButton *btn = view;
-        
-        [btn addItemWithTitle:@"None"];
-        [btn addItemWithTitle:@"photographer 1"];
-        [btn addItemWithTitle:@"photographer 2"];
-        [btn addItemWithTitle:@"photographer 3"];
-        
+        //NSPopUpButton *btn = view;
+        //[btn addItemWithTitle:@"None"];
+        //[btn addItemWithTitle:@"photographer 1"];
+        //[btn addItemWithTitle:@"photographer 2"];
+        //[btn addItemWithTitle:@"photographer 3"];
     } else if ([columnID isEqualToString:@"Size"]) {
         NSTableCellView *cell = view;
         //cell.textField.stringValue = rolls[row][@"Size"];
@@ -158,7 +156,12 @@
     autoIncRollName = 0;
     [rolls removeAllObjects];
     
-    BOOL started = [checkOrderNumberService startCheckOrderNumber:@"ccsmacuploader" password:@"candid123"
+    [checkOrderNumberService setEffectiveServiceRoot:wizardWindowController.effectiveService
+        coreDomain:wizardWindowController.effectiveCoreDomain];
+    
+    BOOL started = [checkOrderNumberService
+        startCheckOrderNumber:wizardWindowController.effectiveUser
+        password:wizardWindowController.effectivePass
         orderNumber:event.orderNumber complete:^(CheckOrderNumberResult *result) {
             if (result.error) {
                 NSAlert *alert = [NSAlert alertWithError:result.error];
@@ -173,8 +176,7 @@
                 if (result.loginSuccess && result.processSuccess) {
                     //result.ccsPassword;
                     wizardWindowController.txtStepTitle.stringValue = event.eventName;
-                    wizardWindowController.txtStepDescription.stringValue = [NSString stringWithFormat:
-                        @"Event ID: %@; Order ID: %@", event.eventID, event.orderNumber];
+                    wizardWindowController.txtStepDescription.stringValue = [NSString stringWithFormat:@"Event Number: %@", event.orderNumber];
 
                     [tblRolls reloadData];
                     

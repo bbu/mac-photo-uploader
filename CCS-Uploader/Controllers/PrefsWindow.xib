@@ -21,14 +21,14 @@
         <window title="Preferences" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" deferred="NO" releasedWhenClosed="NO" wantsToBeColor="NO" animationBehavior="documentWindow" id="1">
             <windowStyleMask key="styleMask" titled="YES" closable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
-            <rect key="contentRect" x="222" y="773" width="500" height="74"/>
+            <rect key="contentRect" x="222" y="773" width="500" height="138"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1080"/>
             <view key="contentView" id="2">
-                <rect key="frame" x="0.0" y="0.0" width="500" height="74"/>
+                <rect key="frame" x="0.0" y="0.0" width="500" height="138"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <customView translatesAutoresizingMaskIntoConstraints="NO" id="PXV-xc-ztm">
-                        <rect key="frame" x="10" y="10" width="480" height="54"/>
+                        <rect key="frame" x="10" y="10" width="480" height="118"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     </customView>
                 </subviews>

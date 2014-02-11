@@ -18,8 +18,13 @@
 
 - (NSString *)serviceURL
 {
-    NSString *coreDomain = kDefaultCoreDomain;
-    return [NSString stringWithFormat:kCoreServiceRoot @"CheckOrderNumber", coreDomain];
+    if (effectiveServiceRoot == kServiceRootQuicPost) {
+        return kQuicPostServiceRoot @"CheckOrderNumber";
+    } else if (effectiveServiceRoot == kServiceRootCore) {
+        return [NSString stringWithFormat:kCoreServiceRoot @"CheckOrderNumber", effectiveCoreDomain];
+    }
+    
+    return @"";
 }
 
 - (BOOL)startCheckOrderNumber:(NSString *)email password:(NSString *)password orderNumber:(NSString *)orderNumber

@@ -6,7 +6,7 @@
 
 @interface LoginViewController () {
     IBOutlet NSPopUpButton *btnService;
-    IBOutlet NSTextField *txtUsername, *txtPassword, *txtEventNumber;
+    IBOutlet NSTextField *txtUsername, *txtPassword, *lblCoreURL, *txtCoreURL, *txtEventNumber;
     AuthService *authService;
     WizardWindowController *wizardWindowController;
 
@@ -50,9 +50,15 @@
     if (btnService.selectedTag == 0) {
         txtUsername.stringValue = quicPostUser ? [quicPostUser copy] : @"";
         txtPassword.stringValue = quicPostPass ? [quicPostPass copy] : @"";
+        [lblCoreURL setHidden:YES];
+        [txtCoreURL setHidden:YES];
+        txtCoreURL.stringValue = @"";
     } else {
         txtUsername.stringValue = coreUser ? [coreUser copy] : @"";
         txtPassword.stringValue = corePass ? [corePass copy] : @"";
+        [lblCoreURL setHidden:NO];
+        [txtCoreURL setHidden:NO];
+        txtCoreURL.stringValue = coreDomain ? [coreDomain copy] : kDefaultCoreDomain;
     }
 }
 
@@ -72,23 +78,38 @@
 
         txtUsername.stringValue = quicPostUser ? [quicPostUser copy] : @"";
         txtPassword.stringValue = quicPostPass ? [quicPostPass copy] : @"";
+        [lblCoreURL setHidden:YES];
+        [txtCoreURL setHidden:YES];
+        txtCoreURL.stringValue = @"";
     } else {
         coreUser = [defaults objectForKey:kCoreUser];
         corePass = [defaults objectForKey:kCorePass];
-
+        coreDomain = [defaults objectForKey:kCoreDomain];
+        
         txtUsername.stringValue = coreUser ? [coreUser copy] : @"";
         txtPassword.stringValue = corePass ? [corePass copy] : @"";
+        [lblCoreURL setHidden:NO];
+        [txtCoreURL setHidden:NO];
+        txtCoreURL.stringValue = coreDomain ? [coreDomain copy] : kDefaultCoreDomain;
     }
 }
 
 - (void)startLogin
 {
-    if (!txtUsername.stringValue.length || !txtPassword.stringValue.length) {
+    if (!txtUsername.stringValue.length || !txtPassword.stringValue.length ||
+        (btnService.selectedTag == 1 && !txtCoreURL.stringValue.length)) {
+        
         NSAlert *alert = [NSAlert new];
-        alert.messageText = !txtUsername.stringValue.length ? @"You must enter a username." : @"You must enter a password.";
+        
+        alert.messageText = !txtUsername.stringValue.length ?
+            @"You must enter a username." : (!txtPassword.stringValue.length ?
+                @"You must enter a password." : @"You must enter a CORE URL when the CORE service is selected.");
+        
         [alert beginSheetModalForWindow:wizardWindowController.window completionHandler:nil];
         return;
     }
+    
+    [authService setEffectiveServiceRoot:btnService.selectedTag coreDomain:txtCoreURL.stringValue];
     
     BOOL started = [authService startAuth:txtUsername.stringValue password:txtPassword.stringValue
         complete:^(AuthResult *result) {
@@ -107,10 +128,17 @@
                     } else {
                         [defaults setObject:txtUsername.stringValue forKey:kCoreUser];
                         [defaults setObject:txtPassword.stringValue forKey:kCorePass];
+                        [defaults setObject:txtCoreURL.stringValue forKey:kCoreDomain];
                         [defaults setObject:[NSNumber numberWithBool:NO] forKey:kQuicPostSelected];
                     }
                     
                     [defaults synchronize];
+                    
+                    wizardWindowController.effectiveUser = [txtUsername.stringValue copy];
+                    wizardWindowController.effectivePass = [txtPassword.stringValue copy];
+                    wizardWindowController.effectiveService = btnService.selectedTag;
+                    wizardWindowController.effectiveCoreDomain =
+                        btnService.selectedTag == 1 ? [txtCoreURL.stringValue copy] : nil;
                     
                     wizardWindowController.loadingViewController.txtMessage.stringValue = @"Retrieving events...";
                     [wizardWindowController.eventsViewController refreshEvents:YES];

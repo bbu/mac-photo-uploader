@@ -86,13 +86,21 @@
 
 - (NSString *)serviceURL:(BOOL)multipleEvents
 {
-    NSString *coreDomain = kDefaultCoreDomain;
-    
-    if (multipleEvents) {
-        return [NSString stringWithFormat:kCoreServiceRoot @"ListEvents2", coreDomain];
-    } else {
-        return [NSString stringWithFormat:kCoreServiceRoot @"ListEvent", coreDomain];
+    if (effectiveServiceRoot == kServiceRootQuicPost) {
+        if (multipleEvents) {
+            return kQuicPostServiceRoot @"ListEvents2";
+        } else {
+            return kQuicPostServiceRoot @"ListEvent";
+        }
+    } else if (effectiveServiceRoot == kServiceRootCore) {
+        if (multipleEvents) {
+            return [NSString stringWithFormat:kCoreServiceRoot @"ListEvents2", effectiveCoreDomain];
+        } else {
+            return [NSString stringWithFormat:kCoreServiceRoot @"ListEvent", effectiveCoreDomain];
+        }
     }
+    
+    return @"";
 }
 
 - (BOOL)startListEvents:(NSString *)email password:(NSString *)password

@@ -25,4 +25,8 @@ typedef NS_ENUM(NSUInteger, WizardStep) {
 @property EventsViewController *eventsViewController;
 @property BrowseViewController *browseViewController;
 
+@property NSString *effectiveUser, *effectivePass;
+@property NSInteger effectiveService;
+@property NSString *effectiveCoreDomain;
+
 @end

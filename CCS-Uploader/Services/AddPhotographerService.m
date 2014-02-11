@@ -17,8 +17,13 @@
 
 - (NSString *)serviceURL
 {
-    NSString *coreDomain = kDefaultCoreDomain;
-    return [NSString stringWithFormat:kCoreServiceRoot @"AddPhotographer", coreDomain];
+    if (effectiveServiceRoot == kServiceRootQuicPost) {
+        return kQuicPostServiceRoot @"AddPhotographer";
+    } else if (effectiveServiceRoot == kServiceRootCore) {
+        return [NSString stringWithFormat:kCoreServiceRoot @"AddPhotographer", effectiveCoreDomain];
+    }
+    
+    return @"";
 }
 
 - (BOOL)startAddPhotographer:(NSString *)email password:(NSString *)password account:(NSString *)account

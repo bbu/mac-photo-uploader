@@ -18,8 +18,13 @@
 
 - (NSString *)serviceURL
 {
-    NSString *coreDomain = kDefaultCoreDomain;
-    return [NSString stringWithFormat:kCoreServiceRoot @"AuthenticateUser", coreDomain];
+    if (effectiveServiceRoot == kServiceRootQuicPost) {
+        return kQuicPostServiceRoot @"AuthenticateUser";
+    } else if (effectiveServiceRoot == kServiceRootCore) {
+        return [NSString stringWithFormat:kCoreServiceRoot @"AuthenticateUser", effectiveCoreDomain];
+    }
+    
+    return @"";
 }
 
 - (BOOL)startAuth:(NSString *)email password:(NSString *)password complete:(void (^)(AuthResult *result))block

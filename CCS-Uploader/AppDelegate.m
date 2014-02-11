@@ -47,11 +47,13 @@
         resizeToMaxSide:200 rotate:kDontRotate compressionQuality:1];
     */
     
-    NSData *encrypted = [NSData dataWithBase64EncodedString:@"0D0RWk2qKEcwm3sYZ3r4eg=="];
-    NSData *decrypted = [CCSPassword decryptCCSPassword:encrypted];
-    NSString *decryptedString = [[NSString alloc] initWithData:decrypted encoding:NSUTF16LittleEndianStringEncoding];
-    NSLog(@"%@", decryptedString);
-
+    //NSData *encrypted = [NSData dataWithBase64EncodedString:@"C51ZEDu0aVG6xAIRodp46w=="];
+    //NSData *decrypted = [CCSPassword decryptCCSPassword:encrypted];
+    //NSString *decryptedString = [[NSString alloc] initWithData:decrypted encoding:NSUTF16LittleEndianStringEncoding];
+    //NSLog(@"%@", decryptedString);
+    
+    //NSString *domainName = [[NSBundle mainBundle] bundleIdentifier];
+    //[[NSUserDefaults standardUserDefaults] removePersistentDomainForName:domainName];
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
@@ -80,7 +82,9 @@
         prefsWindowController = [PrefsWindowController new];
     }
     
+    [NSApp activateIgnoringOtherApps:YES];
     [prefsWindowController showWindow:nil];
+    [prefsWindowController.window makeKeyAndOrderFront:nil];
 }
 
 - (IBAction)openMainWindow:(id)sender

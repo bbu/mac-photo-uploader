@@ -18,12 +18,20 @@
     self = [super init];
     
     if (self) {
+        effectiveServiceRoot = kServiceRootQuicPost;
+        effectiveCoreDomain = @"";
         responseData = [NSMutableData new];
         lastValue = [NSMutableString new];
         numberFormatter = [NSNumberFormatter new];
     }
     
     return self;
+}
+
+- (void)setEffectiveServiceRoot:(ServiceRoot)serviceRoot coreDomain:(NSString *)coreDomain
+{
+    effectiveServiceRoot = serviceRoot;
+    effectiveCoreDomain = coreDomain;
 }
 
 - (BOOL)isRunning

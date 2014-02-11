@@ -29,8 +29,13 @@
 
 - (NSString *)serviceURL
 {
-    NSString *coreDomain = kDefaultCoreDomain;
-    return [NSString stringWithFormat:kCoreServiceRoot @"ListPhotographers", coreDomain];
+    if (effectiveServiceRoot == kServiceRootQuicPost) {
+        return kQuicPostServiceRoot @"ListPhotographers";
+    } else if (effectiveServiceRoot == kServiceRootCore) {
+        return [NSString stringWithFormat:kCoreServiceRoot @"ListPhotographers", effectiveCoreDomain];
+    }
+    
+    return @"";
 }
 
 - (BOOL)startListPhotographers:(NSString *)account email:(NSString *)email password:(NSString *)password

@@ -1,7 +1,7 @@
 #import "FoldersViewController.h"
+#import "../PrefsWindowController.h"
 
 @interface FoldersViewController ()
-
 @end
 
 @implementation FoldersViewController
@@ -48,7 +48,7 @@
 - (IBAction)browseForApplicationFolder:(id)sender
 {
     NSOpenPanel *openPanel = [self.class openPanelWithMessage:@"Select application folder:"];
-    
+
     [openPanel beginWithCompletionHandler:^(NSInteger result){
         if (result == NSFileHandlingPanelOKButton) {
             txtApplicationFolder.stringValue = openPanel.URL.path;

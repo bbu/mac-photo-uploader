@@ -31,8 +31,13 @@
 
 - (NSString *)serviceURL
 {
-    NSString *coreDomain = kDefaultCoreDomain;
-    return [NSString stringWithFormat:kCoreServiceRoot @"ListDivisions", coreDomain];
+    if (effectiveServiceRoot == kServiceRootQuicPost) {
+        return kQuicPostServiceRoot @"ListDivisions";
+    } else if (effectiveServiceRoot == kServiceRootCore) {
+        return [NSString stringWithFormat:kCoreServiceRoot @"ListDivisions", effectiveCoreDomain];
+    }
+    
+    return @"";
 }
 
 - (BOOL)startListDivisions:(NSString *)email password:(NSString *)password eventID:(NSString *)eventID
