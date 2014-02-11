@@ -4,7 +4,7 @@
 
 + (NSData *)dataWithBase64EncodedString:(NSString *)string
 {
-    const char lookup[] = {
+    static const char lookup[] = {
         99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 
         99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 
         99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 62, 99, 99, 99, 63, 
@@ -63,7 +63,7 @@
 {
     wrapWidth = (wrapWidth / 4) * 4;
     
-    const char lookup[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    static const char lookup[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     
     NSUInteger inputLength = [self length];
     const unsigned char *inputBytes = [self bytes];

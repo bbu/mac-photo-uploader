@@ -1,6 +1,8 @@
 #import "AppDelegate.h"
 #import "Utils/ImageUtil.h"
 #import "Utils/FileUtil.h"
+#import "Utils/Base64.h"
+#import "Utils/CCSPassword.h"
 
 #import "Services/VerifyOrderService.h"
 
@@ -44,6 +46,12 @@
     [ImageUtil resizeAndRotateImage:@"/Users/blagovest/Downloads/lotus8.jpg" outputImageFilename:@"/Users/blagovest/Downloads/lotus.jpg"
         resizeToMaxSide:200 rotate:kDontRotate compressionQuality:1];
     */
+    
+    NSData *encrypted = [NSData dataWithBase64EncodedString:@"0D0RWk2qKEcwm3sYZ3r4eg=="];
+    NSData *decrypted = [CCSPassword decryptCCSPassword:encrypted];
+    NSString *decryptedString = [[NSString alloc] initWithData:decrypted encoding:NSUTF16LittleEndianStringEncoding];
+    NSLog(@"%@", decryptedString);
+
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification

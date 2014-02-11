@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2B1BDC6E18AA208900671C54 /* CCSPassword.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B1BDC6D18AA208900671C54 /* CCSPassword.m */; };
 		2B1D706F18A228100021230E /* FullSizePostedService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B1D706E18A228100021230E /* FullSizePostedService.m */; };
 		2B1D707218A231890021230E /* ActivateFullSizeService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B1D707118A231890021230E /* ActivateFullSizeService.m */; };
 		2B1D707518A238300021230E /* FullSizeImageDimensionsByRollService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B1D707418A238300021230E /* FullSizeImageDimensionsByRollService.m */; };
@@ -65,6 +66,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		2B1BDC6C18AA208900671C54 /* CCSPassword.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CCSPassword.h; sourceTree = "<group>"; };
+		2B1BDC6D18AA208900671C54 /* CCSPassword.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CCSPassword.m; sourceTree = "<group>"; };
 		2B1D706D18A228100021230E /* FullSizePostedService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FullSizePostedService.h; sourceTree = "<group>"; };
 		2B1D706E18A228100021230E /* FullSizePostedService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FullSizePostedService.m; sourceTree = "<group>"; };
 		2B1D707018A231890021230E /* ActivateFullSizeService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ActivateFullSizeService.h; sourceTree = "<group>"; };
@@ -301,6 +304,8 @@
 				2B758C4F18929A460045DE48 /* ImageUtil.m */,
 				2B3499BB189E852600A45D6C /* FileUtil.h */,
 				2B3499BC189E852600A45D6C /* FileUtil.m */,
+				2B1BDC6C18AA208900671C54 /* CCSPassword.h */,
+				2B1BDC6D18AA208900671C54 /* CCSPassword.m */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -474,6 +479,7 @@
 				2B533EBB188FB2AF00A4D8A2 /* WizardWindowController.m in Sources */,
 				2B3499C0189EDCC800A45D6C /* Base64.m in Sources */,
 				2B533EC6188FE63300A4D8A2 /* LoadingViewController.m in Sources */,
+				2B1BDC6E18AA208900671C54 /* CCSPassword.m in Sources */,
 				2B5693C4188689E000E13C17 /* AccountViewController.m in Sources */,
 				2B229E6618A38176000B19DD /* FrameModel.m in Sources */,
 				2B58D637189A4452004D21CF /* Service.m in Sources */,
