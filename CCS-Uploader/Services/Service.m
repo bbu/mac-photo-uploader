@@ -18,8 +18,6 @@
     self = [super init];
     
     if (self) {
-        effectiveServiceRoot = kServiceRootQuicPost;
-        effectiveCoreDomain = @"";
         responseData = [NSMutableData new];
         lastValue = [NSMutableString new];
         numberFormatter = [NSNumberFormatter new];

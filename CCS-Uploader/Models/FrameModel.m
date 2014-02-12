@@ -1,26 +1,28 @@
 #import "FrameModel.h"
 
 @interface FrameModel () {
-    NSString *filename, *extension;
+    NSString *name, *extension;
     NSInteger filesize;
     NSDate *lastModified;
     NSInteger width, height;
+    BOOL fileExists, needsReload, needsDelete, newlyAdded, fullsizeSent, thumbsSent, userDidRotate, clearedExifOrientation;
 }
 @end
 
 @implementation FrameModel
 
-@synthesize filename, extension;
+@synthesize name, extension;
 @synthesize filesize;
 @synthesize lastModified;
 @synthesize width, height;
+@synthesize fileExists, needsReload, needsDelete, newlyAdded, fullsizeSent, thumbsSent, userDidRotate, clearedExifOrientation;
 
 - (id)initWithCoder:(NSCoder *)decoder
 {
     self = [super init];
     
     if (self) {
-        filename = [decoder decodeObjectForKey:@"filename"];
+        name = [decoder decodeObjectForKey:@"name"];
         extension = [decoder decodeObjectForKey:@"extension"];
         filesize = [decoder decodeIntegerForKey:@"filesize"];
         lastModified = [decoder decodeObjectForKey:@"lastModified"];
@@ -44,7 +46,7 @@
 
 - (void)encodeWithCoder:(NSCoder *)encoder
 {
-    [encoder encodeObject:filename forKey:@"filename"];
+    [encoder encodeObject:name forKey:@"name"];
     [encoder encodeObject:extension forKey:@"extension"];
     [encoder encodeInteger:filesize forKey:@"filesize"];
     [encoder encodeObject:lastModified forKey:@"lastModified"];

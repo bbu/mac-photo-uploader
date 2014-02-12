@@ -9,7 +9,7 @@
         NSLog(@"%s(%u): %@", __FILE__, __LINE__, errorMessage); \
         \
         if (error) { \
-            *error = [NSError errorWithDomain:@"Domain" code:1 userInfo:@{NSLocalizedDescriptionKey:errorMessage}]; \
+            *error = [NSError errorWithDomain:@"Order initialization" code:1 userInfo:@{ NSLocalizedDescriptionKey: errorMessage }]; \
         } \
         \
         (retval); \
@@ -20,7 +20,6 @@
     NSString *rootDir;
     NSMutableArray *rolls;
     
-    NSString *ccsPassword;
     NSNumberFormatter *numberFormatter;
     NSFileManager *fileMgr;
     NSUserDefaults *defaults;
@@ -48,7 +47,7 @@
     return self;
 }
 
-- (id)initWithEventRow:(EventRow *)event ccsPassword:(NSString *)password error:(NSError **)error
+- (id)initWithEventRow:(EventRow *)event error:(NSError **)error
 {
     if (!(self = [super init])) {
         return nil;
@@ -107,7 +106,6 @@
         }
     }
     
-    ccsPassword = password;
     return self;
 }
 
@@ -134,9 +132,91 @@
 
 - (BOOL)diffWithExistingFiles
 {
+    NSMutableArray *subdirsInRoot = [FileUtil filesInDirectory:rootDir extensionSet:nil recursive:NO absolutePaths:NO];
+    
+    if (!subdirsInRoot) {
+        return NO;
+    }
+    
+    NSMutableSet *existingDirs = [NSMutableSet setWithArray:subdirsInRoot];
+    
     for (RollModel *roll in rolls) {
-        for (FrameModel *frame in roll.frames) {
+        if ([existingDirs containsObject:roll.number]) {
+            [existingDirs removeObject:roll.number];
+
+            roll.dirExists = YES;
+
+            NSMutableArray *filesInSubdir = [FileUtil filesInDirectory:[rootDir stringByAppendingPathComponent:roll.number]
+                extensionSet:[NSSet setWithObjects:@"jpg", @"png", nil]
+                recursive:NO absolutePaths:NO];
             
+            if (!filesInSubdir) {
+                continue;
+            }
+            
+            NSMutableSet *existingFiles = [NSMutableSet setWithArray:filesInSubdir];
+            
+            for (FrameModel *frame in roll.frames) {
+                NSString *path = [rootDir stringByAppendingPathComponent:roll.number];
+                NSString *filename = [frame.name stringByAppendingPathExtension:frame.extension];
+                NSString *filepath = [path stringByAppendingPathComponent:filename];
+                
+                if ([existingFiles containsObject:filename]) {
+                    [existingFiles removeObject:filename];
+                    
+                    frame.fileExists = YES;
+
+                    NSDictionary *fileAttrs = [fileMgr attributesOfItemAtPath:filepath error:nil];
+                    
+                    if (fileAttrs && [frame.lastModified compare:fileAttrs.fileModificationDate] != NSOrderedSame) {
+                        frame.needsReload = YES;
+                        frame.filesize = fileAttrs.fileSize;
+                        frame.lastModified = fileAttrs.fileModificationDate;
+                        frame.fullsizeSent = NO;
+                        frame.thumbsSent = NO;
+                    }
+                } else {
+                    frame.needsDelete = YES;
+                }
+            }
+            
+            for (NSString *newlyAddedFile in existingFiles) {
+                FrameModel *frame = [FrameModel new];
+                frame.name = [newlyAddedFile stringByDeletingPathExtension];
+                frame.extension = newlyAddedFile.pathExtension;
+                frame.needsReload = YES;
+                frame.newlyAdded = YES;
+                frame.fileExists = YES;
+                [roll.frames addObject:frame];
+            }
+        } else {
+            roll.dirExists = NO;
+            roll.needsDelete = YES;
+        }
+    }
+    
+    for (NSString *newlyAddedDir in existingDirs) {
+        RollModel *roll = [RollModel new];
+        roll.number = newlyAddedDir;
+        roll.newlyAdded = YES;
+        roll.dirExists = YES;
+        roll.frames = [NSMutableArray new];
+        
+        NSMutableArray *filesInSubdir = [FileUtil filesInDirectory:[rootDir stringByAppendingPathComponent:newlyAddedDir]
+            extensionSet:[NSSet setWithObjects:@"jpg", @"png", nil] recursive:NO absolutePaths:NO];
+        
+        if (!filesInSubdir) {
+            continue;
+        }
+        
+        for (NSString *newlyAddedFile in filesInSubdir) {
+            FrameModel *frame = [FrameModel new];
+            frame.name = [newlyAddedFile stringByDeletingPathExtension];
+            frame.extension = newlyAddedFile.pathExtension;
+            frame.needsReload = YES;
+            frame.newlyAdded = YES;
+            frame.fileExists = YES;
+            [roll.frames addObject:frame];
         }
     }
     

@@ -8,6 +8,5 @@
 + (NSString *)pathForDataFile:(NSString *)filename;
 + (NSString *)pathForDataDir:(NSString *)dirname;
 + (NSString *)humanFriendlyFilesize:(NSUInteger)value;
-+ (NSSet *)extensionSetWithJpeg:(BOOL)jpeg withPng:(BOOL)png;
 
 @end

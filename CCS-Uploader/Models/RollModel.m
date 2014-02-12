@@ -2,27 +2,30 @@
 #import "FrameModel.h"
 
 @interface RollModel () {
-    NSString *rollNumber;
+    NSString *number;
     NSString *photographer, *photographerID;
     NSInteger totalFrameSize;
     NSObject *greenScreen;
     NSMutableArray *frames;
+    BOOL dirExists, needsDelete, newlyAdded;
 }
 @end
 
 @implementation RollModel
-@synthesize rollNumber;
+
+@synthesize number;
 @synthesize photographer, photographerID;
 @synthesize totalFrameSize;
 @synthesize greenScreen;
 @synthesize frames;
+@synthesize dirExists, needsDelete, newlyAdded;
 
 - (id)initWithCoder:(NSCoder *)decoder
 {
     self = [super init];
     
     if (self) {
-        rollNumber = [decoder decodeObjectForKey:@"rollNumber"];
+        number = [decoder decodeObjectForKey:@"number"];
         photographer = [decoder decodeObjectForKey:@"photographer"];
         photographerID = [decoder decodeObjectForKey:@"photographerID"];
         totalFrameSize = [decoder decodeIntegerForKey:@"totalFrameSize"];
@@ -45,7 +48,7 @@
 
 - (void)encodeWithCoder:(NSCoder *)encoder
 {
-    [encoder encodeObject:rollNumber forKey:@"rollNumber"];
+    [encoder encodeObject:number forKey:@"number"];
     [encoder encodeObject:photographer forKey:@"photographer"];
     [encoder encodeObject:photographerID forKey:@"photographerID"];
     [encoder encodeInteger:totalFrameSize forKey:@"totalFrameSize"];

@@ -60,6 +60,8 @@
         [txtCoreURL setHidden:NO];
         txtCoreURL.stringValue = coreDomain ? [coreDomain copy] : kDefaultCoreDomain;
     }
+    
+    txtEventNumber.stringValue = @"";
 }
 
 - (void)loadView

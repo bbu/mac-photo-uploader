@@ -17,4 +17,9 @@
 @property (readonly) NSString *rootDir;
 @property (readonly) NSMutableArray *rolls;
 
+- (id)initWithEventRow:(EventRow *)event error:(NSError **)error;
+- (BOOL)diffWithExistingFiles;
+- (BOOL)save;
+- (BOOL)delete;
+
 @end

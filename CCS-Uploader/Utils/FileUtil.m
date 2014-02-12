@@ -14,6 +14,7 @@
         return contents;
     }
     
+    BOOL includeInList;
     NSString *absolutePath, *relativePath;
     
     if (recursive) {
@@ -26,7 +27,11 @@
                 absolutePath = [dir stringByAppendingPathComponent:relativePath];
                 existsAndIsDir = [fileMgr fileExistsAtPath:absolutePath isDirectory:&isDir] && isDir;
                 
-                if (!existsAndIsDir && [FileUtil filenameExtensionInSet:extensions filename:relativePath]) {
+                includeInList =
+                    (!existsAndIsDir && extensions && [FileUtil filenameExtensionInSet:extensions filename:relativePath]) ||
+                    (existsAndIsDir && !extensions);
+                
+                if (includeInList) {
                     [contents addObject:absolutePaths ? absolutePath : relativePath];
                 }
             }
@@ -42,7 +47,11 @@
                 absolutePath = [dir stringByAppendingPathComponent:relativePath];
                 existsAndIsDir = [fileMgr fileExistsAtPath:absolutePath isDirectory:&isDir] && isDir;
                 
-                if (!existsAndIsDir && [FileUtil filenameExtensionInSet:extensions filename:relativePath]) {
+                includeInList =
+                    (!existsAndIsDir && extensions && [FileUtil filenameExtensionInSet:extensions filename:relativePath]) ||
+                    (existsAndIsDir && !extensions);
+                
+                if (includeInList) {
                     [contents addObject:absolutePaths ? absolutePath : relativePath];
                 }
             }
@@ -98,11 +107,7 @@
 
 + (BOOL)filenameExtensionInSet:(NSSet *)extensions filename:(NSString *)filename
 {
-    if (!extensions) {
-        return YES;
-    }
-    
-    NSString *extension = [filename.pathExtension lowercaseString];
+    NSString *extension = filename.pathExtension.lowercaseString;
     return extension && [extensions containsObject:extension] ? YES : NO;
 }
 
@@ -119,33 +124,6 @@
     }
 
     return [NSString stringWithFormat:@"%4.2f %@", convertedValue, tokens[multiplyFactor]];
-}
-
-+ (NSSet *)extensionSetWithJpeg:(BOOL)jpeg withPng:(BOOL)png
-{
-    static NSSet *jpegAndPngSet, *jpegSet, *pngSet;
-    
-    if (jpeg && png) {
-        if (!jpegAndPngSet) {
-            jpegAndPngSet = [NSSet setWithObjects:@"jpeg", @"jpg", @"png", nil];
-        }
-        
-        return jpegAndPngSet;
-    } else if (jpeg) {
-        if (!jpegSet) {
-            jpegSet = [NSSet setWithObjects:@"jpeg", @"jpg", nil];
-        }
-        
-        return jpegSet;
-    } else if (png) {
-        if (!pngSet) {
-            pngSet = [NSSet setWithObjects:@"png", nil];
-        }
-        
-        return pngSet;
-    } else {
-        return nil;
-    }
 }
 
 @end

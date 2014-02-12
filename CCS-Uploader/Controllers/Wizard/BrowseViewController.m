@@ -1,9 +1,14 @@
 #import "../../Utils/FileUtil.h"
+#import "../../Utils/CCSPassword.h"
+#import "../../Utils/Base64.h"
 
 #import "BrowseViewController.h"
 #import "../WizardWindowController.h"
 #import "../../Models/OrderModel.h"
+
 #import "../../Services/CheckOrderNumberService.h"
+#import "../../Services/EventSettingsService.h"
+#import "../../Services/UploadExtensionsService.h"
 
 @interface BrowseViewController () <NSTableViewDelegate, NSTableViewDataSource> {
     IBOutlet NSTableView *tblRolls;
@@ -11,7 +16,17 @@
     WizardWindowController *wizardWindowController;
     
     OrderModel *orderModel;
+    //EventSettingsRow *eventSettings;
+    
+    
     CheckOrderNumberService *checkOrderNumberService;
+    EventSettingsService *eventSettingsService;
+    UploadExtensionsService *uploadExtensionsService;
+    
+    EventSettingsResult *eventSettings;
+    NSMutableArray *uploadExtensions;
+    NSString *ccsPassword;
+    
     NSInteger autoIncRollName;
     NSMutableArray *rolls;
 }
@@ -28,6 +43,8 @@
         wizardWindowController = parent;
         rolls = [NSMutableArray new];
         checkOrderNumberService = [CheckOrderNumberService new];
+        eventSettingsService = [EventSettingsService new];
+        uploadExtensionsService = [UploadExtensionsService new];
     }
     
     return self;
@@ -55,7 +72,7 @@
                 NSUInteger totalSize = 0;
                 
                 for (NSURL *url in openPanel.URLs) {
-                    NSMutableArray *contents = [FileUtil filesInDirectory:url.path extensionSet:[FileUtil extensionSetWithJpeg:YES withPng:YES] recursive:YES absolutePaths:YES];
+                    NSMutableArray *contents = [FileUtil filesInDirectory:url.path extensionSet:[NSSet setWithObjects:@"jpg", @"png", nil] recursive:YES absolutePaths:YES];
                     
                     if (contents) {
                         totalCount += contents.count;
@@ -156,48 +173,114 @@
     autoIncRollName = 0;
     [rolls removeAllObjects];
     
-    [checkOrderNumberService setEffectiveServiceRoot:wizardWindowController.effectiveService
-        coreDomain:wizardWindowController.effectiveCoreDomain];
+    void (^terminate)(NSString *) = ^(NSString *message) {
+        NSAlert *alert = [NSAlert new];
+        alert.messageText = message;
+        
+        if (fromWizard) {
+            [wizardWindowController showStep:kWizardStepEvents];
+        }
+        
+        [alert beginSheetModalForWindow:wizardWindowController.window
+            completionHandler:fromWizard ? nil : ^(NSModalResponse response) {
+                [wizardWindowController.window close];
+            }
+        ];
+    };
     
-    BOOL started = [checkOrderNumberService
-        startCheckOrderNumber:wizardWindowController.effectiveUser
-        password:wizardWindowController.effectivePass
-        orderNumber:event.orderNumber complete:^(CheckOrderNumberResult *result) {
+    NSString *effectiveUser, *effectivePass;
+    NSInteger effectiveService;
+    NSString *effectiveCoreDomain;
+    
+    if (fromWizard) {
+        effectiveUser = wizardWindowController.effectiveUser;
+        effectivePass = wizardWindowController.effectivePass;
+        effectiveService = wizardWindowController.effectiveService;
+        effectiveCoreDomain = wizardWindowController.effectiveCoreDomain;
+    } else {
+        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        NSNumber *selectedService = [defaults objectForKey:kQuicPostSelected];
+        
+        if (selectedService == nil || selectedService.boolValue) {
+            effectiveUser = [defaults objectForKey:kQuicPostUser];
+            effectivePass = [defaults objectForKey:kQuicPostPass];
+            effectiveService = kServiceRootQuicPost;
+            effectiveCoreDomain = nil;
+        } else {
+            effectiveUser = [defaults objectForKey:kCoreUser];
+            effectivePass = [defaults objectForKey:kCorePass];
+            effectiveService = kServiceRootCore;
+            effectiveCoreDomain = [defaults objectForKey:kCoreDomain];
+        }
+    }
+    
+    [checkOrderNumberService setEffectiveServiceRoot:effectiveService coreDomain:effectiveCoreDomain];
+    
+    BOOL started = [checkOrderNumberService startCheckOrderNumber:effectiveUser password:effectivePass orderNumber:event.orderNumber
+        complete:^(CheckOrderNumberResult *result) {
             if (result.error) {
-                NSAlert *alert = [NSAlert alertWithError:result.error];
-                
-                if (fromWizard) {
-                    [wizardWindowController showStep:kWizardStepEvents];
-                } else {
-                }
-
-                [alert beginSheetModalForWindow:wizardWindowController.window completionHandler:nil];
+                terminate([NSString stringWithFormat:@"Could not check the selected event. An error occurred: %@", result.error.localizedDescription]);
             } else {
                 if (result.loginSuccess && result.processSuccess) {
-                    //result.ccsPassword;
-                    wizardWindowController.txtStepTitle.stringValue = event.eventName;
-                    wizardWindowController.txtStepDescription.stringValue = [NSString stringWithFormat:@"Event Number: %@", event.orderNumber];
+                    NSData *encryptedPassword = [NSData dataWithBase64EncodedString:result.ccsPassword];
+                    NSData *decryptedPassword = [CCSPassword decryptCCSPassword:encryptedPassword];
+                    ccsPassword = [[NSString alloc] initWithData:decryptedPassword encoding:NSUTF16LittleEndianStringEncoding];
 
-                    [tblRolls reloadData];
-                    
-                    [wizardWindowController showStep:kWizardStepBrowse];
+                    [eventSettingsService startGetEventSettings:event.ccsAccount password:ccsPassword orderNumber:event.orderNumber
+                        complete:^(EventSettingsResult *result) {
+                            if (result.error) {
+                                terminate([NSString stringWithFormat:@"Could not not obtain the event's settings. An error occurred: %@", result.error.localizedDescription]);
+                            } else {
+                                if ([result.status isEqualToString:@"AuthenticationSuccessful"]) {
+                                    eventSettings = result;
+                                    
+                                    [uploadExtensionsService startGetUploadExtensions:event.ccsAccount password:ccsPassword
+                                        complete:^(UploadExtensionsResult *result) {
+                                            if (result.error) {
+                                                terminate([NSString stringWithFormat:
+                                                    @"Could not obtain allowed upload file extensions. An error occurred: %@",
+                                                    result.error.localizedDescription]);
+                                            } else {
+                                                if ([result.status isEqualToString:@"Successful"]) {
+                                                    uploadExtensions = result.extensions;
+                                                    NSError *error = nil;
+                                                    
+                                                    orderModel = [[OrderModel alloc] initWithEventRow:event error:&error];
+                                                    
+                                                    if (orderModel == nil) {
+                                                        terminate([NSString stringWithFormat:@"An error occurred while loading up the event. %@", error.localizedDescription]);
+                                                    } else {
+                                                        //[orderModel diffWithExistingFiles];
+                                                        
+                                                        wizardWindowController.txtStepTitle.stringValue = event.eventName;
+                                                        wizardWindowController.txtStepDescription.stringValue =
+                                                        [NSString stringWithFormat:@"Event Number: %@", event.orderNumber];
+                                                        
+                                                        [tblRolls reloadData];
+                                                        [wizardWindowController showStep:kWizardStepBrowse];
+                                                    }
+                                                } else {
+                                                    terminate([NSString stringWithFormat:
+                                                        @"Could not obtain allowed upload file extensions. The server returned \"%@\".", result.status]);
+                                                }
+                                            }
+                                        }
+                                    ];
+                                } else {
+                                    terminate([NSString stringWithFormat:@"Could not obtain the event's settings. The server returned \"%@\".", result.status]);
+                                }
+                            }
+                        }
+                    ];
                 } else {
-                    NSAlert *alert = [NSAlert new];
-                    alert.messageText = @"The server refused the selected event.";
-                    
-                    if (fromWizard) {
-                        [wizardWindowController showStep:kWizardStepEvents];
-                    } else {
-                    }
-
-                    [alert beginSheetModalForWindow:wizardWindowController.window completionHandler:nil];
+                    terminate([NSString stringWithFormat:@"The server rejected the selected event \"%@\".", event.orderNumber]);
                 }
             }
         }
     ];
     
     if (started) {
-        wizardWindowController.loadingViewController.txtMessage.stringValue = @"Loading event...";
+        wizardWindowController.loadingViewController.txtMessage.stringValue = @"Checking event number...";
         [wizardWindowController showStep:kWizardStepLoading];
     }
 }

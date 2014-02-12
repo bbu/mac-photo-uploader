@@ -2,10 +2,11 @@
 
 @interface RollModel : NSObject <NSCoding>
 
-@property NSString *rollNumber;
+@property NSString *number;
 @property NSString *photographer, *photographerID;
-@property (readonly) NSInteger totalFrameSize;
-@property (readonly) NSObject *greenScreen;
-@property (readonly) NSMutableArray *frames;
+@property NSInteger totalFrameSize;
+@property NSObject *greenScreen;
+@property NSMutableArray *frames;
+@property BOOL dirExists, needsDelete, newlyAdded;
 
 @end
