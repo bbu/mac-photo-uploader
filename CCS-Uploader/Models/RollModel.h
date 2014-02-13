@@ -7,6 +7,6 @@
 @property NSInteger totalFrameSize;
 @property NSObject *greenScreen;
 @property NSMutableArray *frames;
-@property BOOL dirExists, needsDelete, newlyAdded;
+@property BOOL needsDelete, newlyAdded;
 
 @end

@@ -182,6 +182,11 @@
     }
 }
 
+- (IBAction)closeAdvancedSearch:(id)sender
+{
+    [advancedSearchPopover close];
+}
+
 - (void)popoverWillShow:(NSNotification *)notification
 {
     popoverState = dpStartDate.dateValue.hash + dpEndDate.dateValue.hash +
@@ -192,6 +197,7 @@
 - (void)popoverWillClose:(NSNotification *)notification
 {
     NSUInteger oldPopoverState = popoverState;
+    
     popoverState = dpStartDate.dateValue.hash + dpEndDate.dateValue.hash +
         chkHideNonAssigned.state + chkHideNullDates.state +
         chkHideActive.state + chkFilterDateRange.state;

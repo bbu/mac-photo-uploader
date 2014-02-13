@@ -1,7 +1,8 @@
 #import "OrderModel.h"
 
+#define kEventFolderExtension @"ccsevent"
 #define kOrderFileExtension @"ccsorder"
-#define kDefaultLocalFolder @"Images/%@"
+#define kDefaultLocalFolder @"Events/%@"
 
 #define FAIL(retval, fmt, ...) \
     ({ \
@@ -19,6 +20,7 @@
     EventRow *eventRow;
     NSString *rootDir;
     NSMutableArray *rolls;
+    NSMutableArray *rollsToHide, *framesToHide;
     
     NSNumberFormatter *numberFormatter;
     NSFileManager *fileMgr;
@@ -33,6 +35,7 @@
 @synthesize eventRow;
 @synthesize rootDir;
 @synthesize rolls;
+@synthesize rollsToHide, framesToHide;
 
 - (id)initWithCoder:(NSCoder *)decoder
 {
@@ -80,11 +83,12 @@
     } else {
         rolls = [NSMutableArray new];
         NSString *localFolder = [defaults objectForKey:kApplicationFolder];
+        NSString *dirname = [eventRow.orderNumber stringByAppendingPathExtension:kEventFolderExtension];
         
         if (localFolder) {
-            rootDir = [localFolder stringByAppendingPathComponent:eventRow.orderNumber];
+            rootDir = [localFolder stringByAppendingPathComponent:dirname];
         } else {
-            rootDir = [FileUtil pathForDataDir:[NSString stringWithFormat:kDefaultLocalFolder, eventRow.orderNumber]];
+            rootDir = [FileUtil pathForDataDir:[NSString stringWithFormat:kDefaultLocalFolder, dirname]];
             
             if (!rootDir) {
                 return FAIL(nil, @"Could not obtain application data directory path.");
@@ -105,6 +109,8 @@
             return FAIL(nil, @"Could not create order root directory: %@", dirError.localizedDescription);
         }
     }
+    
+    [self diffWithExistingFiles];
     
     return self;
 }
@@ -130,12 +136,20 @@
     [encoder encodeObject:rolls forKey:@"rolls"];
 }
 
-- (BOOL)diffWithExistingFiles
+- (void)diffWithExistingFiles
 {
     NSMutableArray *subdirsInRoot = [FileUtil filesInDirectory:rootDir extensionSet:nil recursive:NO absolutePaths:NO];
     
+    rollsToHide = [NSMutableArray new];
+    framesToHide = [NSMutableArray new];
+    
     if (!subdirsInRoot) {
-        return NO;
+        for (RollModel *roll in rolls) {
+            [rollsToHide addObject:roll.number];
+        }
+        
+        [rolls removeAllObjects];
+        return;
     }
     
     NSMutableSet *existingDirs = [NSMutableSet setWithArray:subdirsInRoot];
@@ -144,41 +158,61 @@
         if ([existingDirs containsObject:roll.number]) {
             [existingDirs removeObject:roll.number];
 
-            roll.dirExists = YES;
-
-            NSMutableArray *filesInSubdir = [FileUtil filesInDirectory:[rootDir stringByAppendingPathComponent:roll.number]
+            if (!roll.frames) {
+                roll.frames = [NSMutableArray new];
+            }
+            
+            NSString *path = [rootDir stringByAppendingPathComponent:roll.number];
+            NSMutableArray *filesInSubdir = [FileUtil filesInDirectory:path
                 extensionSet:[NSSet setWithObjects:@"jpg", @"png", nil]
                 recursive:NO absolutePaths:NO];
             
             if (!filesInSubdir) {
+                [rollsToHide addObject:roll.number];
+                roll.needsDelete = YES;
                 continue;
             }
             
             NSMutableSet *existingFiles = [NSMutableSet setWithArray:filesInSubdir];
             
             for (FrameModel *frame in roll.frames) {
-                NSString *path = [rootDir stringByAppendingPathComponent:roll.number];
                 NSString *filename = [frame.name stringByAppendingPathExtension:frame.extension];
                 NSString *filepath = [path stringByAppendingPathComponent:filename];
                 
                 if ([existingFiles containsObject:filename]) {
                     [existingFiles removeObject:filename];
                     
-                    frame.fileExists = YES;
-
                     NSDictionary *fileAttrs = [fileMgr attributesOfItemAtPath:filepath error:nil];
                     
-                    if (fileAttrs && [frame.lastModified compare:fileAttrs.fileModificationDate] != NSOrderedSame) {
-                        frame.needsReload = YES;
-                        frame.filesize = fileAttrs.fileSize;
-                        frame.lastModified = fileAttrs.fileModificationDate;
-                        frame.fullsizeSent = NO;
-                        frame.thumbsSent = NO;
+                    if (fileAttrs) {
+                        roll.totalFrameSize += fileAttrs.fileSize;
+                        
+                        if ([frame.lastModified compare:fileAttrs.fileModificationDate] != NSOrderedSame) {
+                            frame.needsReload = YES;
+                            frame.filesize = fileAttrs.fileSize;
+                            frame.lastModified = fileAttrs.fileModificationDate;
+                            frame.fullsizeSent = NO;
+                            frame.thumbsSent = NO;
+                        } else {
+                            // frame.needsReload = NO;
+                        }
+                    } else {
+                        [framesToHide addObject:[roll.number stringByAppendingPathComponent:frame.name]];
+                        frame.needsDelete = YES;
                     }
                 } else {
+                    [framesToHide addObject:[roll.number stringByAppendingPathComponent:frame.name]];
                     frame.needsDelete = YES;
                 }
             }
+            
+            NSIndexSet *frameIndexesToRemove = [roll.frames
+                indexesOfObjectsPassingTest:^BOOL(FrameModel *frame, NSUInteger idx, BOOL *stop) {
+                    return frame.needsDelete;
+                }
+            ];
+            
+            [roll.frames removeObjectsAtIndexes:frameIndexesToRemove];
             
             for (NSString *newlyAddedFile in existingFiles) {
                 FrameModel *frame = [FrameModel new];
@@ -186,41 +220,53 @@
                 frame.extension = newlyAddedFile.pathExtension;
                 frame.needsReload = YES;
                 frame.newlyAdded = YES;
-                frame.fileExists = YES;
                 [roll.frames addObject:frame];
             }
         } else {
-            roll.dirExists = NO;
+            [rollsToHide addObject:roll.number];
             roll.needsDelete = YES;
         }
     }
     
+    NSIndexSet *rollIndexesToRemove = [rolls
+        indexesOfObjectsPassingTest:^BOOL(RollModel *roll, NSUInteger idx, BOOL *stop) {
+            return roll.needsDelete;
+        }
+    ];
+    
+    [rolls removeObjectsAtIndexes:rollIndexesToRemove];
+    
     for (NSString *newlyAddedDir in existingDirs) {
-        RollModel *roll = [RollModel new];
-        roll.number = newlyAddedDir;
-        roll.newlyAdded = YES;
-        roll.dirExists = YES;
-        roll.frames = [NSMutableArray new];
-        
-        NSMutableArray *filesInSubdir = [FileUtil filesInDirectory:[rootDir stringByAppendingPathComponent:newlyAddedDir]
+        NSString *path = [rootDir stringByAppendingPathComponent:newlyAddedDir];
+        NSMutableArray *filesInSubdir = [FileUtil filesInDirectory:path
             extensionSet:[NSSet setWithObjects:@"jpg", @"png", nil] recursive:NO absolutePaths:NO];
         
         if (!filesInSubdir) {
             continue;
         }
         
+        RollModel *roll = [RollModel new];
+        roll.number = newlyAddedDir;
+        roll.newlyAdded = YES;
+        roll.frames = [NSMutableArray new];
+        [rolls addObject:roll];
+
         for (NSString *newlyAddedFile in filesInSubdir) {
+            NSString *filepath = [path stringByAppendingPathComponent:newlyAddedFile];
+            NSDictionary *fileAttrs = [fileMgr attributesOfItemAtPath:filepath error:nil];
+            
+            if (!fileAttrs) {
+                continue;
+            }
+            
             FrameModel *frame = [FrameModel new];
             frame.name = [newlyAddedFile stringByDeletingPathExtension];
             frame.extension = newlyAddedFile.pathExtension;
             frame.needsReload = YES;
             frame.newlyAdded = YES;
-            frame.fileExists = YES;
             [roll.frames addObject:frame];
         }
     }
-    
-    return YES;
 }
 
 + (NSString *)pathToOrderFile:(NSString *)orderNumber

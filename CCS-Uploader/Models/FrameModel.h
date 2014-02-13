@@ -6,6 +6,7 @@
 @property NSInteger filesize;
 @property NSDate *lastModified;
 @property NSInteger width, height;
-@property BOOL fileExists, needsReload, needsDelete, newlyAdded, fullsizeSent, thumbsSent, userDidRotate, clearedExifOrientation;
+@property NSUInteger orientation;
+@property BOOL needsReload, needsDelete, newlyAdded, fullsizeSent, thumbsSent, userDidRotate;
 
 @end

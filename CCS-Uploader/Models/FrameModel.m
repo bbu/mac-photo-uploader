@@ -5,7 +5,9 @@
     NSInteger filesize;
     NSDate *lastModified;
     NSInteger width, height;
-    BOOL fileExists, needsReload, needsDelete, newlyAdded, fullsizeSent, thumbsSent, userDidRotate, clearedExifOrientation;
+    NSUInteger orientation;
+    
+    BOOL needsReload, needsDelete, newlyAdded, fullsizeSent, thumbsSent, userDidRotate;
 }
 @end
 
@@ -15,7 +17,8 @@
 @synthesize filesize;
 @synthesize lastModified;
 @synthesize width, height;
-@synthesize fileExists, needsReload, needsDelete, newlyAdded, fullsizeSent, thumbsSent, userDidRotate, clearedExifOrientation;
+@synthesize orientation;
+@synthesize needsReload, needsDelete, newlyAdded, fullsizeSent, thumbsSent, userDidRotate;
 
 - (id)initWithCoder:(NSCoder *)decoder
 {
@@ -28,6 +31,7 @@
         lastModified = [decoder decodeObjectForKey:@"lastModified"];
         width = [decoder decodeIntegerForKey:@"width"];
         height = [decoder decodeIntegerForKey:@"height"];
+        orientation = [decoder decodeIntegerForKey:@"orientation"];
     }
     
     return self;
@@ -52,6 +56,7 @@
     [encoder encodeObject:lastModified forKey:@"lastModified"];
     [encoder encodeInteger:width forKey:@"width"];
     [encoder encodeInteger:height forKey:@"height"];
+    [encoder encodeInteger:orientation forKey:@"orientation"];
 }
 
 @end

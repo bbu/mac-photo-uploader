@@ -26,10 +26,6 @@
 
 - (void)saveState
 {
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    
-    [defaults setObject:txtApplicationFolder.stringValue forKey:kApplicationFolder];
-    [defaults setObject:txtDefaultImageBrowseLocation.stringValue forKey:kDefaultImageBrowseLocation];
 }
 
 + (NSOpenPanel *)openPanelWithMessage:(NSString *)message
@@ -52,6 +48,10 @@
     [openPanel beginWithCompletionHandler:^(NSInteger result){
         if (result == NSFileHandlingPanelOKButton) {
             txtApplicationFolder.stringValue = openPanel.URL.path;
+
+            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+            [defaults setObject:openPanel.URL.path forKey:kApplicationFolder];
+            [defaults synchronize];
         }
     }];
 }
@@ -63,6 +63,10 @@
     [openPanel beginWithCompletionHandler:^(NSInteger result){
         if (result == NSFileHandlingPanelOKButton) {
             txtDefaultImageBrowseLocation.stringValue = openPanel.URL.path;
+            
+            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+            [defaults setObject:openPanel.URL.path forKey:kDefaultImageBrowseLocation];
+            [defaults synchronize];
         }
     }];
 }

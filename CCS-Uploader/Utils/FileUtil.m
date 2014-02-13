@@ -35,6 +35,8 @@
                     [contents addObject:absolutePaths ? absolutePath : relativePath];
                 }
             }
+        } else {
+            NSLog(@"Could not enumerate directory '%@' recursively.", dir);
         }
     } else {
         NSError *error = nil;
@@ -55,6 +57,8 @@
                     [contents addObject:absolutePaths ? absolutePath : relativePath];
                 }
             }
+        } else {
+            NSLog(@"Could not list contents of directory '%@': %@", dir, error.localizedDescription);
         }
     }
     

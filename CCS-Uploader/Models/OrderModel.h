@@ -16,9 +16,10 @@
 @property EventRow *eventRow;
 @property (readonly) NSString *rootDir;
 @property (readonly) NSMutableArray *rolls;
+@property (readonly) NSMutableArray *rollsToHide, *framesToHide;
 
 - (id)initWithEventRow:(EventRow *)event error:(NSError **)error;
-- (BOOL)diffWithExistingFiles;
+- (void)diffWithExistingFiles;
 - (BOOL)save;
 - (BOOL)delete;
 

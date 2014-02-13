@@ -250,11 +250,11 @@
                                                     if (orderModel == nil) {
                                                         terminate([NSString stringWithFormat:@"An error occurred while loading up the event. %@", error.localizedDescription]);
                                                     } else {
-                                                        //[orderModel diffWithExistingFiles];
+                                                        [orderModel save];
                                                         
                                                         wizardWindowController.txtStepTitle.stringValue = event.eventName;
                                                         wizardWindowController.txtStepDescription.stringValue =
-                                                        [NSString stringWithFormat:@"Event Number: %@", event.orderNumber];
+                                                            [NSString stringWithFormat:@"Event Number: %@", event.orderNumber];
                                                         
                                                         [tblRolls reloadData];
                                                         [wizardWindowController showStep:kWizardStepBrowse];
@@ -280,7 +280,7 @@
     ];
     
     if (started) {
-        wizardWindowController.loadingViewController.txtMessage.stringValue = @"Checking event number...";
+        wizardWindowController.loadingViewController.txtMessage.stringValue = @"Checking the event and verifying local files...";
         [wizardWindowController showStep:kWizardStepLoading];
     }
 }

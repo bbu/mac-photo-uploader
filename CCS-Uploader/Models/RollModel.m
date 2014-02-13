@@ -7,7 +7,7 @@
     NSInteger totalFrameSize;
     NSObject *greenScreen;
     NSMutableArray *frames;
-    BOOL dirExists, needsDelete, newlyAdded;
+    BOOL needsDelete, newlyAdded;
 }
 @end
 
@@ -18,7 +18,7 @@
 @synthesize totalFrameSize;
 @synthesize greenScreen;
 @synthesize frames;
-@synthesize dirExists, needsDelete, newlyAdded;
+@synthesize needsDelete, newlyAdded;
 
 - (id)initWithCoder:(NSCoder *)decoder
 {
@@ -28,7 +28,6 @@
         number = [decoder decodeObjectForKey:@"number"];
         photographer = [decoder decodeObjectForKey:@"photographer"];
         photographerID = [decoder decodeObjectForKey:@"photographerID"];
-        totalFrameSize = [decoder decodeIntegerForKey:@"totalFrameSize"];
         greenScreen = [decoder decodeObjectForKey:@"greenScreen"];
         frames = [decoder decodeObjectForKey:@"frames"];
     }
@@ -51,7 +50,6 @@
     [encoder encodeObject:number forKey:@"number"];
     [encoder encodeObject:photographer forKey:@"photographer"];
     [encoder encodeObject:photographerID forKey:@"photographerID"];
-    [encoder encodeInteger:totalFrameSize forKey:@"totalFrameSize"];
     [encoder encodeObject:greenScreen forKey:@"greenScreen"];
     [encoder encodeObject:frames forKey:@"frames"];
 }
