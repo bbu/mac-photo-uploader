@@ -52,8 +52,8 @@
     //NSString *decryptedString = [[NSString alloc] initWithData:decrypted encoding:NSUTF16LittleEndianStringEncoding];
     //NSLog(@"%@", decryptedString);
     
-    NSString *domainName = [[NSBundle mainBundle] bundleIdentifier];
-    [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:domainName];
+    //NSString *domainName = [[NSBundle mainBundle] bundleIdentifier];
+    //[[NSUserDefaults standardUserDefaults] removePersistentDomainForName:domainName];
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification

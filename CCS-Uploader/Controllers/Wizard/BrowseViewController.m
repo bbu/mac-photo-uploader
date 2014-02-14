@@ -13,11 +13,13 @@
 @interface BrowseViewController () <NSTableViewDelegate, NSTableViewDataSource> {
     IBOutlet NSTableView *tblRolls;
     IBOutlet NSPopover *advancedOptionsPopover, *viewRollPopover;
+    IBOutlet NSPanel *includeNewlyAddedImagesSheet;
+    IBOutlet NSTextView *txtNewFiles;
+    
     WizardWindowController *wizardWindowController;
     
     OrderModel *orderModel;
     //EventSettingsRow *eventSettings;
-    
     
     CheckOrderNumberService *checkOrderNumberService;
     EventSettingsService *eventSettingsService;
@@ -112,7 +114,7 @@
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
 {
-    return rolls.count;
+    return orderModel.rolls.count;
 }
 
 - (NSView *)tableView:(NSTableView *)tableView viewForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
@@ -123,7 +125,7 @@
     if ([columnID isEqualToString:@"Folder"]) {
         NSTableCellView *cell = view;
         cell.imageView.image = [NSImage imageNamed:@"NSFolder"];
-        cell.textField.stringValue = rolls[row][@"Name"];
+        cell.textField.stringValue = ((RollModel *)orderModel.rolls[row]).number;
     } else if ([columnID isEqualToString:@"Photographer"]) {
         //NSPopUpButton *btn = view;
         //[btn addItemWithTitle:@"None"];
@@ -132,11 +134,10 @@
         //[btn addItemWithTitle:@"photographer 3"];
     } else if ([columnID isEqualToString:@"Size"]) {
         NSTableCellView *cell = view;
-        //cell.textField.stringValue = rolls[row][@"Size"];
-        cell.textField.stringValue = [FileUtil humanFriendlyFilesize:((NSNumber *)rolls[row][@"Size"]).unsignedIntegerValue];
+        cell.textField.stringValue = [FileUtil humanFriendlyFilesize:((RollModel *)orderModel.rolls[row]).totalFrameSize];
     } else if ([columnID isEqualToString:@"Count"]) {
         NSTableCellView *cell = view;
-        cell.textField.stringValue = rolls[row][@"Count"];
+        cell.textField.stringValue = [NSString stringWithFormat:@"%lu", ((RollModel *)orderModel.rolls[row]).frames.count];
     } else if ([columnID isEqualToString:@"GreenScreen"]) {
         NSTableCellView *cell = view;
         //[NSImage imageNamed:@"NSStatusNone"] : [NSImage imageNamed:@"NSMenuOnStateTemplate"]
@@ -244,19 +245,41 @@
                                                 if ([result.status isEqualToString:@"Successful"]) {
                                                     uploadExtensions = result.extensions;
                                                     NSError *error = nil;
-                                                    
+                                                    [self view];
+                                                    [tblRolls reloadData];
+
                                                     orderModel = [[OrderModel alloc] initWithEventRow:event error:&error];
                                                     
                                                     if (orderModel == nil) {
                                                         terminate([NSString stringWithFormat:@"An error occurred while loading up the event. %@", error.localizedDescription]);
                                                     } else {
-                                                        [orderModel save];
+                                                        if (orderModel.newlyAdded) {
+                                                            NSMutableString *newFiles = [NSMutableString new];
+                                                            
+                                                            for (RollModel *roll in orderModel.rolls) {
+                                                                if (roll.newlyAdded) {
+                                                                    [newFiles appendFormat:@"%@/\r", roll.number];
+                                                                }
+                                                                
+                                                                for (FrameModel *frame in roll.frames) {
+                                                                    if (frame.newlyAdded) {
+                                                                        [newFiles appendFormat:@"%@/%@.%@\r", roll.number, frame.name, frame.extension];
+                                                                    }
+                                                                }
+                                                            }
+                                                            
+                                                            txtNewFiles.string = newFiles;
+                                                            
+                                                            [NSApp beginSheet:includeNewlyAddedImagesSheet modalForWindow:wizardWindowController.window modalDelegate:nil didEndSelector:nil contextInfo:nil];
+                                                        } else {
+                                                            [tblRolls reloadData];
+                                                            [orderModel save];
+                                                        }
                                                         
                                                         wizardWindowController.txtStepTitle.stringValue = event.eventName;
                                                         wizardWindowController.txtStepDescription.stringValue =
                                                             [NSString stringWithFormat:@"Event Number: %@", event.orderNumber];
                                                         
-                                                        [tblRolls reloadData];
                                                         [wizardWindowController showStep:kWizardStepBrowse];
                                                     }
                                                 } else {
@@ -283,6 +306,30 @@
         wizardWindowController.loadingViewController.txtMessage.stringValue = @"Checking the event and verifying local files...";
         [wizardWindowController showStep:kWizardStepLoading];
     }
+}
+
+- (IBAction)ignoreNewFiles:(id)sender
+{
+    [orderModel ignoreNewlyAdded];
+    [includeNewlyAddedImagesSheet close];
+    [tblRolls reloadData];
+    [orderModel save];
+    [NSApp endSheet:includeNewlyAddedImagesSheet];
+}
+
+- (IBAction)importNewFiles:(id)sender
+{
+    [orderModel includeNewlyAdded];
+    [includeNewlyAddedImagesSheet close];
+    [tblRolls reloadData];
+    [orderModel save];
+    [NSApp endSheet:includeNewlyAddedImagesSheet];
+}
+
+- (void)controlTextDidEndEditing:(NSNotification *)notification
+{
+    NSTextField *textField = [notification object];
+    NSLog(@"controlTextDidChange: stringValue == %@, row == %ld", [textField stringValue], [tblRolls rowForView:textField]);
 }
 
 - (IBAction)changedPhotographer:(id)sender
@@ -312,6 +359,5 @@
     [viewRollPopover close];
     [viewRollPopover showRelativeToRect:[sender superview].bounds ofView:sender preferredEdge:NSMaxXEdge];
 }
-
 
 @end

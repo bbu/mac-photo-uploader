@@ -21,11 +21,11 @@
     NSString *rootDir;
     NSMutableArray *rolls;
     NSMutableArray *rollsToHide, *framesToHide;
+    BOOL newlyAdded;
     
     NSNumberFormatter *numberFormatter;
     NSFileManager *fileMgr;
     NSUserDefaults *defaults;
-    NSInteger rollAutoIncrementCount;
 }
 
 @end
@@ -33,9 +33,11 @@
 @implementation OrderModel
 
 @synthesize eventRow;
+
 @synthesize rootDir;
 @synthesize rolls;
 @synthesize rollsToHide, framesToHide;
+@synthesize newlyAdded;
 
 - (id)initWithCoder:(NSCoder *)decoder
 {
@@ -158,6 +160,8 @@
         if ([existingDirs containsObject:roll.number]) {
             [existingDirs removeObject:roll.number];
 
+            roll.totalFrameSize = 0;
+
             if (!roll.frames) {
                 roll.frames = [NSMutableArray new];
             }
@@ -185,23 +189,36 @@
                     NSDictionary *fileAttrs = [fileMgr attributesOfItemAtPath:filepath error:nil];
                     
                     if (fileAttrs) {
-                        roll.totalFrameSize += fileAttrs.fileSize;
-                        
                         if ([frame.lastModified compare:fileAttrs.fileModificationDate] != NSOrderedSame) {
-                            frame.needsReload = YES;
-                            frame.filesize = fileAttrs.fileSize;
-                            frame.lastModified = fileAttrs.fileModificationDate;
-                            frame.fullsizeSent = NO;
-                            frame.thumbsSent = NO;
+                            CGSize size;
+                            NSUInteger orientation;
+                            
+                            if ([ImageUtil getImageProperties:filepath size:&size type:frame.imageType orientation:&orientation]) {
+                                frame.filesize = fileAttrs.fileSize;
+                                frame.lastModified = fileAttrs.fileModificationDate;
+                                frame.fullsizeSent = NO;
+                                frame.thumbsSent = NO;
+                                frame.width = size.width;
+                                frame.height = size.height;
+                                frame.orientation = orientation;
+                            } else {
+                                // image is corrupt
+                                [framesToHide addObject:@[roll.number, frame.name, frame.extension]];
+                                frame.needsDelete = YES;
+                            }
                         } else {
                             // frame.needsReload = NO;
                         }
+                        
+                        if (!frame.needsDelete) {
+                            roll.totalFrameSize += fileAttrs.fileSize;
+                        }
                     } else {
-                        [framesToHide addObject:[roll.number stringByAppendingPathComponent:frame.name]];
+                        [framesToHide addObject:@[roll.number, frame.name, frame.extension]];
                         frame.needsDelete = YES;
                     }
                 } else {
-                    [framesToHide addObject:[roll.number stringByAppendingPathComponent:frame.name]];
+                    [framesToHide addObject:@[roll.number, frame.name, frame.extension]];
                     frame.needsDelete = YES;
                 }
             }
@@ -215,10 +232,11 @@
             [roll.frames removeObjectsAtIndexes:frameIndexesToRemove];
             
             for (NSString *newlyAddedFile in existingFiles) {
+                newlyAdded = YES;
+                
                 FrameModel *frame = [FrameModel new];
                 frame.name = [newlyAddedFile stringByDeletingPathExtension];
                 frame.extension = newlyAddedFile.pathExtension;
-                frame.needsReload = YES;
                 frame.newlyAdded = YES;
                 [roll.frames addObject:frame];
             }
@@ -245,6 +263,8 @@
             continue;
         }
         
+        newlyAdded = YES;
+        
         RollModel *roll = [RollModel new];
         roll.number = newlyAddedDir;
         roll.newlyAdded = YES;
@@ -252,21 +272,85 @@
         [rolls addObject:roll];
 
         for (NSString *newlyAddedFile in filesInSubdir) {
-            NSString *filepath = [path stringByAppendingPathComponent:newlyAddedFile];
-            NSDictionary *fileAttrs = [fileMgr attributesOfItemAtPath:filepath error:nil];
-            
-            if (!fileAttrs) {
-                continue;
-            }
-            
             FrameModel *frame = [FrameModel new];
             frame.name = [newlyAddedFile stringByDeletingPathExtension];
             frame.extension = newlyAddedFile.pathExtension;
-            frame.needsReload = YES;
             frame.newlyAdded = YES;
             [roll.frames addObject:frame];
         }
     }
+}
+
+- (void)ignoreNewlyAdded
+{
+    NSIndexSet *rollIndexesToRemove = [rolls
+        indexesOfObjectsPassingTest:^BOOL(RollModel *roll, NSUInteger idx, BOOL *stop) {
+            return roll.newlyAdded;
+        }
+    ];
+    
+    [rolls removeObjectsAtIndexes:rollIndexesToRemove];
+    
+    for (RollModel *roll in rolls) {
+        NSIndexSet *frameIndexesToRemove = [roll.frames
+            indexesOfObjectsPassingTest:^BOOL(FrameModel *frame, NSUInteger idx, BOOL *stop) {
+                return frame.newlyAdded;
+            }
+        ];
+        
+        [roll.frames removeObjectsAtIndexes:frameIndexesToRemove];
+    }
+    
+    newlyAdded = NO;
+}
+
+- (void)includeNewlyAdded
+{
+    for (RollModel *roll in rolls) {
+        if (roll.newlyAdded) {
+            roll.newlyAdded = NO;
+        }
+
+        NSString *path = [rootDir stringByAppendingPathComponent:roll.number];
+
+        for (FrameModel *frame in roll.frames) {
+            if (frame.newlyAdded) {
+                NSString *filename = [frame.name stringByAppendingPathExtension:frame.extension];
+                NSString *filepath = [path stringByAppendingPathComponent:filename];
+                
+                NSDictionary *fileAttrs = [fileMgr attributesOfItemAtPath:filepath error:nil];
+                
+                if (fileAttrs) {
+                    CGSize size;
+                    NSUInteger orientation;
+                    
+                    if ([ImageUtil getImageProperties:filepath size:&size type:frame.imageType orientation:&orientation]) {
+                        frame.filesize = fileAttrs.fileSize;
+                        frame.lastModified = fileAttrs.fileModificationDate;
+                        frame.width = size.width;
+                        frame.height = size.height;
+                        frame.orientation = orientation;
+                        frame.fullsizeSent = NO;
+                        frame.thumbsSent = NO;
+                        frame.newlyAdded = NO;
+                        roll.totalFrameSize += fileAttrs.fileSize;
+                    } else {
+                        // image is corrupt
+                    }
+                }
+            }
+        }
+        
+        NSIndexSet *frameIndexesToRemove = [roll.frames
+            indexesOfObjectsPassingTest:^BOOL(FrameModel *frame, NSUInteger idx, BOOL *stop) {
+                return frame.newlyAdded;
+            }
+        ];
+        
+        [roll.frames removeObjectsAtIndexes:frameIndexesToRemove];
+    }
+    
+    newlyAdded = NO;
 }
 
 + (NSString *)pathToOrderFile:(NSString *)orderNumber

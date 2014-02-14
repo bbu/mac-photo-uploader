@@ -7,6 +7,9 @@
 @property NSDate *lastModified;
 @property NSInteger width, height;
 @property NSUInteger orientation;
-@property BOOL needsReload, needsDelete, newlyAdded, fullsizeSent, thumbsSent, userDidRotate;
+@property NSMutableString *imageType;
+@property BOOL fullsizeSent, thumbsSent;
+
+@property BOOL needsDelete, newlyAdded, userDidRotate;
 
 @end

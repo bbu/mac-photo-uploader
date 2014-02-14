@@ -17,9 +17,13 @@
 @property (readonly) NSString *rootDir;
 @property (readonly) NSMutableArray *rolls;
 @property (readonly) NSMutableArray *rollsToHide, *framesToHide;
+@property (readonly) BOOL newlyAdded;
 
 - (id)initWithEventRow:(EventRow *)event error:(NSError **)error;
 - (void)diffWithExistingFiles;
+- (void)ignoreNewlyAdded;
+- (void)includeNewlyAdded;
+
 - (BOOL)save;
 - (BOOL)delete;
 

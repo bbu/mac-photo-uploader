@@ -256,7 +256,7 @@
                     </textFieldCell>
                 </textField>
                 <button verticalHuggingPriority="750" id="yE9-Lo-1k1">
-                    <rect key="frame" x="14" y="13" width="363" height="32"/>
+                    <rect key="frame" x="14" y="15" width="362" height="31"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="push" title="Close and Apply Filters" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="ENW-Qj-PR4">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>

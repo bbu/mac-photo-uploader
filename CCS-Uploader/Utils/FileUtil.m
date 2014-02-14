@@ -117,10 +117,14 @@
 
 + (NSString *)humanFriendlyFilesize:(NSUInteger)value
 {
+    if (value < 1024) {
+        return @"0 bytes";
+    }
+    
     double convertedValue = value;
     int multiplyFactor = 0;
-
-    NSArray *tokens = @[@"bytes", @"KB", @"MB", @"GB", @"TB"];
+    
+    NSArray *tokens = @[@"", @"KB", @"MB", @"GB", @"TB"];
     
     while (convertedValue > 1024) {
         convertedValue /= 1024;
