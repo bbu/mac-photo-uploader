@@ -1,6 +1,9 @@
 #import "WizardWindowController.h"
+#import "MainWindowController.h"
 
 @interface WizardWindowController () {
+    MainWindowController *mainWindowController;
+    
     IBOutlet NSView *contentView;
     IBOutlet NSTextField *txtStepTitle, *txtStepDescription;
     IBOutlet NSButton *btnCancel, *btnBack, *btnNext;
@@ -9,6 +12,9 @@
     LoginViewController *loginViewController;
     EventsViewController *eventsViewController;
     BrowseViewController *browseViewController;
+    ReviewViewController *reviewViewController;
+    ScheduleViewController *scheduleViewController;
+
     NSAlert *alert;
     
     WizardStep wizardStep;
@@ -31,17 +37,22 @@
     loadingViewController,
     loginViewController,
     eventsViewController,
-    browseViewController;
+    browseViewController,
+    reviewViewController,
+    scheduleViewController;
 
-- (id)init
+- (id)initWithMainWindowController:(MainWindowController *)parent
 {
     self = [super initWithWindowNibName:@"WizardWindow"];
 
     if (self) {
+        mainWindowController = parent;
         loadingViewController = [LoadingViewController new];
         loginViewController = [[LoginViewController alloc] initWithWizardController:self];
         eventsViewController = [[EventsViewController alloc] initWithWizardController:self];
         browseViewController = [[BrowseViewController alloc] initWithWizardController:self];
+        reviewViewController = [[ReviewViewController alloc] initWithWizardController:self];
+        scheduleViewController = [[ScheduleViewController alloc] initWithWizardController:self];
         alert = [NSAlert new];
     }
     
@@ -101,15 +112,15 @@
         } break;
 
         case kWizardStepBrowse: {
-            
+            [self showStep:kWizardStepReview];
         } break;
             
         case kWizardStepReview: {
-            
+            [self showStep:kWizardStepSchedule];
         } break;
             
         case kWizardStepSchedule: {
-            
+            [self.window close];
         } break;
             
         case kWizardStepLoading: break;
@@ -123,8 +134,8 @@
         @"Sign In",
         @"Choose an Event",
         @"",
-        @"Review Event Images",
-        @"Schedule Upload",
+        @"",
+        @"",
     };
     
     static NSString *descriptions[] = {
@@ -154,8 +165,8 @@
         loginViewController,
         eventsViewController,
         browseViewController,
-        loadingViewController,
-        loadingViewController,
+        reviewViewController,
+        scheduleViewController,
     ][step];
     
     if (step == kWizardStepLoading) {

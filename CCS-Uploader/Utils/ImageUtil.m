@@ -287,6 +287,9 @@ releaseSource:
     CGContextConcatCTM(drawingContext, exifTransform);
     CGContextConcatCTM(drawingContext, rotationTransform);
     CGContextDrawImage(drawingContext, CGRectMake(0, 0, inputImageSize.width, inputImageSize.height), inputImage);
+    //CGContextSetBlendMode(drawingContext, kCGBlendModePlusLighter);
+    //CGContextDrawImage(drawingContext, CGRectMake(0, 0, watermarkImageSize.width, watermarkImageSize.height), watermarkImage);
+    
     CGImageRef outputImage = CGBitmapContextCreateImage(drawingContext);
     
     if (outputImage == NULL) {

@@ -1,7 +1,15 @@
 #import "MainWindowController.h"
 #import "Prefs/AdvancedViewController.h"
 
-@interface MainWindowController ()
+@interface MainWindowController () {
+    IBOutlet NSTableView *tblTransfers;
+    IBOutlet NSMenu *menuThumbnails;
+    IBOutlet NSImageView
+        *imgUploading1, *imgUploading2, *imgUploading3, *imgUploading4,
+        *imgUploading5, *imgUploading6, *imgUploading7, *imgUploading8;
+    
+    IBOutlet WizardWindowController *wizardWindowController;
+}
 
 @end
 
@@ -20,15 +28,7 @@
 
 -(NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
 {
-    NSInteger rowCount = 0;
-    
-    if (tableView == tblThumbnails) {
-        rowCount = 2;
-    } else if (tableView == tblFullSize) {
-        rowCount = 2;
-    }
-    
-    return rowCount;
+    return 2;
 }
 
 -(CGFloat)tableView:(NSTableView *)tableView heightOfRow:(NSInteger)row
@@ -42,10 +42,10 @@
 
 -(IBAction)deleteRowFromThumbnails:(id)sender
 {
-    NSInteger clickedRow = [tblThumbnails rowForView:sender];
+    NSInteger clickedRow = [tblTransfers rowForView:sender];
 
     if (clickedRow != -1) {
-        [tblThumbnails removeRowsAtIndexes:[NSIndexSet indexSetWithIndex:clickedRow] withAnimation:NSTableViewAnimationEffectFade];
+        [tblTransfers removeRowsAtIndexes:[NSIndexSet indexSetWithIndex:clickedRow] withAnimation:NSTableViewAnimationEffectFade];
     }
 }
 
@@ -56,43 +56,41 @@
 
 -(NSView *)tableView:(NSTableView *)tableView viewForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
 {
-    //if (tableView == tblThumbnails) {
-        if (row % 5 == 0) {
-            NSTextField *result = [tableView makeViewWithIdentifier:@"grp" owner:self];
+    if (row % 5 == 0) {
+        NSTextField *result = [tableView makeViewWithIdentifier:@"grp" owner:self];
 
-            if (result == nil) {
-                result = [[NSTextField alloc] initWithFrame:NSZeroRect];
-                result.identifier = tableColumn.identifier;
-                result.drawsBackground = NO;
-                result.bezeled = NO;
-                result.font = [NSFont systemFontOfSize:10];
-            }
-            
-            result.objectValue = @"Completed Transfers";
-            return result;
-        } else {
-            NSTableCellView *result = [tableView makeViewWithIdentifier:tableColumn.identifier owner:self];
-            
-            if (result == nil) {
-                result = [[NSTableCellView alloc] initWithFrame:NSZeroRect];
-                result.identifier = tableColumn.identifier;
-            }
-            
-            if ([tableColumn.identifier isEqualToString:@"Event"]) {
-                result.textField.stringValue = @"My Test Event";
-            } else if ([tableColumn.identifier isEqualToString:@"Status"]) {
-                result.textField.stringValue = @"Complete";
-            } else if ([tableColumn.identifier isEqualToString:@"Date"]) {
-                result.textField.stringValue = @"1/20/2014 14:12";
-            }
-            
-            return result;
+        if (result == nil) {
+            result = [[NSTextField alloc] initWithFrame:NSZeroRect];
+            result.identifier = tableColumn.identifier;
+            result.drawsBackground = NO;
+            result.bezeled = NO;
+            result.font = [NSFont systemFontOfSize:10];
         }
-    //} else if (tableView == tblFullSize) {
-        //NSTableCellView *view = [tableView makeViewWithIdentifier:@"cell" owner:nil];
         
-        //return view;
-    //}
+        result.objectValue = @"Completed Transfers";
+        return result;
+    } else {
+        NSTableCellView *result = [tableView makeViewWithIdentifier:tableColumn.identifier owner:self];
+        
+        if (result == nil) {
+            result = [[NSTableCellView alloc] initWithFrame:NSZeroRect];
+            result.identifier = tableColumn.identifier;
+        }
+        
+        if ([tableColumn.identifier isEqualToString:@"Event"]) {
+            result.textField.stringValue = @"My Test Event";
+        } else if ([tableColumn.identifier isEqualToString:@"Status"]) {
+            result.textField.stringValue = @"Complete";
+        } else if ([tableColumn.identifier isEqualToString:@"Thumbs"]) {
+            result.textField.stringValue = @"25/100";
+        } else if ([tableColumn.identifier isEqualToString:@"Fullsize"]) {
+            result.textField.stringValue = @"0/100";
+        } else if ([tableColumn.identifier isEqualToString:@"Date"]) {
+            result.textField.stringValue = @"1/20/2014 14:12";
+        }
+        
+        return result;
+    }
     
     return nil;
 }
@@ -104,22 +102,16 @@
 
 - (IBAction)previewsAndThumbnailsHelp:(id)sender
 {
-    NSString *label = @"Previews and thumbnails are used for displaying online and in CORE/Quicpost.";
-    NSPopover *popover = [AdvancedViewController popoverWithLabel:label size:NSMakeSize(260, 34)];
-    [popover showRelativeToRect:[sender superview].bounds ofView:sender preferredEdge:NSMaxXEdge];
-}
-
-- (IBAction)fullSizeImagesHelp:(id)sender
-{
-    NSString *label = @"Full-size images are used to produce prints and products. Orders cannot be processed without full-size images.";
-    NSPopover *popover = [AdvancedViewController popoverWithLabel:label size:NSMakeSize(260, 49)];
+    NSString *label = @"Previews and thumbnails are used for displaying online and in CORE/Quicpost. Full-size images are used to produce prints and products. Orders cannot be processed without full-size images.";
+    
+    NSPopover *popover = [AdvancedViewController popoverWithLabel:label size:NSMakeSize(260, 81)];
     [popover showRelativeToRect:[sender superview].bounds ofView:sender preferredEdge:NSMaxXEdge];
 }
 
 - (IBAction)startWizard:(id)sender
 {
     if (wizardWindowController == nil) {
-        wizardWindowController = [WizardWindowController new];
+        wizardWindowController = [[WizardWindowController alloc] initWithMainWindowController:self];
     }
     
     [wizardWindowController showWindow:self];
@@ -129,8 +121,10 @@
 {
     [super windowDidLoad];
     
-    [tblThumbnails reloadData];
-    [tblFullSize reloadData];
+    [tblTransfers reloadData];
+    
+    //NSImage *img = [[NSImage alloc] initWithContentsOfFile:@"/Users/blagovest/Downloads/lotus.jpg"];
+    //[imgUploading1 setImage:img];
 }
 
 - (void)windowWillClose:(NSNotification *)notification

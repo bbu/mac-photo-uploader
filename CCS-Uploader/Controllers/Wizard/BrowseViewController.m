@@ -12,6 +12,7 @@
 
 @interface BrowseViewController () <NSTableViewDelegate, NSTableViewDataSource> {
     IBOutlet NSTableView *tblRolls;
+    IBOutlet NSButton *chkAutoNumberRolls, *chkAutoNumberFrames;
     IBOutlet NSPopover *advancedOptionsPopover, *viewRollPopover;
     IBOutlet NSPanel *includeNewlyAddedImagesSheet;
     IBOutlet NSTextView *txtNewFiles;
@@ -19,7 +20,6 @@
     WizardWindowController *wizardWindowController;
     
     OrderModel *orderModel;
-    //EventSettingsRow *eventSettings;
     
     CheckOrderNumberService *checkOrderNumberService;
     EventSettingsService *eventSettingsService;
@@ -61,7 +61,9 @@
     openPanel.canChooseFiles = YES;
     openPanel.allowsMultipleSelection = YES;
     openPanel.message = @"Select files or folders to upload:";
-    [openPanel setFrame:NSMakeRect(0, 0, wizardWindowController.window.frame.size.width + 80, wizardWindowController.window.frame.size.height - 60) display:YES];
+
+    [openPanel setFrame:NSMakeRect(0, 0, wizardWindowController.window.frame.size.width + 80,
+        wizardWindowController.window.frame.size.height - 60) display:YES];
     
     if (defaultLocation) {
         [openPanel setDirectoryURL:[NSURL fileURLWithPath:defaultLocation]];
@@ -70,36 +72,10 @@
     [openPanel beginSheetModalForWindow:wizardWindowController.window
         completionHandler:^(NSInteger result) {
             if (result == NSFileHandlingPanelOKButton) {
-                NSInteger totalCount = 0;
-                NSUInteger totalSize = 0;
-                
-                for (NSURL *url in openPanel.URLs) {
-                    NSMutableArray *contents = [FileUtil filesInDirectory:url.path extensionSet:[NSSet setWithObjects:@"jpg", @"png", nil] recursive:YES absolutePaths:YES];
-                    
-                    if (contents) {
-                        totalCount += contents.count;
-                    } else {
-                        NSDictionary *attrs = [[NSFileManager defaultManager] attributesOfItemAtPath:url.path error:nil];
-                        totalSize += [attrs fileSize];
-                        totalCount++;
-                    }
-
-                    for (NSString *filename in contents) {
-                        NSDictionary *attrs = [[NSFileManager defaultManager] attributesOfItemAtPath:filename error:nil];
-                        totalSize += [attrs fileSize];
-                        NSLog(@"%@", filename);
-                    }
-                }
-                
-                NSMutableDictionary *roll = [@{
-                    @"Name": [NSString stringWithFormat:@"%05ld", ++autoIncRollName],
-                    @"Photographer": @"abc",
-                    @"Count": [NSString stringWithFormat:@"%ld", totalCount],
-                    @"Size": [NSNumber numberWithUnsignedInteger:totalSize],
-                } mutableCopy];
-                
-                [rolls addObject:roll];
-
+                [orderModel addNewImages:-1 urls:openPanel.URLs
+                    frameNumberLimit:9999
+                    autoNumberRolls:chkAutoNumberRolls.state == NSOnState ? YES : NO
+                    autoNumberFrames:chkAutoNumberFrames.state == NSOnState ? YES : NO];
                 
                 [tblRolls reloadData];
             }

@@ -2,6 +2,7 @@
 
 #define kEventFolderExtension @"ccsevent"
 #define kOrderFileExtension @"ccsorder"
+#define kTempFolderName @".ccstmp"
 #define kDefaultLocalFolder @"Events/%@"
 
 #define FAIL(retval, fmt, ...) \
@@ -351,6 +352,175 @@
     }
     
     newlyAdded = NO;
+}
+
+- (void)addNewImages:(NSInteger)rollIndex urls:(NSArray *)urls frameNumberLimit:(NSInteger)frameNumberLimit autoNumberRolls:(BOOL)autoNumberRolls autoNumberFrames:(BOOL)autoNumberFrames
+{
+    NSError *error = nil;
+    NSString *tempDir = [rootDir stringByAppendingPathComponent:kTempFolderName];
+    [fileMgr removeItemAtPath:tempDir error:nil];
+    
+    if (![fileMgr createDirectoryAtPath:tempDir withIntermediateDirectories:NO attributes:nil error:&error]) {
+        return;
+    }
+    
+    RollModel *tempRoll = [RollModel new];
+    tempRoll.frames = [NSMutableArray new];
+    NSString *derivedRollName = nil;
+    
+    for (NSURL *url in urls) {
+        BOOL isDirectory;
+        BOOL fileExists = [fileMgr fileExistsAtPath:url.path isDirectory:&isDirectory];
+        
+        if (fileExists) {
+            CGSize size;
+            NSUInteger orientation;
+            NSMutableString *imageType = [NSMutableString new];
+            
+            if (isDirectory) {
+                NSMutableArray *filesToCopy = [FileUtil filesInDirectory:url.path
+                    extensionSet:[NSSet setWithObjects:@"jpg", @"png", nil] recursive:YES absolutePaths:YES];
+                
+                if (!filesToCopy) {
+                    continue;
+                }
+                
+                if (!autoNumberRolls && !derivedRollName) {
+                    derivedRollName = url.path.lastPathComponent;
+                }
+                
+                for (NSString *fileToCopy in filesToCopy) {
+                    if ([ImageUtil getImageProperties:fileToCopy size:&size type:imageType orientation:&orientation]) {
+                        NSString *destFilepath = [tempDir stringByAppendingPathComponent:fileToCopy.lastPathComponent];
+                        
+                        for (NSInteger dupNumber = 1; [fileMgr fileExistsAtPath:destFilepath]; dupNumber++) {
+                            destFilepath = [tempDir stringByAppendingPathComponent:[NSString stringWithFormat:@"%@_%ld.%@",
+                                [fileToCopy.lastPathComponent stringByDeletingPathExtension], dupNumber, fileToCopy.pathExtension]];
+                        }
+                        
+                        if ([fileMgr copyItemAtPath:fileToCopy toPath:destFilepath error:nil]) {
+                            FrameModel *newFrame = [FrameModel new];
+                            
+                            newFrame.name = [destFilepath.lastPathComponent stringByDeletingPathExtension];
+                            newFrame.extension = destFilepath.pathExtension;
+                            newFrame.width = size.width;
+                            newFrame.height = size.height;
+                            newFrame.orientation = orientation;
+                            newFrame.imageType = imageType;
+                            
+                            [tempRoll.frames addObject:newFrame];
+                        }
+                    }
+                }
+            } else {
+                NSString *fileToCopy = url.path;
+
+                if ([ImageUtil getImageProperties:fileToCopy size:&size type:imageType orientation:&orientation]) {
+                    NSString *destFilepath = [tempDir stringByAppendingPathComponent:fileToCopy.lastPathComponent];
+                    
+                    for (NSInteger dupNumber = 1; [fileMgr fileExistsAtPath:destFilepath]; dupNumber++) {
+                        destFilepath = [tempDir stringByAppendingPathComponent:[NSString stringWithFormat:@"%@_%ld.%@",
+                            [fileToCopy.lastPathComponent stringByDeletingPathExtension], dupNumber, fileToCopy.pathExtension]];
+                    }
+                    
+                    if ([fileMgr copyItemAtPath:fileToCopy toPath:destFilepath error:nil]) {
+                        FrameModel *newFrame = [FrameModel new];
+                        
+                        newFrame.name = [destFilepath.lastPathComponent stringByDeletingPathExtension];
+                        newFrame.extension = destFilepath.pathExtension;
+                        newFrame.width = size.width;
+                        newFrame.height = size.height;
+                        newFrame.orientation = orientation;
+                        newFrame.imageType = imageType;
+                        
+                        [tempRoll.frames addObject:newFrame];
+                    }
+                }
+            }
+        }
+    }
+    
+    if (rollIndex == -1) {
+        NSInteger rollsToCreate = (tempRoll.frames.count - 1) / frameNumberLimit + 1;
+        
+        for (NSInteger i = 0, nextRollNumber = [self deriveNextRollNumber]; i < rollsToCreate; ++i, ++nextRollNumber) {
+            RollModel *newRoll = [RollModel new];
+            
+            newRoll.frames = [NSMutableArray new];
+            newRoll.number = (autoNumberRolls || !derivedRollName) ?
+                [NSString stringWithFormat:@"%05ld", nextRollNumber] : derivedRollName;
+            
+            NSString *rollPath = [rootDir stringByAppendingPathComponent:newRoll.number];
+            
+            for (NSInteger dupNumber = 1; [fileMgr fileExistsAtPath:rollPath]; ++dupNumber) {
+                newRoll.number = (autoNumberRolls || !derivedRollName) ?
+                    [NSString stringWithFormat:@"%05ld_%ld", nextRollNumber, dupNumber] :
+                    [NSString stringWithFormat:@"%@_%ld", derivedRollName, dupNumber];
+                
+                rollPath = [rootDir stringByAppendingPathComponent:newRoll.number];
+            }
+            
+            if (![fileMgr createDirectoryAtPath:rollPath withIntermediateDirectories:NO attributes:nil error:nil]) {
+                continue;
+            }
+            
+            NSInteger startIndex = i * frameNumberLimit;
+            NSInteger endIndex = startIndex + frameNumberLimit;
+            
+            if (endIndex > tempRoll.frames.count) {
+                endIndex = tempRoll.frames.count;
+            }
+            
+            for (NSInteger j = startIndex, nextFrameNumber = 1; j < endIndex; ++j, ++nextFrameNumber) {
+                FrameModel *frame = tempRoll.frames[j];
+                
+                NSString *fileToMove = [tempDir stringByAppendingPathComponent:[frame.name stringByAppendingPathExtension:frame.extension]];
+                
+                if (autoNumberFrames) {
+                    frame.name = [NSString stringWithFormat:@"%04ld", nextFrameNumber];
+                }
+                
+                NSString *destFilepath = [rollPath stringByAppendingPathComponent:
+                    [frame.name stringByAppendingPathExtension:frame.extension]];
+                
+                if ([fileMgr moveItemAtPath:fileToMove toPath:destFilepath error:nil]) {
+                    NSDictionary *fileAttrs = [fileMgr attributesOfItemAtPath:destFilepath error:nil];
+                    
+                    if (fileAttrs) {
+                        frame.filesize = fileAttrs.fileSize;
+                        frame.lastModified = fileAttrs.fileModificationDate;
+                        newRoll.totalFrameSize += fileAttrs.fileSize;
+                        [newRoll.frames addObject:frame];
+                    }
+                }
+            }
+            
+            [rolls addObject:newRoll];
+        }
+    } else {
+        //RollModel *targetRoll = [rolls objectAtIndex:rollIndex];
+    }
+    
+    [fileMgr removeItemAtPath:tempDir error:nil];
+}
+
+- (NSInteger)deriveNextRollNumber
+{
+    NSInteger maxDerivedNumber = 0;
+    
+    for (RollModel *roll in rolls) {
+        NSInteger dirnameAsInt = labs(roll.number.integerValue);
+        
+        if (dirnameAsInt > maxDerivedNumber) {
+            maxDerivedNumber = dirnameAsInt;
+        }
+    }
+    
+    if (maxDerivedNumber >= 99999) {
+        return 1;
+    }
+    
+    return maxDerivedNumber + 1;
 }
 
 + (NSString *)pathToOrderFile:(NSString *)orderNumber

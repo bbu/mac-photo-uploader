@@ -29,6 +29,10 @@
 		2B4766121887E328008DF1FD /* AdvancedView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2B4766101887E328008DF1FD /* AdvancedView.xib */; };
 		2B4766161887FEBC008DF1FD /* MarketSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B4766141887FEBC008DF1FD /* MarketSettingsViewController.m */; };
 		2B4766171887FEBC008DF1FD /* MarketSettingsView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2B4766151887FEBC008DF1FD /* MarketSettingsView.xib */; };
+		2B50FF7F18B1FDD400DBFCA0 /* ReviewViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B50FF7D18B1FDD400DBFCA0 /* ReviewViewController.m */; };
+		2B50FF8018B1FDD400DBFCA0 /* ReviewView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2B50FF7E18B1FDD400DBFCA0 /* ReviewView.xib */; };
+		2B50FF8418B1FE7F00DBFCA0 /* ScheduleViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B50FF8218B1FE7F00DBFCA0 /* ScheduleViewController.m */; };
+		2B50FF8518B1FE7F00DBFCA0 /* ScheduleView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2B50FF8318B1FE7F00DBFCA0 /* ScheduleView.xib */; };
 		2B51D15218979D2B0021AD20 /* ListEventsService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B51D15118979D2B0021AD20 /* ListEventsService.m */; };
 		2B51D1551897E6830021AD20 /* ListPhotographersService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B51D1541897E6830021AD20 /* ListPhotographersService.m */; };
 		2B51D1581897E6A90021AD20 /* AddPhotographerService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B51D1571897E6A90021AD20 /* AddPhotographerService.m */; };
@@ -107,6 +111,12 @@
 		2B4766131887FEBC008DF1FD /* MarketSettingsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MarketSettingsViewController.h; sourceTree = "<group>"; };
 		2B4766141887FEBC008DF1FD /* MarketSettingsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MarketSettingsViewController.m; sourceTree = "<group>"; };
 		2B4766151887FEBC008DF1FD /* MarketSettingsView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MarketSettingsView.xib; sourceTree = "<group>"; };
+		2B50FF7C18B1FDD400DBFCA0 /* ReviewViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ReviewViewController.h; sourceTree = "<group>"; };
+		2B50FF7D18B1FDD400DBFCA0 /* ReviewViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ReviewViewController.m; sourceTree = "<group>"; };
+		2B50FF7E18B1FDD400DBFCA0 /* ReviewView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ReviewView.xib; sourceTree = "<group>"; };
+		2B50FF8118B1FE7F00DBFCA0 /* ScheduleViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ScheduleViewController.h; sourceTree = "<group>"; };
+		2B50FF8218B1FE7F00DBFCA0 /* ScheduleViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ScheduleViewController.m; sourceTree = "<group>"; };
+		2B50FF8318B1FE7F00DBFCA0 /* ScheduleView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ScheduleView.xib; sourceTree = "<group>"; };
 		2B51D15018979D2B0021AD20 /* ListEventsService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ListEventsService.h; sourceTree = "<group>"; };
 		2B51D15118979D2B0021AD20 /* ListEventsService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ListEventsService.m; sourceTree = "<group>"; };
 		2B51D1531897E6830021AD20 /* ListPhotographersService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ListPhotographersService.h; sourceTree = "<group>"; };
@@ -208,6 +218,12 @@
 				2B431358189112B500580D54 /* BrowseViewController.h */,
 				2B431359189112B500580D54 /* BrowseViewController.m */,
 				2B43135A189112B500580D54 /* BrowseView.xib */,
+				2B50FF7C18B1FDD400DBFCA0 /* ReviewViewController.h */,
+				2B50FF7D18B1FDD400DBFCA0 /* ReviewViewController.m */,
+				2B50FF7E18B1FDD400DBFCA0 /* ReviewView.xib */,
+				2B50FF8118B1FE7F00DBFCA0 /* ScheduleViewController.h */,
+				2B50FF8218B1FE7F00DBFCA0 /* ScheduleViewController.m */,
+				2B50FF8318B1FE7F00DBFCA0 /* ScheduleView.xib */,
 			);
 			path = Wizard;
 			sourceTree = "<group>";
@@ -427,11 +443,13 @@
 				2B4766121887E328008DF1FD /* AdvancedView.xib in Resources */,
 				2B533ECC189002C600A4D8A2 /* EventsView.xib in Resources */,
 				2B74BF0B1883D50B00D0B78B /* InfoPlist.strings in Resources */,
+				2B50FF8018B1FDD400DBFCA0 /* ReviewView.xib in Resources */,
 				2B5E0B2F188410620023095C /* PrefsWindow.xib in Resources */,
 				2B74BF111883D50B00D0B78B /* Credits.rtf in Resources */,
 				2B533EBC188FB2AF00A4D8A2 /* WizardWindow.xib in Resources */,
 				2B7ACBE8188680D700C68B0B /* FoldersView.xib in Resources */,
 				2B7ACBE118867AEE00C68B0B /* Images.xcassets in Resources */,
+				2B50FF8518B1FE7F00DBFCA0 /* ScheduleView.xib in Resources */,
 				2B533EC7188FE63300A4D8A2 /* LoadingView.xib in Resources */,
 				2B4766171887FEBC008DF1FD /* MarketSettingsView.xib in Resources */,
 				2B43135C189112B500580D54 /* BrowseView.xib in Resources */,
@@ -457,6 +475,7 @@
 				2B4766111887E328008DF1FD /* AdvancedViewController.m in Sources */,
 				2B35F96018A2E121005199CA /* PostImageDataService.m in Sources */,
 				2B2905AF18991548003C4345 /* CheckOrderNumberService.m in Sources */,
+				2B50FF8418B1FE7F00DBFCA0 /* ScheduleViewController.m in Sources */,
 				2B51D15B1897FCBA0021AD20 /* ListDivisionsService.m in Sources */,
 				2B74BF141883D50B00D0B78B /* AppDelegate.m in Sources */,
 				2B7ACBE7188680D700C68B0B /* FoldersViewController.m in Sources */,
@@ -485,6 +504,7 @@
 				2B58D637189A4452004D21CF /* Service.m in Sources */,
 				2B43135B189112B500580D54 /* BrowseViewController.m in Sources */,
 				2B229E6318A38162000B19DD /* RollModel.m in Sources */,
+				2B50FF7F18B1FDD400DBFCA0 /* ReviewViewController.m in Sources */,
 				2B31E7B31887D05E0089D868 /* ImageUploadViewController.m in Sources */,
 				2B533EC1188FBF8500A4D8A2 /* LoginViewController.m in Sources */,
 				2B5E0B2E188410620023095C /* PrefsWindowController.m in Sources */,

@@ -23,6 +23,7 @@
 - (void)diffWithExistingFiles;
 - (void)ignoreNewlyAdded;
 - (void)includeNewlyAdded;
+- (void)addNewImages:(NSInteger)rollIndex urls:(NSArray *)urls frameNumberLimit:(NSInteger)frameNumberLimit autoNumberRolls:(BOOL)autoNumberRolls autoNumberFrames:(BOOL)autoNumberFrames;
 
 - (BOOL)save;
 - (BOOL)delete;

@@ -1,9 +1,13 @@
 #import <Cocoa/Cocoa.h>
 
+@class MainWindowController;
+
 #import "Wizard/LoadingViewController.h"
 #import "Wizard/LoginViewController.h"
 #import "Wizard/EventsViewController.h"
 #import "Wizard/BrowseViewController.h"
+#import "Wizard/ReviewViewController.h"
+#import "Wizard/ScheduleViewController.h"
 
 typedef NS_ENUM(NSUInteger, WizardStep) {
     kWizardStepLoading = 0,
@@ -16,6 +20,7 @@ typedef NS_ENUM(NSUInteger, WizardStep) {
 
 @interface WizardWindowController : NSWindowController
 
+- (id)initWithMainWindowController:(MainWindowController *)parent;
 - (void)showStep:(WizardStep)step;
 
 @property (readonly) NSTextField *txtStepTitle, *txtStepDescription;
@@ -24,6 +29,8 @@ typedef NS_ENUM(NSUInteger, WizardStep) {
 @property LoginViewController *loginViewController;
 @property EventsViewController *eventsViewController;
 @property BrowseViewController *browseViewController;
+@property ReviewViewController *reviewViewController;
+@property ScheduleViewController *scheduleViewController;
 
 @property NSString *effectiveUser, *effectivePass;
 @property NSInteger effectiveService;
