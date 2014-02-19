@@ -12,7 +12,7 @@
 
 @interface BrowseViewController () <NSTableViewDelegate, NSTableViewDataSource> {
     IBOutlet NSTableView *tblRolls;
-    IBOutlet NSButton *chkAutoNumberRolls, *chkAutoNumberFrames;
+    IBOutlet NSButton *chkAutoNumberRolls, *chkAutoNumberFrames, *chkPutImagesInCurrentlySelectedRoll;
     IBOutlet NSPopover *advancedOptionsPopover, *viewRollPopover;
     IBOutlet NSPanel *includeNewlyAddedImagesSheet;
     IBOutlet NSTextView *txtNewFiles;
@@ -72,11 +72,13 @@
     [openPanel beginSheetModalForWindow:wizardWindowController.window
         completionHandler:^(NSInteger result) {
             if (result == NSFileHandlingPanelOKButton) {
-                [orderModel addNewImages:-1 urls:openPanel.URLs
+                [orderModel addNewImages:
+                    chkPutImagesInCurrentlySelectedRoll.state == NSOnState ? tblRolls.selectedRow : -1
+                    urls:openPanel.URLs
                     frameNumberLimit:9999
                     autoNumberRolls:chkAutoNumberRolls.state == NSOnState ? YES : NO
                     autoNumberFrames:chkAutoNumberFrames.state == NSOnState ? YES : NO];
-                
+
                 [tblRolls reloadData];
             }
         }
@@ -222,6 +224,7 @@
                                                     uploadExtensions = result.extensions;
                                                     NSError *error = nil;
                                                     [self view];
+                                                    orderModel = nil;
                                                     [tblRolls reloadData];
 
                                                     orderModel = [[OrderModel alloc] initWithEventRow:event error:&error];

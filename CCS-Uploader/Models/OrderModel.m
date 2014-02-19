@@ -24,7 +24,6 @@
     NSMutableArray *rollsToHide, *framesToHide;
     BOOL newlyAdded;
     
-    NSNumberFormatter *numberFormatter;
     NSFileManager *fileMgr;
     NSUserDefaults *defaults;
 }
@@ -60,7 +59,6 @@
     }
     
     eventRow = event;
-    numberFormatter = [NSNumberFormatter new];
     fileMgr = [NSFileManager defaultManager];
     defaults = [NSUserDefaults standardUserDefaults];
     
@@ -354,13 +352,15 @@
     newlyAdded = NO;
 }
 
-- (void)addNewImages:(NSInteger)rollIndex urls:(NSArray *)urls frameNumberLimit:(NSInteger)frameNumberLimit autoNumberRolls:(BOOL)autoNumberRolls autoNumberFrames:(BOOL)autoNumberFrames
+- (void)addNewImages:(NSInteger)rollIndex urls:(NSArray *)urls frameNumberLimit:(NSInteger)frameNumberLimit
+    autoNumberRolls:(BOOL)autoNumberRolls autoNumberFrames:(BOOL)autoNumberFrames
 {
     NSError *error = nil;
     NSString *tempDir = [rootDir stringByAppendingPathComponent:kTempFolderName];
     [fileMgr removeItemAtPath:tempDir error:nil];
     
     if (![fileMgr createDirectoryAtPath:tempDir withIntermediateDirectories:NO attributes:nil error:&error]) {
+        NSLog(@"Could not create temporary directory \"%@\".", tempDir);
         return;
     }
     
@@ -440,8 +440,11 @@
         }
     }
     
-    if (rollIndex == -1) {
-        NSInteger rollsToCreate = (tempRoll.frames.count - 1) / frameNumberLimit + 1;
+    RollModel *targetRoll = (rollIndex == -1) ? nil : [rolls objectAtIndex:rollIndex];
+    
+    if (!targetRoll) {
+        NSInteger rollsToCreate = tempRoll.frames.count ?
+            (tempRoll.frames.count - 1) / frameNumberLimit + 1 : 0;
         
         for (NSInteger i = 0, nextRollNumber = [self deriveNextRollNumber]; i < rollsToCreate; ++i, ++nextRollNumber) {
             RollModel *newRoll = [RollModel new];
@@ -498,7 +501,110 @@
             [rolls addObject:newRoll];
         }
     } else {
-        //RollModel *targetRoll = [rolls objectAtIndex:rollIndex];
+        NSInteger framesRemaining = frameNumberLimit - targetRoll.frames.count;
+        NSInteger framesMoved = 0;
+        
+        if (framesRemaining > 0) {
+            NSString *rollPath = [rootDir stringByAppendingPathComponent:targetRoll.number];
+            
+            for (NSInteger nextFrameNumber = [self deriveNextFrameNumber:targetRoll];
+                framesMoved < framesRemaining && framesMoved < tempRoll.frames.count;
+                ++framesMoved, ++nextFrameNumber) {
+                
+                FrameModel *frame = tempRoll.frames[framesMoved];
+                
+                NSString *fileToMove = [tempDir stringByAppendingPathComponent:[frame.name stringByAppendingPathExtension:frame.extension]];
+                NSString *originalFrameName = nil;
+                
+                if (autoNumberFrames) {
+                    frame.name = [NSString stringWithFormat:@"%04ld", nextFrameNumber];
+                } else {
+                    originalFrameName = [frame.name copy];
+                }
+                
+                NSString *destFilepath = [rollPath stringByAppendingPathComponent:
+                    [frame.name stringByAppendingPathExtension:frame.extension]];
+                
+                for (NSInteger dupNumber = 1; [fileMgr fileExistsAtPath:destFilepath]; ++dupNumber) {
+                    frame.name = autoNumberFrames ?
+                        [NSString stringWithFormat:@"%04ld_%ld", nextFrameNumber, dupNumber] :
+                        [NSString stringWithFormat:@"%@_%ld", originalFrameName, dupNumber];
+
+                    destFilepath = [rollPath stringByAppendingPathComponent:
+                        [frame.name stringByAppendingPathExtension:frame.extension]];
+                }
+                
+                if ([fileMgr moveItemAtPath:fileToMove toPath:destFilepath error:&error]) {
+                    NSDictionary *fileAttrs = [fileMgr attributesOfItemAtPath:destFilepath error:nil];
+                    
+                    if (fileAttrs) {
+                        frame.filesize = fileAttrs.fileSize;
+                        frame.lastModified = fileAttrs.fileModificationDate;
+                        targetRoll.totalFrameSize += fileAttrs.fileSize;
+                        [targetRoll.frames addObject:frame];
+                    }
+                }
+            }
+        }
+        
+        NSInteger rollsToCreate = tempRoll.frames.count - framesMoved ?
+            (tempRoll.frames.count - framesMoved - 1) / frameNumberLimit + 1 : 0;
+        
+        for (NSInteger i = 0, nextRollNumber = [self deriveNextRollNumber]; i < rollsToCreate; ++i, ++nextRollNumber) {
+            RollModel *newRoll = [RollModel new];
+            
+            newRoll.frames = [NSMutableArray new];
+            newRoll.number = (autoNumberRolls || !derivedRollName) ?
+                [NSString stringWithFormat:@"%05ld", nextRollNumber] : derivedRollName;
+            
+            NSString *rollPath = [rootDir stringByAppendingPathComponent:newRoll.number];
+            
+            for (NSInteger dupNumber = 1; [fileMgr fileExistsAtPath:rollPath]; ++dupNumber) {
+                newRoll.number = (autoNumberRolls || !derivedRollName) ?
+                    [NSString stringWithFormat:@"%05ld_%ld", nextRollNumber, dupNumber] :
+                    [NSString stringWithFormat:@"%@_%ld", derivedRollName, dupNumber];
+                
+                rollPath = [rootDir stringByAppendingPathComponent:newRoll.number];
+            }
+            
+            if (![fileMgr createDirectoryAtPath:rollPath withIntermediateDirectories:NO attributes:nil error:nil]) {
+                continue;
+            }
+            
+            NSInteger startIndex = framesMoved + i * frameNumberLimit;
+            NSInteger endIndex = framesMoved + startIndex + frameNumberLimit;
+            
+            if (endIndex > tempRoll.frames.count - framesMoved) {
+                endIndex = tempRoll.frames.count - framesMoved;
+            }
+            
+            for (NSInteger j = startIndex, nextFrameNumber = 1; j < endIndex; ++j, ++nextFrameNumber) {
+                FrameModel *frame = tempRoll.frames[j];
+                
+                NSString *fileToMove = [tempDir stringByAppendingPathComponent:[frame.name stringByAppendingPathExtension:frame.extension]];
+                
+                if (autoNumberFrames) {
+                    frame.name = [NSString stringWithFormat:@"%04ld", nextFrameNumber];
+                }
+                
+                NSString *destFilepath = [rollPath stringByAppendingPathComponent:
+                    [frame.name stringByAppendingPathExtension:frame.extension]];
+                
+                if ([fileMgr moveItemAtPath:fileToMove toPath:destFilepath error:nil]) {
+                    NSDictionary *fileAttrs = [fileMgr attributesOfItemAtPath:destFilepath error:nil];
+                    
+                    if (fileAttrs) {
+                        frame.filesize = fileAttrs.fileSize;
+                        frame.lastModified = fileAttrs.fileModificationDate;
+                        newRoll.totalFrameSize += fileAttrs.fileSize;
+                        [newRoll.frames addObject:frame];
+                    }
+                }
+            }
+            
+            [rolls addObject:newRoll];
+
+        }
     }
     
     [fileMgr removeItemAtPath:tempDir error:nil];
@@ -517,6 +623,25 @@
     }
     
     if (maxDerivedNumber >= 99999) {
+        return 1;
+    }
+    
+    return maxDerivedNumber + 1;
+}
+
+- (NSInteger)deriveNextFrameNumber:(RollModel *)roll
+{
+    NSInteger maxDerivedNumber = 0;
+    
+    for (FrameModel *frame in roll.frames) {
+        NSInteger frameAsInt = labs(frame.name.integerValue);
+        
+        if (frameAsInt > maxDerivedNumber) {
+            maxDerivedNumber = frameAsInt;
+        }
+    }
+    
+    if (maxDerivedNumber >= 9999) {
         return 1;
     }
     

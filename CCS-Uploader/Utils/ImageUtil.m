@@ -21,23 +21,29 @@
     BOOL result = NO;
     
     [imageType setString:(__bridge NSString *)CGImageSourceGetType(imageSource)];
+
     CFDictionaryRef imageProperties = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, (__bridge CFDictionaryRef)options);
     
     if (imageProperties) {
-        NSNumber *width = (NSNumber *)CFDictionaryGetValue(imageProperties, kCGImagePropertyPixelWidth);
-        NSNumber *height = (NSNumber *)CFDictionaryGetValue(imageProperties, kCGImagePropertyPixelHeight);
-        NSNumber *orientationNumber = (NSNumber *)CFDictionaryGetValue(imageProperties, kCGImagePropertyOrientation);
-        
-        size->width = width.floatValue;
-        size->height = height.floatValue;
-        *orientation = orientationNumber.unsignedIntegerValue;
-        
+        CFIndex propertyCount = CFDictionaryGetCount(imageProperties);
+
+        if (propertyCount) {
+            NSNumber *width = (NSNumber *)CFDictionaryGetValue(imageProperties, kCGImagePropertyPixelWidth);
+            NSNumber *height = (NSNumber *)CFDictionaryGetValue(imageProperties, kCGImagePropertyPixelHeight);
+            NSNumber *orientationNumber = (NSNumber *)CFDictionaryGetValue(imageProperties, kCGImagePropertyOrientation);
+            
+            size->width = width.floatValue;
+            size->height = height.floatValue;
+            *orientation = orientationNumber.unsignedIntegerValue;
+            
+            result = YES;
+        }
+
         CFRelease(imageProperties);
-        result = YES;
     } else {
         NSLog(@"Could not get image properties for %@", filename);
     }
-
+    
     CFRelease(imageSource);
     return result;
 }
