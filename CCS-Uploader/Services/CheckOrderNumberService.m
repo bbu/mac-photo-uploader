@@ -1,5 +1,8 @@
 #import "CheckOrderNumberService.h"
 
+#import "../Utils/CCSPassword.h"
+#import "../Utils/Base64.h"
+
 @interface CheckOrderNumberResult () {
     BOOL _loginSuccess, _processSuccess;
     NSString *_ccsPassword;
@@ -79,7 +82,9 @@
     } else if ([elementName isEqualToString:@"ProcessResult"]) {
         checkOrderNumberResult.processSuccess = [lastValue isEqualToString:@"Success"];
     } else if ([elementName isEqualToString:@"StringData"]) {
-        checkOrderNumberResult.ccsPassword = [lastValue copy];
+        NSData *encryptedPassword = [NSData dataWithBase64EncodedString:lastValue];
+        NSData *decryptedPassword = [CCSPassword decryptCCSPassword:encryptedPassword];
+        checkOrderNumberResult.ccsPassword = [[NSString alloc] initWithData:decryptedPassword encoding:NSUTF16LittleEndianStringEncoding];
     }
 }
 

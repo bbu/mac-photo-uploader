@@ -118,7 +118,7 @@
 + (NSString *)humanFriendlyFilesize:(NSUInteger)value
 {
     if (value < 1024) {
-        return @"0 bytes";
+        return [NSString stringWithFormat:@"%lu bytes", value];
     }
     
     double convertedValue = value;

@@ -116,20 +116,6 @@
     return self;
 }
 
-- (id)initWithOrderNumber:(NSString *)orderNumber
-{
-    NSString *orderFilename = [eventRow.orderNumber stringByAppendingPathExtension:kOrderFileExtension];
-    NSString *path = [FileUtil pathForDataFile:orderFilename];
-    
-    self = [NSKeyedUnarchiver unarchiveObjectWithFile:path];
-    
-    if (self) {
-        
-    }
-    
-    return self;
-}
-
 - (void)encodeWithCoder:(NSCoder *)encoder
 {
     [encoder encodeObject:eventRow forKey:@"eventRow"];
@@ -352,7 +338,7 @@
     newlyAdded = NO;
 }
 
-- (void)addNewImages:(NSInteger)rollIndex urls:(NSArray *)urls frameNumberLimit:(NSInteger)frameNumberLimit
+- (void)addNewImages:(NSArray *)URLs inRoll:(NSInteger)rollIndex framesPerRoll:(NSInteger)framesPerRoll
     autoNumberRolls:(BOOL)autoNumberRolls autoNumberFrames:(BOOL)autoNumberFrames
 {
     NSError *error = nil;
@@ -368,7 +354,7 @@
     tempRoll.frames = [NSMutableArray new];
     NSString *derivedRollName = nil;
     
-    for (NSURL *url in urls) {
+    for (NSURL *url in URLs) {
         BOOL isDirectory;
         BOOL fileExists = [fileMgr fileExistsAtPath:url.path isDirectory:&isDirectory];
         
@@ -444,7 +430,7 @@
     
     if (!targetRoll) {
         NSInteger rollsToCreate = tempRoll.frames.count ?
-            (tempRoll.frames.count - 1) / frameNumberLimit + 1 : 0;
+            (tempRoll.frames.count - 1) / framesPerRoll + 1 : 0;
         
         for (NSInteger i = 0, nextRollNumber = [self deriveNextRollNumber]; i < rollsToCreate; ++i, ++nextRollNumber) {
             RollModel *newRoll = [RollModel new];
@@ -467,8 +453,8 @@
                 continue;
             }
             
-            NSInteger startIndex = i * frameNumberLimit;
-            NSInteger endIndex = startIndex + frameNumberLimit;
+            NSInteger startIndex = i * framesPerRoll;
+            NSInteger endIndex = startIndex + framesPerRoll;
             
             if (endIndex > tempRoll.frames.count) {
                 endIndex = tempRoll.frames.count;
@@ -501,17 +487,17 @@
             [rolls addObject:newRoll];
         }
     } else {
-        NSInteger framesRemaining = frameNumberLimit - targetRoll.frames.count;
-        NSInteger framesMoved = 0;
+        NSInteger framesRemaining = framesPerRoll - targetRoll.frames.count;
+        NSInteger framesInTargetRoll = 0;
         
         if (framesRemaining > 0) {
             NSString *rollPath = [rootDir stringByAppendingPathComponent:targetRoll.number];
             
             for (NSInteger nextFrameNumber = [self deriveNextFrameNumber:targetRoll];
-                framesMoved < framesRemaining && framesMoved < tempRoll.frames.count;
-                ++framesMoved, ++nextFrameNumber) {
+                framesInTargetRoll < framesRemaining && framesInTargetRoll < tempRoll.frames.count;
+                ++framesInTargetRoll, ++nextFrameNumber) {
                 
-                FrameModel *frame = tempRoll.frames[framesMoved];
+                FrameModel *frame = tempRoll.frames[framesInTargetRoll];
                 
                 NSString *fileToMove = [tempDir stringByAppendingPathComponent:[frame.name stringByAppendingPathExtension:frame.extension]];
                 NSString *originalFrameName = nil;
@@ -547,8 +533,8 @@
             }
         }
         
-        NSInteger rollsToCreate = tempRoll.frames.count - framesMoved ?
-            (tempRoll.frames.count - framesMoved - 1) / frameNumberLimit + 1 : 0;
+        NSInteger rollsToCreate = tempRoll.frames.count - framesInTargetRoll ?
+            (tempRoll.frames.count - framesInTargetRoll - 1) / framesPerRoll + 1 : 0;
         
         for (NSInteger i = 0, nextRollNumber = [self deriveNextRollNumber]; i < rollsToCreate; ++i, ++nextRollNumber) {
             RollModel *newRoll = [RollModel new];
@@ -571,11 +557,11 @@
                 continue;
             }
             
-            NSInteger startIndex = framesMoved + i * frameNumberLimit;
-            NSInteger endIndex = framesMoved + startIndex + frameNumberLimit;
+            NSInteger startIndex = framesInTargetRoll + i * framesPerRoll;
+            NSInteger endIndex = startIndex + framesPerRoll;
             
-            if (endIndex > tempRoll.frames.count - framesMoved) {
-                endIndex = tempRoll.frames.count - framesMoved;
+            if (endIndex > tempRoll.frames.count) {
+                endIndex = tempRoll.frames.count;
             }
             
             for (NSInteger j = startIndex, nextFrameNumber = 1; j < endIndex; ++j, ++nextFrameNumber) {
@@ -603,11 +589,39 @@
             }
             
             [rolls addObject:newRoll];
-
         }
     }
     
     [fileMgr removeItemAtPath:tempDir error:nil];
+}
+
+- (void)deleteRollAtIndex:(NSInteger)rollIndex
+{
+    RollModel *targetRoll = (rollIndex == -1) ? nil : [rolls objectAtIndex:rollIndex];
+
+    if (targetRoll) {
+        NSString *dirToDelete = [rootDir stringByAppendingPathComponent:targetRoll.number];
+        [fileMgr removeItemAtPath:dirToDelete error:nil];
+        [rollsToHide addObject:targetRoll.number];
+        [rolls removeObjectAtIndex:rollIndex];
+    }
+}
+
+- (BOOL)renameRollAtIndex:(NSInteger)rollIndex newName:(NSString *)newName error:(NSError **)error
+{
+    RollModel *targetRoll = (rollIndex == -1) ? nil : [rolls objectAtIndex:rollIndex];
+    
+    if (targetRoll) {
+        NSString *oldRollPath = [rootDir stringByAppendingPathComponent:targetRoll.number];
+        NSString *newRollPath = [rootDir stringByAppendingPathComponent:newName];
+        
+        if ([fileMgr moveItemAtPath:oldRollPath toPath:newRollPath error:error]) {
+            targetRoll.number = [newName copy];
+            return YES;
+        }
+    }
+    
+    return NO;
 }
 
 - (NSInteger)deriveNextRollNumber
@@ -654,12 +668,6 @@
     return [FileUtil pathForDataFile:orderFilename];
 }
 
-- (BOOL)addRoll:(RollModel *)roll renumber:(BOOL)renumber
-{
-    [rolls addObject:roll];
-    return YES;
-}
-
 - (BOOL)save
 {
     NSString *path = [OrderModel pathToOrderFile:eventRow.orderNumber];
@@ -669,7 +677,8 @@
 - (BOOL)delete
 {
     NSString *path = [OrderModel pathToOrderFile:eventRow.orderNumber];
-    return [[NSFileManager defaultManager] removeItemAtPath:path error:nil];
+    [fileMgr removeItemAtPath:rootDir error:nil];
+    return [fileMgr removeItemAtPath:path error:nil];
 }
 
 @end

@@ -87,6 +87,24 @@
     return marketSettingsRows.count;
 }
 
+- (BOOL)tableView:(NSTableView *)tableView shouldEditTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
+{
+    NSString *columnID = tableColumn.identifier;
+    
+    if ([columnID isEqualToString:@"Images"]) {
+        return YES;
+    }
+    
+    return NO;
+}
+
+- (void)tableViewSelectionDidChange:(NSNotification *)aNotification
+{
+    NSInteger col = [tblMarketSettings columnWithIdentifier:@"Images"];
+    NSInteger row = tblMarketSettings.selectedRow;
+    [tblMarketSettings editColumn:col row:row withEvent:NULL select:YES];
+}
+
 - (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
 {
     return marketSettingsRows[row][tableColumn.identifier];

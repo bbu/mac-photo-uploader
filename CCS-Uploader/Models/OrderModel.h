@@ -23,8 +23,12 @@
 - (void)diffWithExistingFiles;
 - (void)ignoreNewlyAdded;
 - (void)includeNewlyAdded;
-- (void)addNewImages:(NSInteger)rollIndex urls:(NSArray *)urls frameNumberLimit:(NSInteger)frameNumberLimit
+
+- (void)addNewImages:(NSArray *)urls inRoll:(NSInteger)rollIndex framesPerRoll:(NSInteger)framesPerRoll
     autoNumberRolls:(BOOL)autoNumberRolls autoNumberFrames:(BOOL)autoNumberFrames;
+
+- (void)deleteRollAtIndex:(NSInteger)rollIndex;
+- (BOOL)renameRollAtIndex:(NSInteger)rollIndex newName:(NSString *)newName error:(NSError **)error;
 
 - (BOOL)save;
 - (BOOL)delete;
