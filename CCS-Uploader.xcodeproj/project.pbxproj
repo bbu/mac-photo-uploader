@@ -65,6 +65,7 @@
 		2B7ACBE7188680D700C68B0B /* FoldersViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B7ACBE5188680D700C68B0B /* FoldersViewController.m */; };
 		2B7ACBE8188680D700C68B0B /* FoldersView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2B7ACBE6188680D700C68B0B /* FoldersView.xib */; };
 		2B7D7F0918A25B4F000BF66B /* EventSettingsService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B7D7F0818A25B4F000BF66B /* EventSettingsService.m */; };
+		2BED464818B7D16F0018FBD4 /* Quartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2BED464718B7D16F0018FBD4 /* Quartz.framework */; };
 		2BF6D27D18A297AA00F3929F /* UploadExtensionsService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BF6D27C18A297AA00F3929F /* UploadExtensionsService.m */; };
 		2BF6D28018A29BC300F3929F /* ActivatePreviewsAndThumbsService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BF6D27F18A29BC300F3929F /* ActivatePreviewsAndThumbsService.m */; };
 /* End PBXBuildFile section */
@@ -171,6 +172,8 @@
 		2B7ACBE6188680D700C68B0B /* FoldersView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = FoldersView.xib; sourceTree = "<group>"; };
 		2B7D7F0718A25B4F000BF66B /* EventSettingsService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EventSettingsService.h; sourceTree = "<group>"; };
 		2B7D7F0818A25B4F000BF66B /* EventSettingsService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EventSettingsService.m; sourceTree = "<group>"; };
+		2BED464518B7D1300018FBD4 /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
+		2BED464718B7D16F0018FBD4 /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = System/Library/Frameworks/Quartz.framework; sourceTree = SDKROOT; };
 		2BF6D27B18A297AA00F3929F /* UploadExtensionsService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UploadExtensionsService.h; sourceTree = "<group>"; };
 		2BF6D27C18A297AA00F3929F /* UploadExtensionsService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UploadExtensionsService.m; sourceTree = "<group>"; };
 		2BF6D27E18A29BC300F3929F /* ActivatePreviewsAndThumbsService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ActivatePreviewsAndThumbsService.h; sourceTree = "<group>"; };
@@ -182,6 +185,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2BED464818B7D16F0018FBD4 /* Quartz.framework in Frameworks */,
 				2B5693C71886AB2800E13C17 /* QuartzCore.framework in Frameworks */,
 				2B74BF011883D50B00D0B78B /* Cocoa.framework in Frameworks */,
 			);
@@ -266,6 +270,8 @@
 		2B74BEFF1883D50B00D0B78B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				2BED464718B7D16F0018FBD4 /* Quartz.framework */,
+				2BED464518B7D1300018FBD4 /* ImageIO.framework */,
 				2B5693C61886AB2800E13C17 /* QuartzCore.framework */,
 				2B74BF001883D50B00D0B78B /* Cocoa.framework */,
 				2B74BF021883D50B00D0B78B /* Other Frameworks */,

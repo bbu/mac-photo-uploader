@@ -11,6 +11,61 @@
 #import "../../Services/UploadExtensionsService.h"
 #import "../../Services/ListDivisionsService.h"
 
+#import <Quartz/Quartz.h>
+
+@interface ImageInBrowserView : NSObject {
+    NSString *filepath;
+    FrameModel *frameModel;
+}
+@end
+
+@implementation ImageInBrowserView
+
+- (id)initWithFrameModel:(FrameModel *)frame path:(NSString *)path
+{
+    self = [super init];
+    
+    if (self) {
+        filepath = path;
+        frameModel = frame;
+    }
+    
+    return self;
+}
+
+- (NSString *)imageRepresentationType
+{
+    return IKImageBrowserPathRepresentationType;
+}
+
+- (id)imageRepresentation
+{
+    return filepath;
+}
+
+- (NSString *)imageUID
+{
+    return filepath;
+}
+
+- (id)imageTitle
+{
+    return [NSString stringWithFormat:@"%@",
+        [frameModel.name stringByAppendingPathExtension:frameModel.extension]];
+}
+
+- (id)imageSubtitle
+{
+    return [NSString stringWithFormat:@"%ldx%ld", frameModel.width, frameModel.height];
+}
+
+- (NSUInteger)imageVersion
+{
+    NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:filepath error:nil];
+    return attributes.fileModificationDate.hash;
+}
+@end
+
 @interface BrowseViewController () <NSTableViewDelegate, NSTableViewDataSource> {
     WizardWindowController *wizardWindowController;
 
@@ -25,6 +80,10 @@
     IBOutlet NSPopover *advancedOptionsPopover, *viewRollPopover;
     IBOutlet NSPanel *includeNewlyAddedImagesSheet;
     IBOutlet NSTextView *txtNewFiles;
+    
+    IBOutlet IKImageBrowserView *imageBrowserView;
+    IBOutlet NSTextField *imageBrowserTitle;
+    NSMutableArray *imagesInBrowser;
     
     CheckOrderNumberService *checkOrderNumberService;
     EventSettingsService *eventSettingsService;
@@ -45,6 +104,13 @@
 
 @implementation BrowseViewController
 
+- (void)awakeFromNib
+{
+    [imageBrowserView setCellsStyleMask:IKCellsStyleSubtitled | IKCellsStyleTitled | IKCellsStyleOutlined | IKCellsStyleShadowed];
+    
+    [imageBrowserView setZoomValue:0.26];
+}
+
 - (id)initWithWizardController:(WizardWindowController *)parent
 {
     self = [super initWithNibName:@"BrowseView" bundle:nil];
@@ -55,6 +121,7 @@
         eventSettingsService = [EventSettingsService new];
         uploadExtensionsService = [UploadExtensionsService new];
         listDivisionsService = [ListDivisionsService new];
+        imagesInBrowser = [NSMutableArray new];
     }
     
     return self;
@@ -393,11 +460,47 @@
 
 - (IBAction)clickedViewRoll:(id)sender
 {
+    static RollModel *rollModelShown;
+    
+    NSInteger row = [tblRolls rowForView:sender];
+    RollModel *targetRoll = orderModel.rolls[row];
+    
+    if (rollModelShown == targetRoll) {
+        [viewRollPopover close];
+        rollModelShown = nil;
+        return;
+    }
+    
     if (viewRollPopover.isShown) {
         [viewRollPopover close];
     }
     
+    rollModelShown = targetRoll;
+    [imagesInBrowser removeAllObjects];
+    NSString *rollPath = [orderModel.rootDir stringByAppendingPathComponent:targetRoll.number];
+    
+    imageBrowserTitle.stringValue = rollPath;
+    
+    for (FrameModel *frame in targetRoll.frames) {
+        NSString *filepath = [[rollPath stringByAppendingPathComponent:frame.name]
+            stringByAppendingPathExtension:frame.extension];
+        
+        ImageInBrowserView *newEntry = [[ImageInBrowserView alloc] initWithFrameModel:frame path:filepath];
+        [imagesInBrowser addObject:newEntry];
+    }
+
+    [imageBrowserView reloadData];
     [viewRollPopover showRelativeToRect:[sender superview].bounds ofView:sender preferredEdge:NSMaxXEdge];
+}
+
+- (NSUInteger)numberOfItemsInImageBrowser:(IKImageBrowserView *)view
+{
+    return imagesInBrowser.count;
+}
+
+- (id)imageBrowser:(IKImageBrowserView *)view itemAtIndex:(NSUInteger)index
+{
+    return imagesInBrowser[index];
 }
 
 @end
