@@ -9,6 +9,8 @@
         <customObject id="-2" userLabel="File's Owner" customClass="BrowseViewController">
             <connections>
                 <outlet property="advancedOptionsPopover" destination="Ev0-cL-VcC" id="aUQ-CH-x6i"/>
+                <outlet property="btnRotationDegrees" destination="glx-9l-D8b" id="ArC-3P-BVm"/>
+                <outlet property="btnRotationDirection" destination="wkX-R8-wgd" id="Jnn-oE-cm7"/>
                 <outlet property="chkAutoCategorizeImages" destination="QfY-Fh-1Qt" id="poa-5n-WWt"/>
                 <outlet property="chkAutoNumberFrames" destination="yi3-c7-3TE" id="BsY-2L-hGx"/>
                 <outlet property="chkAutoNumberRolls" destination="gyN-Yg-Rzh" id="Y0W-1a-vsf"/>
@@ -20,7 +22,6 @@
                 <outlet property="tblRolls" destination="Eum-26-wUS" id="Cjw-xt-uA5"/>
                 <outlet property="txtNewFiles" destination="etA-Be-cCt" id="LaC-yF-YDb"/>
                 <outlet property="view" destination="1" id="2"/>
-                <outlet property="viewFolderPopover" destination="yFD-oL-e8k" id="rLe-p6-QF4"/>
                 <outlet property="viewRollPopover" destination="yFD-oL-e8k" id="gwg-UO-aJ7"/>
             </connections>
         </customObject>
@@ -427,7 +428,7 @@
                 <outlet property="view" destination="Uko-gK-bVM" id="NqI-ar-HY9"/>
             </connections>
         </viewController>
-        <popover id="Ev0-cL-VcC">
+        <popover behavior="semitransient" id="Ev0-cL-VcC">
             <connections>
                 <outlet property="contentViewController" destination="UNq-tH-Zvr" id="vFf-fP-bir"/>
             </connections>
@@ -481,19 +482,20 @@
         <popover behavior="semitransient" id="yFD-oL-e8k">
             <connections>
                 <outlet property="contentViewController" destination="KDj-0y-g5D" id="7za-9p-StB"/>
+                <outlet property="delegate" destination="-2" id="Adl-p6-eiK"/>
             </connections>
         </popover>
         <customView id="dBi-ji-N2n">
-            <rect key="frame" x="0.0" y="0.0" width="839" height="567"/>
+            <rect key="frame" x="0.0" y="0.0" width="839" height="595"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <subviews>
                 <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" id="EtY-tC-63v">
-                    <rect key="frame" x="17" y="511" width="805" height="39"/>
+                    <rect key="frame" x="17" y="539" width="805" height="39"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageAlignment="left" imageScaling="proportionallyDown" imageFrameStyle="grayBezel" image="NSFolder" id="2xS-y6-OuT"/>
                 </imageView>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="bzN-R5-MAb">
-                    <rect key="frame" x="53" y="516" width="754" height="23"/>
+                    <rect key="frame" x="53" y="544" width="754" height="23"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" sendsActionOnEndEditing="YES" alignment="left" title="00001" id="aFv-iM-PeA">
                         <font key="font" size="15" name="LucidaGrande"/>
@@ -501,18 +503,19 @@
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                 </textField>
-                <scrollView horizontalLineScroll="120" horizontalPageScroll="10" verticalLineScroll="120" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" id="KG3-su-8be">
-                    <rect key="frame" x="20" y="61" width="799" height="434"/>
+                <scrollView horizontalLineScroll="84" horizontalPageScroll="10" verticalLineScroll="84" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" id="KG3-su-8be">
+                    <rect key="frame" x="20" y="89" width="799" height="434"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <clipView key="contentView" copiesOnScroll="NO" id="djt-Si-TZI">
                         <rect key="frame" x="1" y="1" width="782" height="432"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <ikImageBrowserView autoresizesSubviews="NO" zoomValue="0.38659605383872986" id="4Ng-qR-G4T">
+                            <ikImageBrowserView autoresizesSubviews="NO" zoomValue="0.24693240225315094" animates="YES" id="4Ng-qR-G4T">
                                 <rect key="frame" x="0.0" y="0.0" width="782" height="432"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <ikCellsStyle key="cellsStyleMask" none="YES" shadowed="YES" outlined="YES" titled="YES" subtitled="YES"/>
                                 <autoresizingMask key="contentResizingMask" heightSizable="YES"/>
-                                <size key="cellSize" width="99" height="99"/>
+                                <size key="cellSize" width="64" height="64"/>
                                 <connections>
                                     <outlet property="_dataSource" destination="-2" id="TJw-WK-XX4"/>
                                     <outlet property="_delegate" destination="-2" id="Uul-oi-yat"/>
@@ -530,57 +533,91 @@
                     </scroller>
                 </scrollView>
                 <button verticalHuggingPriority="750" id="zdn-fG-K7P">
-                    <rect key="frame" x="14" y="13" width="175" height="32"/>
+                    <rect key="frame" x="14" y="41" width="195" height="32"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="push" title="Rotate Selected By:" bezelStyle="rounded" image="NSRefreshFreestandingTemplate" imagePosition="left" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="qa8-aL-B4v">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                     </buttonCell>
+                    <connections>
+                        <action selector="rotateSelectedFrames:" target="-2" id="Tpa-mP-SCm"/>
+                    </connections>
                 </button>
                 <popUpButton verticalHuggingPriority="750" id="glx-9l-D8b">
-                    <rect key="frame" x="189" y="17" width="111" height="26"/>
+                    <rect key="frame" x="18" y="17" width="111" height="26"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" id="UMn-2e-sut">
                         <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="system"/>
+                        <font key="font" metaFont="menu"/>
                         <menu key="menu" title="OtherViews" id="bUi-ak-PT4">
                             <items>
-                                <menuItem title="90 degrees" id="hHz-8T-seJ"/>
-                                <menuItem title="180 degrees" id="onx-Kd-ZSX"/>
-                                <menuItem title="270 degrees" id="XBS-kF-qhQ"/>
+                                <menuItem title="90 degrees" tag="1" id="hHz-8T-seJ"/>
+                                <menuItem title="180 degrees" tag="2" id="onx-Kd-ZSX"/>
+                                <menuItem title="270 degrees" tag="3" id="XBS-kF-qhQ"/>
                             </items>
                         </menu>
                     </popUpButtonCell>
                 </popUpButton>
                 <popUpButton verticalHuggingPriority="750" id="wkX-R8-wgd">
-                    <rect key="frame" x="303" y="17" width="74" height="26"/>
+                    <rect key="frame" x="132" y="17" width="74" height="26"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" id="F7c-Tl-bkC">
                         <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="system"/>
+                        <font key="font" metaFont="menu"/>
                         <menu key="menu" title="OtherViews" id="yRs-Ek-2QZ">
                             <items>
-                                <menuItem title="CW" id="lbh-dL-G0p"/>
-                                <menuItem title="CCW" id="1Cz-1A-ccw"/>
+                                <menuItem title="CW" tag="1" id="lbh-dL-G0p"/>
+                                <menuItem title="CCW" tag="2" id="1Cz-1A-ccw"/>
                             </items>
                         </menu>
                     </popUpButtonCell>
                 </popUpButton>
                 <button verticalHuggingPriority="750" id="GRS-Ng-0qk">
-                    <rect key="frame" x="672" y="13" width="153" height="32"/>
+                    <rect key="frame" x="630" y="41" width="195" height="32"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="push" title="Delete Selected" bezelStyle="rounded" image="NSStopProgressFreestandingTemplate" imagePosition="left" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="rMt-93-GvM">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
+                        <string key="keyEquivalent" base64-UTF8="YES">
+CA
+</string>
+                        <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                     </buttonCell>
+                    <connections>
+                        <action selector="deleteSelectedFrames:" target="-2" id="Tkw-Xq-cWj"/>
+                    </connections>
                 </button>
                 <button verticalHuggingPriority="750" id="Pz7-mV-f8A">
-                    <rect key="frame" x="557" y="13" width="115" height="32"/>
+                    <rect key="frame" x="266" y="41" width="153" height="32"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="push" title="Select All" bezelStyle="rounded" image="NSIconViewTemplate" imagePosition="left" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="mbW-af-Mva">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
+                        <string key="keyEquivalent">a</string>
+                        <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                     </buttonCell>
+                    <connections>
+                        <action selector="selectAllFrames:" target="-2" id="BGQ-np-jjK"/>
+                    </connections>
+                </button>
+                <slider verticalHuggingPriority="750" id="mNa-mJ-fwp">
+                    <rect key="frame" x="270" y="18" width="298" height="21"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <sliderCell key="cell" continuous="YES" state="on" alignment="left" maxValue="100" doubleValue="25" tickMarkPosition="above" sliderType="linear" id="lEU-i5-1JB"/>
+                    <connections>
+                        <action selector="sliderDidMove:" target="-2" id="l1f-U7-Ic9"/>
+                    </connections>
+                </slider>
+                <button verticalHuggingPriority="750" id="I5V-g7-qV1">
+                    <rect key="frame" x="419" y="41" width="153" height="32"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <buttonCell key="cell" type="push" title="Invert Selection" bezelStyle="rounded" image="NSMenuMixedStateTemplate" imagePosition="left" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="K2p-VS-CHf">
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="system"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="invertSelectedFrames:" target="-2" id="Z0a-HN-j0N"/>
+                    </connections>
                 </button>
             </subviews>
         </customView>
@@ -662,6 +699,7 @@
         <image name="NSAdvanced" width="32" height="32"/>
         <image name="NSFolder" width="32" height="32"/>
         <image name="NSIconViewTemplate" width="11" height="10"/>
+        <image name="NSMenuMixedStateTemplate" width="10" height="3"/>
         <image name="NSRefreshFreestandingTemplate" width="14" height="14"/>
         <image name="NSStatusAvailable" width="16" height="16"/>
         <image name="NSStopProgressFreestandingTemplate" width="83" height="83"/>

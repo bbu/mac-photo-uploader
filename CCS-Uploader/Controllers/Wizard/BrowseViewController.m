@@ -62,7 +62,7 @@
 - (NSUInteger)imageVersion
 {
     NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:filepath error:nil];
-    return attributes.fileModificationDate.hash;
+    return attributes.fileModificationDate.hash + attributes.fileSize;
 }
 @end
 
@@ -83,7 +83,9 @@
     
     IBOutlet IKImageBrowserView *imageBrowserView;
     IBOutlet NSTextField *imageBrowserTitle;
+    IBOutlet NSPopUpButton *btnRotationDegrees, *btnRotationDirection;
     NSMutableArray *imagesInBrowser;
+    BOOL rollsNeedReload;
     
     CheckOrderNumberService *checkOrderNumberService;
     EventSettingsService *eventSettingsService;
@@ -94,6 +96,7 @@
     
     NSInteger framesPerRoll;
     BOOL usingPreloader;
+    RollModel *rollModelShown;
     
     EventSettingsResult *eventSettings;
     NSMutableArray *uploadExtensions;
@@ -103,13 +106,6 @@
 @end
 
 @implementation BrowseViewController
-
-- (void)awakeFromNib
-{
-    [imageBrowserView setCellsStyleMask:IKCellsStyleSubtitled | IKCellsStyleTitled | IKCellsStyleOutlined | IKCellsStyleShadowed];
-    
-    [imageBrowserView setZoomValue:0.26];
-}
 
 - (id)initWithWizardController:(WizardWindowController *)parent
 {
@@ -127,6 +123,40 @@
     return self;
 }
 
+- (void)loadView
+{
+    [super loadView];
+    [tblRolls registerForDraggedTypes:[NSArray arrayWithObject:(NSString *)kUTTypeFileURL]];
+}
+
+- (BOOL)tableView:(NSTableView*)tv acceptDrop:(id<NSDraggingInfo>)info row:(NSInteger)row dropOperation:(NSTableViewDropOperation)op
+{
+    NSPasteboard *pasteboard = info.draggingPasteboard;
+    NSArray *acceptedTypes = [NSArray arrayWithObjects:(NSString *)kUTTypeImage, (NSString *)kUTTypeFolder, nil];
+    
+    NSArray *URLs = [pasteboard readObjectsForClasses:[NSArray arrayWithObject:[NSURL class]]
+        options:@{
+            NSPasteboardURLReadingFileURLsOnlyKey: [NSNumber numberWithBool:YES],
+            NSPasteboardURLReadingContentsConformToTypesKey: acceptedTypes
+        }
+    ];
+    
+    [orderModel addNewImages:URLs
+        inRoll:chkPutImagesInCurrentlySelectedRoll.state == NSOnState ? tblRolls.selectedRow : -1
+        framesPerRoll:chkHonourFramesPerRoll.state == NSOnState ? framesPerRoll : 9999
+        autoNumberRolls:chkAutoNumberRolls.state == NSOnState ? YES : NO
+        autoNumberFrames:chkAutoNumberFrames.state == NSOnState ? YES : NO];
+    
+    [tblRolls reloadData];
+    return YES;
+}
+
+- (NSDragOperation)tableView:(NSTableView *)aTableView validateDrop:(id<NSDraggingInfo>)info
+    proposedRow:(NSInteger)row proposedDropOperation:(NSTableViewDropOperation)operation
+{
+    return NSDragOperationCopy;
+}
+
 - (IBAction)browseForImagesClicked:(id)sender
 {
     NSOpenPanel *openPanel = [NSOpenPanel openPanel];
@@ -137,8 +167,8 @@
     openPanel.allowsMultipleSelection = YES;
     openPanel.message = @"Select image files or folders to upload. Any selected folders will be scanned recursively for image files.";
 
-    [openPanel setFrame:NSMakeRect(0, 0, wizardWindowController.window.frame.size.width - 40,
-        wizardWindowController.window.frame.size.height + 10) display:YES];
+    [openPanel setFrame:NSMakeRect(0, 0, wizardWindowController.window.frame.size.width,
+        wizardWindowController.window.frame.size.height) display:YES];
     
     if (defaultLocation) {
         [openPanel setDirectoryURL:[NSURL fileURLWithPath:defaultLocation]];
@@ -460,8 +490,6 @@
 
 - (IBAction)clickedViewRoll:(id)sender
 {
-    static RollModel *rollModelShown;
-    
     NSInteger row = [tblRolls rowForView:sender];
     RollModel *targetRoll = orderModel.rolls[row];
     
@@ -471,10 +499,7 @@
         return;
     }
     
-    if (viewRollPopover.isShown) {
-        [viewRollPopover close];
-    }
-    
+    [viewRollPopover close];
     rollModelShown = targetRoll;
     [imagesInBrowser removeAllObjects];
     NSString *rollPath = [orderModel.rootDir stringByAppendingPathComponent:targetRoll.number];
@@ -493,6 +518,117 @@
     [viewRollPopover showRelativeToRect:[sender superview].bounds ofView:sender preferredEdge:NSMaxXEdge];
 }
 
+- (IBAction)selectAllFrames:(id)sender
+{
+    [imageBrowserView selectAll:nil];    
+}
+
+- (IBAction)invertSelectedFrames:(id)sender
+{
+    NSIndexSet *oldIndexSet = imageBrowserView.selectionIndexes;
+    NSMutableIndexSet *invertedIndexSet = [NSMutableIndexSet new];
+
+    for (NSUInteger index = 0; index < rollModelShown.frames.count; ++index) {
+        if (![oldIndexSet containsIndex:index]) {
+            [invertedIndexSet addIndex:index];
+        }
+    }
+    
+    [imageBrowserView setSelectionIndexes:invertedIndexSet byExtendingSelection:NO];
+}
+
+- (IBAction)rotateSelectedFrames:(id)sender
+{
+    NSString *rollPath = [orderModel.rootDir stringByAppendingPathComponent:rollModelShown.number];
+    
+    [imageBrowserView.selectionIndexes
+        enumerateIndexesUsingBlock:^(NSUInteger index, BOOL *stop) {
+            FrameModel *frame = rollModelShown.frames[index];
+            
+            NSString *filepath = [[rollPath stringByAppendingPathComponent:frame.name]
+                stringByAppendingPathExtension:frame.extension];
+            
+            if (frame.orientation > 1) {
+                [ImageUtil resizeAndRotateImage:filepath outputImageFilename:filepath
+                    resizeToMaxSide:0 rotate:kDontRotate compressionQuality:75];
+            }
+            
+            IURotation rotation = kDontRotate;
+            
+            if (btnRotationDegrees.selectedTag == 1) {
+                rotation = btnRotationDirection.selectedTag == 1 ? kRotateCW90 : kRotateCCW90;
+            } else if (btnRotationDegrees.selectedTag == 2) {
+                rotation = btnRotationDirection.selectedTag == 1 ? kRotateCW180 : kRotateCCW180;
+            } else if (btnRotationDegrees.selectedTag == 3) {
+                rotation = btnRotationDirection.selectedTag == 1 ? kRotateCW270 : kRotateCCW270;
+            }
+
+            [ImageUtil resizeAndRotateImage:filepath outputImageFilename:filepath
+                resizeToMaxSide:0 rotate:rotation compressionQuality:75];
+            
+            if (btnRotationDegrees.selectedTag == 1 || btnRotationDegrees.selectedTag == 3) {
+                NSInteger temp = frame.width;
+                frame.width = frame.height;
+                frame.height = temp;
+            }
+            
+            NSDictionary *fileAttrs = [[NSFileManager defaultManager] attributesOfItemAtPath:filepath error:nil];
+            
+            if (fileAttrs) {
+                rollModelShown.totalFrameSize -= frame.filesize;
+                frame.lastModified = fileAttrs.fileModificationDate;
+                frame.filesize = fileAttrs.fileSize;
+                rollModelShown.totalFrameSize += frame.filesize;
+            }
+            
+            frame.fullsizeSent = NO;
+            frame.thumbsSent = NO;
+            frame.orientation = 1;
+            frame.userDidRotate = YES;
+        }
+    ];
+    
+    [imageBrowserView reloadData];
+    rollsNeedReload = YES;
+}
+
+- (IBAction)deleteSelectedFrames:(id)sender
+{
+    NSString *rollPath = [orderModel.rootDir stringByAppendingPathComponent:rollModelShown.number];
+    
+    [imageBrowserView.selectionIndexes
+        enumerateIndexesUsingBlock:^(NSUInteger index, BOOL *stop) {
+            FrameModel *frame = rollModelShown.frames[index];
+
+            NSString *filepath = [[rollPath stringByAppendingPathComponent:frame.name]
+                stringByAppendingPathExtension:frame.extension];
+
+            frame.needsDelete = YES;
+            rollModelShown.totalFrameSize -= frame.filesize;
+            
+            [[NSFileManager defaultManager] removeItemAtPath:filepath error:nil];
+        }
+    ];
+    
+    NSIndexSet *frameIndexesToRemove = [rollModelShown.frames
+        indexesOfObjectsPassingTest:^BOOL(FrameModel *frame, NSUInteger idx, BOOL *stop) {
+            return frame.needsDelete;
+        }
+    ];
+    
+    [rollModelShown.frames removeObjectsAtIndexes:frameIndexesToRemove];
+    [imagesInBrowser removeObjectsAtIndexes:frameIndexesToRemove];
+    [imageBrowserView reloadData];
+    
+    rollsNeedReload = YES;
+}
+
+- (IBAction)sliderDidMove:(id)sender
+{
+    NSSlider *slider = sender;
+    imageBrowserView.zoomValue = slider.floatValue / 100.;
+}
+
 - (NSUInteger)numberOfItemsInImageBrowser:(IKImageBrowserView *)view
 {
     return imagesInBrowser.count;
@@ -501,6 +637,20 @@
 - (id)imageBrowser:(IKImageBrowserView *)view itemAtIndex:(NSUInteger)index
 {
     return imagesInBrowser[index];
+}
+
+- (void)popoverWillClose:(NSNotification *)notification
+{
+    rollModelShown = nil;
+}
+
+- (void)popoverDidClose:(NSNotification *)notification
+{
+    if (rollsNeedReload) {
+        [orderModel save];
+        [tblRolls performSelector:@selector(reloadData) withObject:nil afterDelay:0];
+        rollsNeedReload = NO;
+    }
 }
 
 @end
