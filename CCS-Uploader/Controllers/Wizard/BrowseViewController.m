@@ -1,6 +1,4 @@
 #import "../../Utils/FileUtil.h"
-#import "../../Utils/CCSPassword.h"
-#import "../../Utils/Base64.h"
 
 #import "BrowseViewController.h"
 #import "../WizardWindowController.h"
@@ -50,13 +48,12 @@
 
 - (id)imageTitle
 {
-    return [NSString stringWithFormat:@"%@",
-        [frameModel.name stringByAppendingPathExtension:frameModel.extension]];
+    return [NSString stringWithFormat:@"%@", [frameModel.name stringByAppendingPathExtension:frameModel.extension]];
 }
 
 - (id)imageSubtitle
 {
-    return [NSString stringWithFormat:@"%ldx%ld", frameModel.width, frameModel.height];
+    return [NSString stringWithFormat:@"%ld × %ld", frameModel.width, frameModel.height];
 }
 
 - (NSUInteger)imageVersion
@@ -142,7 +139,7 @@
     ];
     
     [orderModel addNewImages:URLs
-        inRoll:chkPutImagesInCurrentlySelectedRoll.state == NSOnState ? tblRolls.selectedRow : -1
+        inRoll:chkPutImagesInCurrentlySelectedRoll.state == NSOnState ? tblRolls.selectedRow : (op == NSTableViewDropOn ? row : -1)
         framesPerRoll:chkHonourFramesPerRoll.state == NSOnState ? framesPerRoll : 9999
         autoNumberRolls:chkAutoNumberRolls.state == NSOnState ? YES : NO
         autoNumberFrames:chkAutoNumberFrames.state == NSOnState ? YES : NO];
