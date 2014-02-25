@@ -28,16 +28,16 @@
 
 -(NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
 {
-    return 2;
+    return 25;
 }
 
 -(CGFloat)tableView:(NSTableView *)tableView heightOfRow:(NSInteger)row
 {
-    if (row % 5 == 0) {
-        return 13;
-    } else {
+    //if (row % 5 == 0) {
+    //    return 13;
+    //} else {
         return 18;
-    }
+    //}
 }
 
 -(IBAction)deleteRowFromThumbnails:(id)sender
@@ -49,13 +49,16 @@
     }
 }
 
+/*
 -(BOOL)tableView:(NSTableView *)tableView shouldSelectRow:(NSInteger)row
 {
     return (row % 5 == 0) ? NO : YES;
 }
+*/
 
 -(NSView *)tableView:(NSTableView *)tableView viewForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
 {
+    /*
     if (row % 5 == 0) {
         NSTextField *result = [tableView makeViewWithIdentifier:@"grp" owner:self];
 
@@ -70,34 +73,39 @@
         result.objectValue = @"Completed Transfers";
         return result;
     } else {
-        NSTableCellView *result = [tableView makeViewWithIdentifier:tableColumn.identifier owner:self];
+    */
+
+    NSTableCellView *result = [tableView makeViewWithIdentifier:tableColumn.identifier owner:self];
         
-        if (result == nil) {
-            result = [[NSTableCellView alloc] initWithFrame:NSZeroRect];
-            result.identifier = tableColumn.identifier;
-        }
+    if (result == nil) {
+        result = [[NSTableCellView alloc] initWithFrame:NSZeroRect];
+        result.identifier = tableColumn.identifier;
+    }
+    
+    if ([tableColumn.identifier isEqualToString:@"Event"]) {
+        result.textField.stringValue = @"My Test Event";
+    } else if ([tableColumn.identifier isEqualToString:@"Status"]) {
+        result.textField.stringValue = @"Complete";
+    } else if ([tableColumn.identifier isEqualToString:@"Thumbs"]) {
+        result.textField.stringValue = @"25/100";
+    } else if ([tableColumn.identifier isEqualToString:@"Fullsize"]) {
+        result.textField.stringValue = @"0/100";
+    } else if ([tableColumn.identifier isEqualToString:@"Date"]) {
+        result.textField.stringValue = @"1/20/2014 14:12";
+    }
         
-        if ([tableColumn.identifier isEqualToString:@"Event"]) {
-            result.textField.stringValue = @"My Test Event";
-        } else if ([tableColumn.identifier isEqualToString:@"Status"]) {
-            result.textField.stringValue = @"Complete";
-        } else if ([tableColumn.identifier isEqualToString:@"Thumbs"]) {
-            result.textField.stringValue = @"25/100";
-        } else if ([tableColumn.identifier isEqualToString:@"Fullsize"]) {
-            result.textField.stringValue = @"0/100";
-        } else if ([tableColumn.identifier isEqualToString:@"Date"]) {
-            result.textField.stringValue = @"1/20/2014 14:12";
-        }
-        
-        return result;
+    return result;
+    /*
     }
     
     return nil;
+    */
 }
 
 -(BOOL)tableView:(NSTableView *)tableView isGroupRow:(NSInteger)row
 {
-    return row % 5 == 0 ? YES : NO;
+    //return row % 5 == 0 ? YES : NO;
+    return NO;
 }
 
 - (IBAction)previewsAndThumbnailsHelp:(id)sender

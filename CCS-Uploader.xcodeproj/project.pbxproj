@@ -15,7 +15,7 @@
 		2B229E6318A38162000B19DD /* RollModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B229E6218A38162000B19DD /* RollModel.m */; };
 		2B229E6618A38176000B19DD /* FrameModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B229E6518A38176000B19DD /* FrameModel.m */; };
 		2B2905AF18991548003C4345 /* CheckOrderNumberService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B2905AE18991548003C4345 /* CheckOrderNumberService.m */; };
-		2B2DBC2118BB412F00E4FA18 /* TransfersModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B2DBC2018BB412F00E4FA18 /* TransfersModel.m */; };
+		2B2DBC2118BB412F00E4FA18 /* TransferManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B2DBC2018BB412F00E4FA18 /* TransferManager.m */; };
 		2B31E7B31887D05E0089D868 /* ImageUploadViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B31E7B11887D05E0089D868 /* ImageUploadViewController.m */; };
 		2B31E7B41887D05E0089D868 /* ImageUploadView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2B31E7B21887D05E0089D868 /* ImageUploadView.xib */; };
 		2B3499BD189E852600A45D6C /* FileUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B3499BC189E852600A45D6C /* FileUtil.m */; };
@@ -88,8 +88,8 @@
 		2B229E6518A38176000B19DD /* FrameModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FrameModel.m; sourceTree = "<group>"; };
 		2B2905AD18991548003C4345 /* CheckOrderNumberService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CheckOrderNumberService.h; sourceTree = "<group>"; };
 		2B2905AE18991548003C4345 /* CheckOrderNumberService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CheckOrderNumberService.m; sourceTree = "<group>"; };
-		2B2DBC1F18BB412F00E4FA18 /* TransfersModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TransfersModel.h; sourceTree = "<group>"; };
-		2B2DBC2018BB412F00E4FA18 /* TransfersModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TransfersModel.m; sourceTree = "<group>"; };
+		2B2DBC1F18BB412F00E4FA18 /* TransferManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TransferManager.h; sourceTree = "<group>"; };
+		2B2DBC2018BB412F00E4FA18 /* TransferManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TransferManager.m; sourceTree = "<group>"; };
 		2B30999218895CDE00714D48 /* PrefsWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PrefsWindowController.h; path = "CCS-Uploader/Controllers/PrefsWindowController.h"; sourceTree = SOURCE_ROOT; };
 		2B31E7B01887D05E0089D868 /* ImageUploadViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageUploadViewController.h; sourceTree = "<group>"; };
 		2B31E7B11887D05E0089D868 /* ImageUploadViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageUploadViewController.m; sourceTree = "<group>"; };
@@ -206,8 +206,8 @@
 				2B229E6218A38162000B19DD /* RollModel.m */,
 				2B229E6418A38176000B19DD /* FrameModel.h */,
 				2B229E6518A38176000B19DD /* FrameModel.m */,
-				2B2DBC1F18BB412F00E4FA18 /* TransfersModel.h */,
-				2B2DBC2018BB412F00E4FA18 /* TransfersModel.m */,
+				2B2DBC1F18BB412F00E4FA18 /* TransferManager.h */,
+				2B2DBC2018BB412F00E4FA18 /* TransferManager.m */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -502,7 +502,7 @@
 				2B4766161887FEBC008DF1FD /* MarketSettingsViewController.m in Sources */,
 				2B1D707818A243C30021230E /* MissingFullSizeImagesByRollService.m in Sources */,
 				2B5E0B33188415200023095C /* MainWindowController.m in Sources */,
-				2B2DBC2118BB412F00E4FA18 /* TransfersModel.m in Sources */,
+				2B2DBC2118BB412F00E4FA18 /* TransferManager.m in Sources */,
 				2B51D1581897E6A90021AD20 /* AddPhotographerService.m in Sources */,
 				2BF6D28018A29BC300F3929F /* ActivatePreviewsAndThumbsService.m in Sources */,
 				2B1D706F18A228100021230E /* FullSizePostedService.m in Sources */,

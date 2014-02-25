@@ -69,7 +69,7 @@
     NSString *pathToOrderFile = [OrderModel pathToOrderFile:eventRow.orderNumber];
     
     if (!pathToOrderFile) {
-        return FAIL(nil, @"Event row does not specify an order number!");
+        return FAIL(nil, @"Could not get path to order file!");
     }
     
     OrderModel *unarchivedOrder = [NSKeyedUnarchiver unarchiveObjectWithFile:pathToOrderFile];
