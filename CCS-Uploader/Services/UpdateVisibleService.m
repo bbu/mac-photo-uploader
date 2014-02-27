@@ -1,10 +1,5 @@
 #import "UpdateVisibleService.h"
 
-@interface UpdateVisibleResult () {
-    NSString *_status, *_message;
-}
-@end
-
 @implementation UpdateVisibleResult
 @end
 

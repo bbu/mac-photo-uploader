@@ -1,11 +1,5 @@
 #import "VerifyOrderService.h"
 
-@interface VerifyOrderResult () {
-    NSString *_status, *_message;
-    NSString *_remoteHost, *_remoteDirectory, *_username, *_password;
-}
-@end
-
 @implementation VerifyOrderResult
 @end
 

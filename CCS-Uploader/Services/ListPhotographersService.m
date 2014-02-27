@@ -1,20 +1,6 @@
 #import "ListPhotographersService.h"
 
-@interface PhotographerRow () {
-    NSString *_ccsPhotographerID;
-    NSString *_name;
-    NSString *_email;
-    NSString *_password;
-}
-@end
-
 @implementation PhotographerRow
-@end
-
-@interface ListPhotographersResult () {
-    BOOL _loginSuccess, _processSuccess;
-    NSMutableArray *_photographers;
-}
 @end
 
 @implementation ListPhotographersResult

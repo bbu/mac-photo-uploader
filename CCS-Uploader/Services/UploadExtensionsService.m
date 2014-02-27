@@ -1,11 +1,5 @@
 #import "UploadExtensionsService.h"
 
-@interface UploadExtensionsResult () {
-    NSString *_status, *_message;
-    NSMutableArray *_extensions;
-}
-@end
-
 @implementation UploadExtensionsResult
 @end
 

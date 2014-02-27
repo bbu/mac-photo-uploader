@@ -3,12 +3,6 @@
 #import "../Utils/CCSPassword.h"
 #import "../Utils/Base64.h"
 
-@interface CheckOrderNumberResult () {
-    BOOL _loginSuccess, _processSuccess;
-    NSString *_ccsPassword;
-}
-@end
-
 @implementation CheckOrderNumberResult
 @end
 

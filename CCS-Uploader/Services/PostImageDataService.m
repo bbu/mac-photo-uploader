@@ -2,11 +2,6 @@
 
 #import "../Utils/Base64.h"
 
-@interface PostImageDataResult () {
-    NSString *_status, *_message;
-}
-@end
-
 @implementation PostImageDataResult
 @end
 

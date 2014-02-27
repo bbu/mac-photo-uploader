@@ -1,10 +1,5 @@
 #import "AddPhotographerService.h"
 
-@interface AddPhotographerResult () {
-    BOOL _loginSuccess, _processSuccess;
-}
-@end
-
 @implementation AddPhotographerResult
 @end
 

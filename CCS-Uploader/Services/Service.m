@@ -1,10 +1,5 @@
 #import "Service.h"
 
-@interface ServiceResult () {
-    NSError *_error;
-}
-@end
-
 @implementation ServiceResult
 @end
 

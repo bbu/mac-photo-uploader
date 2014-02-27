@@ -1,20 +1,5 @@
 #import "ListEventsService.h"
 
-@interface EventRow () {
-    NSString *_eventID;
-    NSString *_eventName;
-    NSString *_orderNumber;
-    NSString *_ccsAccount;
-    NSDate *_eventDate;
-    NSString *_marketID;
-    NSString *_market;
-    NSString *_location;
-    NSString *_hostGroup;
-    BOOL _isQuicPost;
-    BOOL _autoCategorizeImages;
-}
-@end
-
 @implementation EventRow
 
 - (void)encodeWithCoder:(NSCoder *)encoder
@@ -53,12 +38,6 @@
     return self;
 }
 
-@end
-
-@interface ListEventsResult () {
-    BOOL _loginSuccess, _processSuccess;
-    NSMutableArray *_events;
-}
 @end
 
 @implementation ListEventsResult

@@ -1,10 +1,5 @@
 #import "ActivateFullSizeService.h"
 
-@interface ActivateFullSizeResult () {
-    NSString *_status, *_message;
-}
-@end
-
 @implementation ActivateFullSizeResult
 @end
 

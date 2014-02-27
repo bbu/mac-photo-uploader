@@ -1,10 +1,5 @@
 #import "FullSizePostedService.h"
 
-@interface FullSizePostedResult () {
-    NSString *_status, *_message;
-}
-@end
-
 @implementation FullSizePostedResult
 @end
 

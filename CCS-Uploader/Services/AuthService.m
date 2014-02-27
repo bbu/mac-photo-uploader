@@ -1,11 +1,5 @@
 #import "AuthService.h"
 
-@interface AuthResult () {
-    BOOL _success;
-    NSString *_accountID;
-}
-@end
-
 @implementation AuthResult
 @end
 

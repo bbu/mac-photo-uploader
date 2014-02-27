@@ -1,22 +1,6 @@
 #import "ListDivisionsService.h"
 
-@interface DivisionRow () {
-    NSString *_divisionID;
-    NSString *_eventID;
-    NSString *_name;
-    NSString *_nameOverride;
-    NSString *_nameWithModID;
-    NSString *_modCode;
-}
-@end
-
 @implementation DivisionRow
-@end
-
-@interface ListDivisionsResult () {
-    BOOL _loginSuccess, _processSuccess;
-    NSMutableArray *_divisions;
-}
 @end
 
 @implementation ListDivisionsResult

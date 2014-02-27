@@ -1,51 +1,13 @@
 #import "EventSettingsService.h"
 #import "../Utils/Base64.h"
 
-@interface EventSettingsTransferRow () {
-    NSInteger _createPreview;
-    NSInteger _createThumbnail;
-    NSInteger _previewWatermarkID;
-    NSInteger _thumbnailWatermarkID;
-    NSInteger _ftp;
-    NSString *_webServiceURL;
-    NSUInteger _createMediumRes;
-}
-@end
-
 @implementation EventSettingsTransferRow
-@end
-
-@interface EventSettingsImageRow () {
-    NSInteger _quality;
-    NSInteger _maxSide;
-    NSInteger _sharpen;
-    NSInteger _resizeMethod;
-}
 @end
 
 @implementation EventSettingsImageRow
 @end
 
-@interface EventSettingsWatermarkRow () {
-    NSInteger _watermarkID;
-    NSString *_description;
-    NSString *_hFile, *_vFile;
-    NSData *_hFileData, *_vFileData;
-}
-@end
-
 @implementation EventSettingsWatermarkRow
-@end
-
-@interface EventSettingsResult () {
-    NSString *_status, *_message;
-    EventSettingsTransferRow *_transferSettings;
-    EventSettingsImageRow *_previewSettings;
-    EventSettingsImageRow *_thumbnailSettings;
-    EventSettingsWatermarkRow *_watermarkSettings;
-    EventSettingsImageRow *_pngSettings;
-    EventSettingsImageRow *_mediumResSettings;
-}
 @end
 
 @implementation EventSettingsResult

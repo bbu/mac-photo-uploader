@@ -1,10 +1,5 @@
 #import "ActivatePreviewsAndThumbsService.h"
 
-@interface ActivatePreviewsAndThumbsResult () {
-    NSString *_status, *_message;
-}
-@end
-
 @implementation ActivatePreviewsAndThumbsResult
 @end
 

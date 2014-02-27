@@ -1,19 +1,6 @@
 #import "MissingFullSizeImagesByRollService.h"
 
-@interface MissingFullSizeImageRow () {
-    NSString *_orderNumber;
-    NSString *_roll;
-    NSString *_frame;
-}
-@end
-
 @implementation MissingFullSizeImageRow
-@end
-
-@interface MissingFullSizeImagesByRollResult () {
-    NSString *_status, *_message;
-    NSMutableArray *_missingImages;
-}
 @end
 
 @implementation MissingFullSizeImagesByRollResult

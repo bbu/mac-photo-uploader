@@ -1,23 +1,6 @@
 #import "FullSizeImageDimensionsByRollService.h"
 
-@interface FullSizeImageDimensionRow () {
-    NSString *_orderNumber;
-    NSString *_roll;
-    NSString *_frame;
-    NSUInteger _filesize;
-    NSInteger _length;
-    NSInteger _width;
-    BOOL _pngImage;
-}
-@end
-
 @implementation FullSizeImageDimensionRow
-@end
-
-@interface FullSizeImageDimensionsByRollResult () {
-    NSString *_status, *_message;
-    NSMutableArray *_dimensions;
-}
 @end
 
 @implementation FullSizeImageDimensionsByRollResult
