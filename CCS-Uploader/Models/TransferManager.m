@@ -1,55 +1,110 @@
 #import "TransferManager.h"
+#import "../Utils/ImageUtil.h"
 
-#import "ImageUtil.h"
+#import "OrderModel.h"
+
+#import "../Services/ListEventsService.h"
+#import "../Services/CheckOrderNumberService.h"
+#import "../Services/EventSettingsService.h"
+#import "../Services/VerifyOrderService.h"
+#import "../Services/FullSizePostedService.h"
+#import "../Services/PostImageDataService.h"
+#import "../Services/UpdateVisibleService.h"
+#import "../Services/ActivatePreviewsAndThumbsService.h"
+#import "../Services/ActivateFullSizeService.h"
 
 #define kTransfersDataFile @"transfers.ccstransfers"
+#define kMaxThreads 8
+
+#pragma mark - ImageTransferContext
+
+typedef NS_ENUM(NSInteger, ImageTransferState) {
+    kImageTransferStateIdle = 0,
+    kImageTransferStateGeneratingThumbs,
+    kImageTransferStateSendingThumbs,
+    kImageTransferStateFixingOrientation,
+    kImageTransferStateSendingFullSize,
+    kImageTransferStatePostingFullSize,
+};
+
+@interface ImageTransferContext : NSObject
+@property ImageTransferState state;
+@property NSInteger slot;
+@property RollModel *roll;
+@property FrameModel *frame;
+@property NSThread *imageProcessingThread;
+@property NSTask *ftpUploadTask;
+@property FullSizePostedService *fullSizePostedService;
+@property PostImageDataService *postImageDataService;
+@property UpdateVisibleService *updateVisibleService;
+@property NSData *fullsizeImage, *previewImage, *thumbnailImage, *pngImage, *mediumResImage;
+@property NSInteger previewWidth, previewHeight, pngWidth, pngHeight;
+@end
 
 @implementation ImageTransferContext
-@synthesize state;
-@synthesize slot;
-@synthesize roll;
-@synthesize frame;
-@synthesize imageProcessingThread;
-@synthesize ftpUploadTask;
-@synthesize fullSizePostedService;
-@synthesize postImageDataService;
-@synthesize updateVisibleService;
-@synthesize fullsizeImage, previewImage, thumbnailImage, pngImage, mediumResImage;
-@synthesize previewWidth, previewHeight, pngWidth, pngHeight;
+@end
+
+#pragma mark - RunningTransferContext
+
+typedef NS_ENUM(NSInteger, RunningTransferState) {
+    kRunningTransferStateIdle = 0,
+    kRunningTransferStateSetup,
+    kRunningTransferStateSendingThumbs,
+    kRunningTransferStateActivatingThumbs,
+    kRunningTransferStateSendingFullSize,
+    kRunningTransferStateActivatingFullSize,
+    kRunningTransferStateFinished,
+};
+
+@interface RunningTransferContext : NSObject
+@property RunningTransferState state;
+@property NSInteger pendingRollIndex;
+@property NSInteger pendingFrameIndex;
+@property OrderModel *orderModel;
+@property EventRow *eventRow;
+@property NSString *ccsPassword;
+@property EventSettingsResult *eventSettings;
+@property VerifyOrderResult *verifyOrderResult;
+@property NSMutableArray *imageContexts;
 @end
 
 @implementation RunningTransferContext
-@synthesize state;
-@synthesize pendingRollIndex;
-@synthesize pendingFrameIndex;
-@synthesize orderModel;
-@synthesize eventRow;
-@synthesize ccsPassword;
-@synthesize eventSettings;
-@synthesize verifyOrderResult;
-@synthesize imageContexts;
+@end
+
+#pragma mark - Transfer
+
+typedef NS_ENUM(NSInteger, TransferStatus) {
+    kTransferStatusQueued,
+    kTransferStatusRunning,
+    kTransferStatusScheduled,
+    kTransferStatusAborted,
+    kTransferStatusStopped,
+    kTransferStatusComplete,
+};
+
+@interface Transfer : NSObject <NSCoding>
+@property NSString *orderNumber;
+@property NSString *eventName;
+@property TransferStatus status;
+@property BOOL uploadThumbs, uploadFullsize;
+@property NSDate *datePushed, *dateScheduled;
+@property RunningTransferContext *context;
 @end
 
 @implementation Transfer
-@synthesize orderNumber;
-@synthesize eventName;
-@synthesize status;
-@synthesize uploadThumbs, uploadFullsize;
-@synthesize datePushed, dateScheduled;
-@synthesize context;
 
 - (id)initWithCoder:(NSCoder *)decoder
 {
     self = [super init];
     
     if (self) {
-        orderNumber = [decoder decodeObjectForKey:@"orderNumber"];
-        eventName = [decoder decodeObjectForKey:@"eventName"];
-        status = [decoder decodeIntegerForKey:@"status"];
-        uploadThumbs = [decoder decodeBoolForKey:@"uploadThumbs"];
-        uploadFullsize = [decoder decodeBoolForKey:@"uploadFullsize"];
-        datePushed = [decoder decodeObjectForKey:@"datePushed"];
-        dateScheduled = [decoder decodeObjectForKey:@"dateScheduled"];
+        _orderNumber = [decoder decodeObjectForKey:@"orderNumber"];
+        _eventName = [decoder decodeObjectForKey:@"eventName"];
+        _status = [decoder decodeIntegerForKey:@"status"];
+        _uploadThumbs = [decoder decodeBoolForKey:@"uploadThumbs"];
+        _uploadFullsize = [decoder decodeBoolForKey:@"uploadFullsize"];
+        _datePushed = [decoder decodeObjectForKey:@"datePushed"];
+        _dateScheduled = [decoder decodeObjectForKey:@"dateScheduled"];
     }
     
     return self;
@@ -57,18 +112,29 @@
 
 - (void)encodeWithCoder:(NSCoder *)encoder
 {
-    [encoder encodeObject:orderNumber forKey:@"orderNumber"];
-    [encoder encodeObject:eventName forKey:@"eventName"];
-    [encoder encodeInteger:status forKey:@"status"];
-    [encoder encodeBool:uploadThumbs forKey:@"uploadThumbs"];
-    [encoder encodeBool:uploadFullsize forKey:@"uploadFullsize"];
-    [encoder encodeObject:datePushed forKey:@"datePushed"];
-    [encoder encodeObject:dateScheduled forKey:@"dateScheduled"];
+    [encoder encodeObject:_orderNumber forKey:@"orderNumber"];
+    [encoder encodeObject:_eventName forKey:@"eventName"];
+    [encoder encodeInteger:_status forKey:@"status"];
+    [encoder encodeBool:_uploadThumbs forKey:@"uploadThumbs"];
+    [encoder encodeBool:_uploadFullsize forKey:@"uploadFullsize"];
+    [encoder encodeObject:_datePushed forKey:@"datePushed"];
+    [encoder encodeObject:_dateScheduled forKey:@"dateScheduled"];
 }
 
 @end
 
-@implementation TransferManager
+#pragma mark - TransferManager
+
+@implementation TransferManager {
+    NSMutableArray *transfers;
+    Transfer *currentlyRunningTransfer;
+    ListEventsService *listEventService;
+    CheckOrderNumberService *checkOrderNumberService;
+    EventSettingsService *eventSettingsService;
+    VerifyOrderService *verifyOrderService;
+    ActivatePreviewsAndThumbsService *activatePreviewsAndThumbsService;
+    ActivateFullSizeService *activateFullSizeService;
+}
 
 @synthesize transfers;
 @synthesize currentlyRunningTransfer;
