@@ -20,23 +20,36 @@ typedef NS_ENUM(NSInteger, ImageTransferState) {
     kImageTransferStateIdle = 0,
     kImageTransferStateGeneratingThumbs,
     kImageTransferStateSendingThumbs,
+    kImageTransferStateFixingOrientation,
     kImageTransferStateSendingFullSize,
     kImageTransferStatePostingFullSize,
 };
 
 @interface ImageTransferContext : NSObject {
     ImageTransferState state;
+    NSInteger slot;
     RollModel *roll;
     FrameModel *frame;
     NSThread *imageProcessingThread;
     NSTask *ftpUploadTask;
+    FullSizePostedService *fullSizePostedService;
+    PostImageDataService *postImageDataService;
+    UpdateVisibleService *updateVisibleService;
+    NSData *fullsizeImage, *previewImage, *thumbnailImage, *pngImage, *mediumResImage;
+    NSInteger previewWidth, previewHeight, pngWidth, pngHeight;
 }
 
 @property ImageTransferState state;
+@property NSInteger slot;
 @property RollModel *roll;
 @property FrameModel *frame;
 @property NSThread *imageProcessingThread;
 @property NSTask *ftpUploadTask;
+@property FullSizePostedService *fullSizePostedService;
+@property PostImageDataService *postImageDataService;
+@property UpdateVisibleService *updateVisibleService;
+@property NSData *fullsizeImage, *previewImage, *thumbnailImage, *pngImage, *mediumResImage;
+@property NSInteger previewWidth, previewHeight, pngWidth, pngHeight;
 @end
 
 typedef NS_ENUM(NSInteger, RunningTransferState) {
@@ -51,8 +64,8 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
 
 @interface RunningTransferContext : NSObject {
     RunningTransferState state;
-    RollModel *pendingRoll;
-    FrameModel *pendingFrame;
+    NSInteger pendingRollIndex;
+    NSInteger pendingFrameIndex;
     OrderModel *orderModel;
     EventRow *eventRow;
     NSString *ccsPassword;
@@ -62,8 +75,8 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
 }
 
 @property RunningTransferState state;
-@property RollModel *pendingRoll;
-@property FrameModel *pendingFrame;
+@property NSInteger pendingRollIndex;
+@property NSInteger pendingFrameIndex;
 @property OrderModel *orderModel;
 @property EventRow *eventRow;
 @property NSString *ccsPassword;
@@ -106,9 +119,6 @@ typedef NS_ENUM(NSInteger, TransferStatus) {
     CheckOrderNumberService *checkOrderNumberService;
     EventSettingsService *eventSettingsService;
     VerifyOrderService *verifyOrderService;
-    FullSizePostedService *fullSizePostedService[kMaxThreads];
-    PostImageDataService *postImageDataService[kMaxThreads];
-    UpdateVisibleService *updateVisibleService[kMaxThreads];
     ActivatePreviewsAndThumbsService *activatePreviewsAndThumbsService;
     ActivateFullSizeService *activateFullSizeService;
 }

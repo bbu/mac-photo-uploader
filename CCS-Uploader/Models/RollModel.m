@@ -12,7 +12,6 @@
 @end
 
 @implementation RollModel
-
 @synthesize number;
 @synthesize photographer, photographerID;
 @synthesize totalFrameSize;
@@ -35,16 +34,6 @@
     return self;
 }
 
-- (id)init
-{
-    self = [super init];
-    
-    if (self) {
-    }
-    
-    return self;
-}
-
 - (void)encodeWithCoder:(NSCoder *)encoder
 {
     [encoder encodeObject:number forKey:@"number"];
@@ -52,17 +41,6 @@
     [encoder encodeObject:photographerID forKey:@"photographerID"];
     [encoder encodeObject:greenScreen forKey:@"greenScreen"];
     [encoder encodeObject:frames forKey:@"frames"];
-}
-
-- (BOOL)addFrame:(FrameModel *)frame
-{
-    return YES;
-}
-
-- (BOOL)removeFrameAtIndex:(NSUInteger)index
-{
-    [frames removeObjectAtIndex:index];
-    return YES;
 }
 
 @end

@@ -1,19 +1,27 @@
 #import "TransferManager.h"
 
+#import "ImageUtil.h"
+
 #define kTransfersDataFile @"transfers.ccstransfers"
 
 @implementation ImageTransferContext
 @synthesize state;
+@synthesize slot;
 @synthesize roll;
 @synthesize frame;
 @synthesize imageProcessingThread;
 @synthesize ftpUploadTask;
+@synthesize fullSizePostedService;
+@synthesize postImageDataService;
+@synthesize updateVisibleService;
+@synthesize fullsizeImage, previewImage, thumbnailImage, pngImage, mediumResImage;
+@synthesize previewWidth, previewHeight, pngWidth, pngHeight;
 @end
 
 @implementation RunningTransferContext
 @synthesize state;
-@synthesize pendingRoll;
-@synthesize pendingFrame;
+@synthesize pendingRollIndex;
+@synthesize pendingFrameIndex;
 @synthesize orderModel;
 @synthesize eventRow;
 @synthesize ccsPassword;
@@ -88,13 +96,6 @@
         checkOrderNumberService = [CheckOrderNumberService new];
         eventSettingsService = [EventSettingsService new];
         verifyOrderService = [VerifyOrderService new];
-        
-        for (NSInteger i = 0; i < kMaxThreads; ++i) {
-            fullSizePostedService[i] = [FullSizePostedService new];
-            postImageDataService[i] = [PostImageDataService new];
-            updateVisibleService[i] = [UpdateVisibleService new];
-        }
-        
         activatePreviewsAndThumbsService = [ActivatePreviewsAndThumbsService new];
         activateFullSizeService = [ActivateFullSizeService new];
     }
@@ -104,9 +105,151 @@
 
 - (void)abortTransfer:(NSString *)message
 {
+    [currentlyRunningTransfer.context.orderModel save];
     currentlyRunningTransfer.status = kTransferStatusAborted;
     currentlyRunningTransfer.context = nil;
     currentlyRunningTransfer = nil;
+}
+
+- (BOOL)nextPendingFrame
+{
+    RunningTransferContext *context = currentlyRunningTransfer.context;
+    
+    for (NSInteger i = context.pendingRollIndex; i < context.orderModel.rolls.count; ++i) {
+        RollModel *roll = context.orderModel.rolls[i];
+        
+        for (NSInteger j = context.pendingFrameIndex; j < roll.frames.count; ++j) {
+            FrameModel *frame = roll.frames[j];
+            
+            if (context.state == kRunningTransferStateSendingThumbs ? !frame.thumbsSent : !frame.fullsizeSent) {
+                context.pendingRollIndex = i;
+                context.pendingFrameIndex = j;
+                return YES;
+            }
+        }
+    }
+    
+    return NO;
+}
+
+- (void)processImage:(ImageTransferContext *)imageContext
+{
+    EventSettingsResult *eventSettings = currentlyRunningTransfer.context.eventSettings;
+    OrderModel *orderModel = currentlyRunningTransfer.context.orderModel;
+    BOOL processed;
+    
+    NSString *pathToFullSizeImage = [[[orderModel.rootDir stringByAppendingPathComponent:imageContext.roll.number]
+        stringByAppendingPathComponent:imageContext.frame.name] stringByAppendingPathExtension:imageContext.frame.extension];
+    
+    if (imageContext.frame.orientation > 1) {
+        [ImageUtil resizeAndRotateImage:pathToFullSizeImage outputImageFilename:pathToFullSizeImage
+            resizeToMaxSide:0 rotate:kDontRotate compressionQuality:0.8];
+        
+        CGSize newSize = CGSizeZero;
+        NSUInteger orientation;
+        [ImageUtil getImageProperties:pathToFullSizeImage size:&newSize type:imageContext.frame.imageType orientation:&orientation];
+        
+        imageContext.frame.width = newSize.width;
+        imageContext.frame.height = newSize.height;
+        
+        NSDictionary *fileAttrs = [[NSFileManager defaultManager] attributesOfItemAtPath:pathToFullSizeImage error:nil];
+        
+        if (fileAttrs) {
+            imageContext.roll.totalFrameSize -= imageContext.frame.filesize;
+            imageContext.frame.lastModified = fileAttrs.fileModificationDate;
+            imageContext.frame.filesize = fileAttrs.fileSize;
+            imageContext.roll.totalFrameSize += imageContext.frame.filesize;
+        } else {
+        }
+        
+        imageContext.frame.fullsizeSent = NO;
+        imageContext.frame.thumbsSent = NO;
+        imageContext.frame.orientation = 1;
+    }
+    
+    if (imageContext.state == kImageTransferStateGeneratingThumbs) {
+        imageContext.fullsizeImage = nil;
+        imageContext.previewImage = nil;
+        imageContext.thumbnailImage = nil;
+        imageContext.pngImage = nil;
+        imageContext.mediumResImage = nil;
+        imageContext.previewWidth = 0;
+        imageContext.previewHeight = 0;
+        imageContext.pngWidth = 0;
+        imageContext.pngHeight = 0;
+        
+        if (eventSettings.transferSettings.createThumbnail && eventSettings.thumbnailSettings) {
+            NSString *thumbnailFilename = [pathToFullSizeImage stringByAppendingFormat:@"_ccsthumb_%ld", imageContext.slot];
+
+            processed = [ImageUtil resizeAndRotateImage:pathToFullSizeImage outputImageFilename:thumbnailFilename
+                resizeToMaxSide:eventSettings.thumbnailSettings.maxSide rotate:kDontRotate
+                compressionQuality:eventSettings.thumbnailSettings.quality / 100.];
+            
+            if (processed) {
+                imageContext.thumbnailImage = [NSData dataWithContentsOfFile:thumbnailFilename];
+            }
+
+            [[NSFileManager defaultManager] removeItemAtPath:thumbnailFilename error:nil];
+        }
+        
+        if (eventSettings.transferSettings.createMediumRes && eventSettings.mediumResSettings) {
+            NSString *mediumResFilename = [pathToFullSizeImage stringByAppendingFormat:@"_ccsmedium_%ld", imageContext.slot];
+
+            processed = [ImageUtil resizeAndRotateImage:pathToFullSizeImage outputImageFilename:mediumResFilename
+                resizeToMaxSide:eventSettings.mediumResSettings.maxSide rotate:kDontRotate
+                compressionQuality:eventSettings.mediumResSettings.quality / 100.];
+            
+            if (processed) {
+                imageContext.mediumResImage = [NSData dataWithContentsOfFile:mediumResFilename];
+            }
+
+            [[NSFileManager defaultManager] removeItemAtPath:mediumResFilename error:nil];
+        }
+        
+        if (eventSettings.transferSettings.createPreview && eventSettings.previewSettings) {
+            NSString *previewFilename = [pathToFullSizeImage stringByAppendingFormat:@"_ccspreview_%ld", imageContext.slot];
+
+            processed = [ImageUtil resizeAndRotateImage:pathToFullSizeImage outputImageFilename:previewFilename
+                resizeToMaxSide:eventSettings.previewSettings.maxSide rotate:kDontRotate
+                compressionQuality:eventSettings.previewSettings.quality / 100.];
+            
+            if (processed) {
+                imageContext.previewImage = [NSData dataWithContentsOfFile:previewFilename];
+                CGSize size = CGSizeZero;
+                NSUInteger orientation;
+                
+                if ([ImageUtil getImageProperties:previewFilename size:&size type:nil orientation:&orientation]) {
+                    imageContext.previewWidth = size.width;
+                    imageContext.previewHeight = size.height;
+                }
+            }
+            
+            [[NSFileManager defaultManager] removeItemAtPath:previewFilename error:nil];
+        }
+    } else if (imageContext.state == kImageTransferStateFixingOrientation) {
+    }
+}
+
+- (NSArray *)curlParameters:(ImageTransferContext *)imageContext
+{
+    RunningTransferContext *context = currentlyRunningTransfer.context;
+    OrderModel *orderModel = context.orderModel;
+    
+    NSString *pathToFullSizeImage = [[[orderModel.rootDir stringByAppendingPathComponent:imageContext.roll.number]
+        stringByAppendingPathComponent:imageContext.frame.name] stringByAppendingPathExtension:imageContext.frame.extension];
+    
+    NSString *ftpDestinationPath = [NSString stringWithFormat:@"ftp://%@/%@/%@",
+        context.verifyOrderResult.remoteHost,
+        context.verifyOrderResult.remoteDirectory,
+        @""
+    ];
+    
+    NSString *ftpCredentials = [NSString stringWithFormat:@"%@:%@",
+        context.verifyOrderResult.username,
+        context.verifyOrderResult.password
+    ];
+    
+    return @[@"-T", pathToFullSizeImage, ftpDestinationPath, @"--user", ftpCredentials, @"--silent"];
 }
 
 - (void)process
@@ -122,11 +265,11 @@
     RunningTransferContext *context = currentlyRunningTransfer.context;
     
     switch (context.state) {
-        case kRunningTransferStateIdle:
+        case kRunningTransferStateIdle: {
             context.state = kRunningTransferStateSetup;
-            break;
+        } break;
             
-        case kRunningTransferStateSetup:
+        case kRunningTransferStateSetup: {
             if ([self setupRunningTransfer]) {
                 if (currentlyRunningTransfer.uploadThumbs) {
                     context.state = kRunningTransferStateSendingThumbs;
@@ -136,68 +279,201 @@
                     context.state = kRunningTransferStateFinished;
                 }
             }
-            break;
+        } break;
             
-        case kRunningTransferStateSendingThumbs:
-            if (!context.orderModel.rolls.count) {
-                context.state = kRunningTransferStateFinished;
-                return;
+        case kRunningTransferStateSendingThumbs: {
+            NSInteger numIdleSlots = 0;
+            
+            for (ImageTransferContext *imageContext in context.imageContexts) {
+                switch (imageContext.state) {
+                    case kImageTransferStateIdle: {
+                        if ([self nextPendingFrame]) {
+                            imageContext.roll = context.orderModel.rolls[context.pendingRollIndex];
+                            imageContext.frame = imageContext.roll.frames[context.pendingFrameIndex];
+                            imageContext.state = kImageTransferStateGeneratingThumbs;
+                            [imageContext.imageProcessingThread start];
+                        } else {
+                            numIdleSlots++;
+                        }
+                    } break;
+                        
+                    case kImageTransferStateGeneratingThumbs: {
+                        if ([imageContext.imageProcessingThread isFinished]) {
+                            imageContext.state = kImageTransferStateSendingThumbs;
+                        }
+                    } break;
+                        
+                    case kImageTransferStateSendingThumbs: {
+                        if (![imageContext.postImageDataService isRunning]) {
+                            [imageContext.postImageDataService
+                                startPostImageData:context.eventRow.ccsAccount
+                                password:context.ccsPassword
+                                orderNumber:currentlyRunningTransfer.orderNumber
+                                roll:imageContext.roll.number
+                                frame:imageContext.frame.name
+                                extension:imageContext.frame.extension
+                                version:@"CCSTransfer 3.0.1.7"
+                                bypassPassword:NO
+                                fullsizeImage:imageContext.fullsizeImage
+                                previewImage:imageContext.previewImage
+                                thumbnailImage:imageContext.thumbnailImage
+                                pngImage:imageContext.pngImage
+                                mediumResImage:imageContext.mediumResImage
+                                originalImageSize:imageContext.frame.filesize
+                                originalWidth:imageContext.frame.width
+                                originalHeight:imageContext.frame.height
+                                previewWidth:imageContext.previewWidth
+                                previewHeight:imageContext.previewHeight
+                                pngWidth:imageContext.pngWidth
+                                pngHeight:imageContext.pngHeight
+                                photographer:@""
+                                photoDateTime:imageContext.frame.lastModified
+                                createPreviewAndThumb:NO
+                                complete:^(PostImageDataResult *result) {
+                                    if (!result.error && [result.status isEqualToString:@"Successful"]) {
+                                        imageContext.frame.thumbsSent = YES;
+                                    } else {
+                                        
+                                    }
+                                    
+                                    imageContext.state = kImageTransferStateIdle;
+                                }
+                            ];
+                        }
+                    } break;
+                        
+                    default: break;
+                }
             }
             
-            if (!context.pendingRoll) {
-                context.pendingRoll = context.orderModel.rolls[0];
+            if (numIdleSlots == context.imageContexts.count) {
+                context.pendingRollIndex = 0;
+                context.pendingFrameIndex = 0;
+                context.state = kRunningTransferStateActivatingThumbs;
             }
-            
-            if (!context.pendingFrame) {
-                context.pendingFrame = context.orderModel.rolls[0];
-            }
-            break;
+        } break;
             
         case kRunningTransferStateActivatingThumbs: {
-            [activatePreviewsAndThumbsService startActivatePreviewsAndThumbs:context.eventRow.ccsAccount
-                password:context.ccsPassword orderNumber:currentlyRunningTransfer.orderNumber
-                complete:^(ActivatePreviewsAndThumbsResult *result) {
-                    if (!result.error && [result.status isEqualToString:@"AuthenticationSuccessful"]) {
-                        if (currentlyRunningTransfer.uploadFullsize) {
-                            context.state = kRunningTransferStateSendingFullSize;
+            if (![activatePreviewsAndThumbsService isRunning]) {
+                [activatePreviewsAndThumbsService
+                    startActivatePreviewsAndThumbs:context.eventRow.ccsAccount
+                    password:context.ccsPassword
+                    orderNumber:currentlyRunningTransfer.orderNumber
+                    complete:^(ActivatePreviewsAndThumbsResult *result) {
+                        if (!result.error && [result.status isEqualToString:@"AuthenticationSuccessful"]) {
+                            if (currentlyRunningTransfer.uploadFullsize) {
+                                context.state = kRunningTransferStateSendingFullSize;
+                            } else {
+                                context.state = kRunningTransferStateFinished;
+                            }
                         } else {
-                            context.state = kRunningTransferStateFinished;
+                            [self abortTransfer:@"Unable to activate thumbs."];
                         }
-                    } else {
-                        [self abortTransfer:@"Unable to activate thumbs."];
                     }
-                }
-            ];
+                ];
+            }
         } break;
             
-        case kRunningTransferStateSendingFullSize:
-            break;
+        case kRunningTransferStateSendingFullSize: {
+            NSInteger numIdleSlots = 0;
             
+            for (ImageTransferContext *imageContext in context.imageContexts) {
+                switch (imageContext.state) {
+                    case kImageTransferStateIdle: {
+                        if ([self nextPendingFrame]) {
+                            imageContext.roll = context.orderModel.rolls[context.pendingRollIndex];
+                            imageContext.frame = imageContext.roll.frames[context.pendingFrameIndex];
+                            
+                            if (imageContext.frame.orientation > 1) {
+                                imageContext.state = kImageTransferStateFixingOrientation;
+                                [imageContext.imageProcessingThread start];
+                            } else {
+                                imageContext.state = kImageTransferStateSendingFullSize;
+                                imageContext.ftpUploadTask.arguments = [self curlParameters:imageContext];
+                                [imageContext.ftpUploadTask launch];
+                            }
+                        } else {
+                            numIdleSlots++;
+                        }
+                    } break;
+                    
+                    case kImageTransferStateFixingOrientation: {
+                        if ([imageContext.imageProcessingThread isFinished]) {
+                            imageContext.state = kImageTransferStateSendingFullSize;
+                            imageContext.ftpUploadTask.arguments = [self curlParameters:imageContext];
+                            [imageContext.ftpUploadTask launch];
+                        }
+                    } break;
+
+                    case kImageTransferStateSendingFullSize: {
+                        if (![imageContext.ftpUploadTask isRunning]) {
+                            if (!imageContext.ftpUploadTask.terminationStatus) {
+                                imageContext.state = kImageTransferStatePostingFullSize;
+                            } else {
+                                imageContext.state = kImageTransferStateIdle;
+                            }
+                        }
+                    } break;
+                        
+                    case kImageTransferStatePostingFullSize: {
+                        if (![imageContext.fullSizePostedService isRunning]) {
+                            [imageContext.fullSizePostedService
+                                startFullSizePosted:context.eventRow.ccsAccount
+                                password:context.ccsPassword
+                                orderNumber:currentlyRunningTransfer.orderNumber
+                                roll:imageContext.roll.number
+                                frame:imageContext.frame.name
+                                filename:[imageContext.frame.name stringByAppendingPathExtension:imageContext.frame.extension]
+                                version:@""
+                                bypassPassword:NO
+                                createPreviewAndThumb:NO
+                                complete:^(FullSizePostedResult *result) {
+                                    if (!result.error && [result.status isEqualToString:@"Successful"]) {
+                                        imageContext.frame.fullsizeSent = YES;
+                                    } else {
+                                        
+                                    }
+                                    
+                                    imageContext.state = kImageTransferStateIdle;
+                                }
+                            ];
+                        }
+                    } break;
+
+                    default: break;
+                }
+            }
+            
+            if (numIdleSlots == context.imageContexts.count) {
+                context.pendingRollIndex = 0;
+                context.pendingFrameIndex = 0;
+                context.state = kRunningTransferStateActivatingFullSize;
+            }
+        } break;
+
         case kRunningTransferStateActivatingFullSize: {
-            [activateFullSizeService startActivateFullSize:context.eventRow.ccsAccount
-                password:context.ccsPassword orderNumber:currentlyRunningTransfer.orderNumber
-                complete:^(ActivateFullSizeResult *result) {
-                    if (!result.error && [result.status isEqualToString:@"AuthenticationSuccessful"]) {
-                        context.state = kRunningTransferStateFinished;
-                    } else {
-                        [self abortTransfer:@"Unable to activate full-size images."];
+            if (![activateFullSizeService isRunning]) {
+                [activateFullSizeService
+                    startActivateFullSize:context.eventRow.ccsAccount
+                    password:context.ccsPassword
+                    orderNumber:currentlyRunningTransfer.orderNumber
+                    complete:^(ActivateFullSizeResult *result) {
+                        if (!result.error && [result.status isEqualToString:@"AuthenticationSuccessful"]) {
+                            context.state = kRunningTransferStateFinished;
+                        } else {
+                            [self abortTransfer:@"Unable to activate full-size images."];
+                        }
                     }
-                }
-            ];
+                ];
+            }
         } break;
             
-        case kRunningTransferStateFinished:
+        case kRunningTransferStateFinished: {
+            [currentlyRunningTransfer.context.orderModel save];
             currentlyRunningTransfer.status = kTransferStatusComplete;
             currentlyRunningTransfer.context = nil;
             currentlyRunningTransfer = nil;
-            break;
-    }
-}
-
-- (void)processImageTransfers
-{
-    for (ImageTransferContext *imageContext in currentlyRunningTransfer.context.imageContexts) {
-        
+        } break;
     }
 }
 
@@ -206,8 +482,11 @@
     RunningTransferContext *context = currentlyRunningTransfer.context;
     
     if (!context.eventRow) {
-        [listEventService startListEvent:@"ccsmacuploader" password:@"candid123"
-            orderNumber:currentlyRunningTransfer.orderNumber complete:^(ListEventsResult *result) {
+        [listEventService
+            startListEvent:@"ccsmacuploader"
+            password:@"candid123"
+            orderNumber:currentlyRunningTransfer.orderNumber
+            complete:^(ListEventsResult *result) {
                 if (!result.error && result.loginSuccess && result.processSuccess && result.events.count == 1) {
                     context.eventRow = result.events[0];
                 } else {
@@ -220,8 +499,11 @@
     }
     
     if (!context.ccsPassword) {
-        [checkOrderNumberService startCheckOrderNumber:@"ccsmacuploader" password:@"candid123"
-            orderNumber:currentlyRunningTransfer.orderNumber complete:^(CheckOrderNumberResult *result) {
+        [checkOrderNumberService
+            startCheckOrderNumber:@"ccsmacuploader"
+            password:@"candid123"
+            orderNumber:currentlyRunningTransfer.orderNumber
+            complete:^(CheckOrderNumberResult *result) {
                 if (!result.error && result.loginSuccess && result.processSuccess) {
                     context.ccsPassword = result.ccsPassword;
                 } else {
@@ -234,8 +516,11 @@
     }
     
     if (!context.eventSettings) {
-        [eventSettingsService startGetEventSettings:context.eventRow.ccsAccount password:context.ccsPassword
-            orderNumber:currentlyRunningTransfer.orderNumber complete:^(EventSettingsResult *result) {
+        [eventSettingsService
+            startGetEventSettings:context.eventRow.ccsAccount
+            password:context.ccsPassword
+            orderNumber:currentlyRunningTransfer.orderNumber
+            complete:^(EventSettingsResult *result) {
                 if (!result.error && [result.status isEqualToString:@"AuthenticationSuccessful"]) {
                     context.eventSettings = result;
                 } else {
@@ -248,8 +533,13 @@
     }
     
     if (!context.verifyOrderResult) {
-        [verifyOrderService startVerifyOrder:context.eventRow.ccsAccount password:context.ccsPassword
-            orderNumber:currentlyRunningTransfer.orderNumber version:@"" bypassPassword:NO complete:^(VerifyOrderResult *result) {
+        [verifyOrderService
+            startVerifyOrder:context.eventRow.ccsAccount
+            password:context.ccsPassword
+            orderNumber:currentlyRunningTransfer.orderNumber
+            version:@"CCSTransfer 3.0.1.7"
+            bypassPassword:NO
+            complete:^(VerifyOrderResult *result) {
                 if (!result.error && [result.status isEqualToString:@"AuthenticationSuccessful"]) {
                     context.verifyOrderResult = result;
                 } else {
@@ -278,18 +568,40 @@
 
 - (Transfer *)nextRunnableTransfer
 {
+    Transfer *(^initRunningTransfer)(Transfer *transfer) = ^(Transfer *transfer) {
+        transfer.status = kTransferStatusRunning;
+        transfer.context = [RunningTransferContext new];
+        transfer.context.imageContexts = [NSMutableArray new];
+        
+        for (NSInteger i = 0; i < kMaxThreads; ++i) {
+            ImageTransferContext *imageTransferContext = [ImageTransferContext new];
+            
+            imageTransferContext.slot = i;
+            imageTransferContext.ftpUploadTask = [NSTask new];
+            imageTransferContext.ftpUploadTask.launchPath = @"/usr/bin/curl";
+
+            imageTransferContext.imageProcessingThread = [[NSThread alloc] initWithTarget:self
+                selector:@selector(processImage:) object:imageTransferContext];
+            
+            imageTransferContext.fullSizePostedService = [FullSizePostedService new];
+            imageTransferContext.postImageDataService = [PostImageDataService new];
+            imageTransferContext.updateVisibleService = [UpdateVisibleService new];
+            
+            [transfer.context.imageContexts addObject:imageTransferContext];
+        }
+        
+        return transfer;
+    };
+    
     for (Transfer *transfer in transfers) {
         if (transfer.status == kTransferStatusRunning) {
-            transfer.context = [RunningTransferContext new];
-            return transfer;
+            return initRunningTransfer(transfer);
         }
     }
     
     for (Transfer *transfer in transfers) {
         if (transfer.status == kTransferStatusQueued) {
-            transfer.status = kTransferStatusRunning;
-            transfer.context = [RunningTransferContext new];
-            return transfer;
+            return initRunningTransfer(transfer);
         }
     }
     
@@ -300,9 +612,7 @@
             NSComparisonResult cmp = [now compare:transfer.dateScheduled];
             
             if (cmp == NSOrderedSame || cmp == NSOrderedDescending) {
-                transfer.status = kTransferStatusRunning;
-                transfer.context = [RunningTransferContext new];
-                return transfer;
+                return initRunningTransfer(transfer);
             }
         }
     }
@@ -323,7 +633,8 @@
         return NO;
     }
     
-    return [NSKeyedArchiver archiveRootObject:transfers toFile:pathToDataFile];
+    return [NSKeyedArchiver archiveRootObject:transfers toFile:pathToDataFile] &&
+        (currentlyRunningTransfer.context.orderModel ? [currentlyRunningTransfer.context.orderModel save] : YES);
 }
 
 @end

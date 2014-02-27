@@ -65,11 +65,11 @@
         [version stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
         bypassPassword ? @"1" : @"0",
 
-        [fullsizeImage base64EncodedString],
-        [previewImage base64EncodedString],
-        [thumbnailImage base64EncodedString],
-        [pngImage base64EncodedString],
-        [mediumResImage base64EncodedString],
+        fullsizeImage ? [fullsizeImage base64EncodedString] : @"",
+        previewImage ? [previewImage base64EncodedString] : @"",
+        thumbnailImage ? [thumbnailImage base64EncodedString] : @"",
+        pngImage ? [pngImage base64EncodedString] : @"",
+        mediumResImage ? [mediumResImage base64EncodedString] : @"",
 
         originalImageSize,
         originalWidth,

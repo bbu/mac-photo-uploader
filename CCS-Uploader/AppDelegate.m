@@ -47,11 +47,6 @@
         resizeToMaxSide:200 rotate:kDontRotate compressionQuality:1];
     */
     
-    //NSData *encrypted = [NSData dataWithBase64EncodedString:@"C51ZEDu0aVG6xAIRodp46w=="];
-    //NSData *decrypted = [CCSPassword decryptCCSPassword:encrypted];
-    //NSString *decryptedString = [[NSString alloc] initWithData:decrypted encoding:NSUTF16LittleEndianStringEncoding];
-    //NSLog(@"%@", decryptedString);
-    
     //NSString *domainName = [[NSBundle mainBundle] bundleIdentifier];
     //[[NSUserDefaults standardUserDefaults] removePersistentDomainForName:domainName];
 }

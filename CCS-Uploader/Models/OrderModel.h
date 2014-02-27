@@ -9,10 +9,7 @@
 #import "../Utils/FileUtil.h"
 #import "../Utils/ImageUtil.h"
 
-@interface OrderModel : NSObject <NSCoding> {
-    
-}
-
+@interface OrderModel : NSObject <NSCoding>
 @property EventRow *eventRow;
 @property (readonly) NSString *rootDir;
 @property (readonly) NSMutableArray *rolls;
@@ -23,13 +20,10 @@
 - (void)diffWithExistingFiles;
 - (void)ignoreNewlyAdded;
 - (void)includeNewlyAdded;
-
 - (void)addNewImages:(NSArray *)urls inRoll:(NSInteger)rollIndex framesPerRoll:(NSInteger)framesPerRoll
     autoNumberRolls:(BOOL)autoNumberRolls autoNumberFrames:(BOOL)autoNumberFrames;
-
 - (void)deleteRollAtIndex:(NSInteger)rollIndex;
 - (BOOL)renameRollAtIndex:(NSInteger)rollIndex newName:(NSString *)newName error:(NSError **)error;
-
 - (BOOL)save;
 - (BOOL)delete;
 

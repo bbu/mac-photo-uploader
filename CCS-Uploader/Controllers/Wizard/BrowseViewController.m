@@ -473,7 +473,8 @@
 {
     NSInteger row = [tblRolls rowForView:sender];
     
-    NSAlert *alert = [NSAlert alertWithMessageText:@"Do you really want to delete this roll?" defaultButton:@"Yes" alternateButton:@"No" otherButton:@"" informativeTextWithFormat:@""];
+    NSAlert *alert = [NSAlert alertWithMessageText:@"Do you really want to delete this roll?"
+        defaultButton:@"Yes" alternateButton:@"No" otherButton:@"" informativeTextWithFormat:@""];
     
     [alert beginSheetModalForWindow:wizardWindowController.window
         completionHandler:^(NSModalResponse response) {
@@ -547,7 +548,7 @@
             
             if (frame.orientation > 1) {
                 [ImageUtil resizeAndRotateImage:filepath outputImageFilename:filepath
-                    resizeToMaxSide:0 rotate:kDontRotate compressionQuality:75];
+                    resizeToMaxSide:0 rotate:kDontRotate compressionQuality:1];
             }
             
             IURotation rotation = kDontRotate;
@@ -561,13 +562,14 @@
             }
 
             [ImageUtil resizeAndRotateImage:filepath outputImageFilename:filepath
-                resizeToMaxSide:0 rotate:rotation compressionQuality:75];
+                resizeToMaxSide:0 rotate:rotation compressionQuality:0.8];
             
-            if (btnRotationDegrees.selectedTag == 1 || btnRotationDegrees.selectedTag == 3) {
-                NSInteger temp = frame.width;
-                frame.width = frame.height;
-                frame.height = temp;
-            }
+            CGSize newSize = CGSizeZero;
+            NSUInteger orientation;
+            [ImageUtil getImageProperties:filepath size:&newSize type:frame.imageType orientation:&orientation];
+            
+            frame.width = newSize.width;
+            frame.height = newSize.height;
             
             NSDictionary *fileAttrs = [[NSFileManager defaultManager] attributesOfItemAtPath:filepath error:nil];
             

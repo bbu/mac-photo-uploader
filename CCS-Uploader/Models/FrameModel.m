@@ -8,22 +8,18 @@
     NSUInteger orientation;
     NSMutableString *imageType;
     BOOL fullsizeSent, thumbsSent;
-    
     BOOL needsDelete, newlyAdded, userDidRotate;
 }
 @end
 
 @implementation FrameModel
-
 @synthesize name, extension;
-
 @synthesize filesize;
 @synthesize lastModified;
 @synthesize width, height;
 @synthesize orientation;
 @synthesize imageType;
 @synthesize fullsizeSent, thumbsSent;
-
 @synthesize needsDelete, newlyAdded, userDidRotate;
 
 - (id)initWithCoder:(NSCoder *)decoder
@@ -41,17 +37,6 @@
         imageType = [decoder decodeObjectForKey:@"imageType"];
         fullsizeSent = [decoder decodeBoolForKey:@"fullsizeSent"];
         thumbsSent = [decoder decodeBoolForKey:@"thumbsSent"];
-    }
-    
-    return self;
-}
-
-- (id)init
-{
-    self = [super init];
-    
-    if (self) {
-        
     }
     
     return self;

@@ -1,7 +1,6 @@
 #import <Foundation/Foundation.h>
 
 @interface FrameModel : NSObject <NSCoding>
-
 @property NSString *name, *extension;
 @property NSInteger filesize;
 @property NSDate *lastModified;
@@ -9,7 +8,5 @@
 @property NSUInteger orientation;
 @property NSMutableString *imageType;
 @property BOOL fullsizeSent, thumbsSent;
-
 @property BOOL needsDelete, newlyAdded, userDidRotate;
-
 @end
