@@ -22,8 +22,9 @@ typedef NS_ENUM(NSInteger, ServiceRoot) {
 }
 
 - (void)setEffectiveServiceRoot:(ServiceRoot)serviceRoot coreDomain:(NSString *)coreDomain;
-- (BOOL)isRunning;
 - (void)cancel;
 + (NSMutableURLRequest *)postRequestWithURL:(NSString *)urlString body:(NSString *)body;
+
+@property (readonly) BOOL started;
 
 @end

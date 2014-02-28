@@ -1,6 +1,8 @@
 #import "MainWindowController.h"
 #import "Prefs/AdvancedViewController.h"
 
+#import "../Models/TransferManager.h"
+
 @interface MainWindowController () {
     IBOutlet NSTableView *tblTransfers;
     IBOutlet NSMenu *menuThumbnails;
@@ -9,18 +11,25 @@
         *imgUploading5, *imgUploading6, *imgUploading7, *imgUploading8;
     
     IBOutlet WizardWindowController *wizardWindowController;
+
+    TransferManager *transferManager;
+    NSDateFormatter *dateFormatter;
 }
 
 @end
 
 @implementation MainWindowController
+@synthesize transferManager;
 
 - (id)init
 {
     self = [super initWithWindowNibName:@"MainWindow"];
     
     if (self) {
-    
+        transferManager = [TransferManager new];
+        dateFormatter = [NSDateFormatter new];
+        dateFormatter.dateFormat = @"MM/dd/Y";
+        [transferManager pushTransfer];
     }
     
     return self;
@@ -28,16 +37,12 @@
 
 -(NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
 {
-    return 25;
+    return transferManager.transfers.count;
 }
 
 -(CGFloat)tableView:(NSTableView *)tableView heightOfRow:(NSInteger)row
 {
-    //if (row % 5 == 0) {
-    //    return 13;
-    //} else {
-        return 18;
-    //}
+    return 18;
 }
 
 -(IBAction)deleteRowFromThumbnails:(id)sender
@@ -82,16 +87,20 @@
         result.identifier = tableColumn.identifier;
     }
     
+    Transfer *transfer = transferManager.transfers[row];
+    
+    static NSString *transferStatuses[] = {@"Queued", @"Running", @"Scheduled", @"Aborted", @"Stopped", @"Complete"};
+    
     if ([tableColumn.identifier isEqualToString:@"Event"]) {
-        result.textField.stringValue = @"My Test Event";
+        result.textField.stringValue = transfer.eventName;
     } else if ([tableColumn.identifier isEqualToString:@"Status"]) {
-        result.textField.stringValue = @"Complete";
+        result.textField.stringValue = transferStatuses[transfer.status];
     } else if ([tableColumn.identifier isEqualToString:@"Thumbs"]) {
-        result.textField.stringValue = @"25/100";
+        result.textField.stringValue = @"";
     } else if ([tableColumn.identifier isEqualToString:@"Fullsize"]) {
-        result.textField.stringValue = @"0/100";
+        result.textField.stringValue = @"";
     } else if ([tableColumn.identifier isEqualToString:@"Date"]) {
-        result.textField.stringValue = @"1/20/2014 14:12";
+        result.textField.stringValue = [dateFormatter stringFromDate:transfer.datePushed];
     }
         
     return result;
@@ -104,7 +113,6 @@
 
 -(BOOL)tableView:(NSTableView *)tableView isGroupRow:(NSInteger)row
 {
-    //return row % 5 == 0 ? YES : NO;
     return NO;
 }
 
@@ -131,6 +139,9 @@
     
     [tblTransfers reloadData];
     
+    [NSTimer scheduledTimerWithTimeInterval:1.0 target:transferManager
+        selector:@selector(processTransfers) userInfo:nil repeats:YES];
+
     //NSImage *img = [[NSImage alloc] initWithContentsOfFile:@"/Users/blagovest/Downloads/lotus.jpg"];
     //[imgUploading1 setImage:img];
 }

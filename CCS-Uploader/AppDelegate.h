@@ -9,6 +9,4 @@
     PrefsWindowController *prefsWindowController;
 }
 
--(IBAction)openPrefs:(id)sender;
-
 @end

@@ -27,10 +27,7 @@
     effectiveCoreDomain = coreDomain;
 }
 
-- (BOOL)isRunning
-{
-    return started;
-}
+@synthesize started;
 
 - (void)cancel
 {

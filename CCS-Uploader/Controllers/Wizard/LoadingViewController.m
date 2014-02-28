@@ -1,9 +1,5 @@
 #import "LoadingViewController.h"
 
-@interface LoadingViewController ()
-
-@end
-
 @implementation LoadingViewController
 @synthesize progressIndicator, txtMessage;
 
