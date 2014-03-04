@@ -121,6 +121,10 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
 
 @synthesize transfers;
 @synthesize currentlyRunningTransfer;
+@synthesize reloadTransfers;
+@synthesize transferStateChanged;
+@synthesize startedUploadingImage;
+@synthesize endedUploadingImage;
 
 - (id)init
 {
@@ -161,6 +165,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
     [currentlyRunningTransfer.context.orderModel save];
     currentlyRunningTransfer.status = kTransferStatusAborted;
     currentlyRunningTransfer.context = nil;
+    reloadTransfers();
     currentlyRunningTransfer = nil;
 }
 
@@ -174,12 +179,16 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
         for (NSInteger j = context.pendingFrameIndex; j < roll.frames.count; ++j) {
             FrameModel *frame = roll.frames[j];
             
-            if (context.state == kRunningTransferStateSendingThumbs ? !frame.thumbsSent : !frame.fullsizeSent) {
+            //if (context.state == kRunningTransferStateSendingThumbs ? !frame.thumbsSent : !frame.fullsizeSent) {
+            if (1) {
                 context.pendingRollIndex = i;
                 context.pendingFrameIndex = j;
                 return YES;
             }
         }
+        
+        context.pendingRollIndex++;
+        context.pendingFrameIndex = 0;
     }
     
     return NO;
@@ -226,10 +235,10 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
         imageContext.thumbnailImage = nil;
         imageContext.pngImage = nil;
         imageContext.mediumResImage = nil;
-        imageContext.previewWidth = 0;
-        imageContext.previewHeight = 0;
-        imageContext.pngWidth = 0;
-        imageContext.pngHeight = 0;
+        imageContext.previewWidth = -1;
+        imageContext.previewHeight = -1;
+        imageContext.pngWidth = -1;
+        imageContext.pngHeight = -1;
         
         if (eventSettings.transferSettings.createThumbnail && eventSettings.thumbnailSettings) {
             NSString *thumbnailFilename = [pathToFullSizeImage stringByAppendingFormat:@"_ccsthumb_%ld", imageContext.slot];
@@ -321,22 +330,28 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
         if (!currentlyRunningTransfer) {
             return;
         }
+        
+        reloadTransfers();
     }
     
     RunningTransferContext *context = currentlyRunningTransfer.context;
     
     switch (context.state) {
         case kRunningTransferStateIdle: {
+            transferStateChanged(@"Setting up transfer");
             context.state = kRunningTransferStateSetup;
         } break;
             
         case kRunningTransferStateSetup: {
             if ([self setupRunningTransfer]) {
                 if (currentlyRunningTransfer.uploadThumbs) {
+                    transferStateChanged(@"Sending previews and thumbnails");
                     context.state = kRunningTransferStateSendingThumbs;
                 } else if (currentlyRunningTransfer.uploadFullsize) {
+                    transferStateChanged(@"Sending full-size images");
                     context.state = kRunningTransferStateSendingFullSize;
                 } else {
+                    transferStateChanged(@"Finished");
                     context.state = kRunningTransferStateFinished;
                 }
             }
@@ -350,10 +365,14 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                     case kImageTransferStateIdle: {
                         if ([self nextPendingFrame]) {
                             imageContext.roll = context.orderModel.rolls[context.pendingRollIndex];
-                            imageContext.frame = imageContext.roll.frames[context.pendingFrameIndex];
-                            context.pendingFrameIndex++;
+                            imageContext.frame = imageContext.roll.frames[context.pendingFrameIndex++];
                             imageContext.state = kImageTransferStateGeneratingThumbs;
+                            
+                            NSString *pathToFullSizeImage = [[[context.orderModel.rootDir stringByAppendingPathComponent:imageContext.roll.number]
+                                stringByAppendingPathComponent:imageContext.frame.name] stringByAppendingPathExtension:imageContext.frame.extension];
 
+                            startedUploadingImage(imageContext.slot, pathToFullSizeImage);
+                            
                             imageContext.imageProcessingThread = [[NSThread alloc] initWithTarget:self
                                 selector:@selector(processImage:) object:imageContext];
                             
@@ -378,7 +397,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                                 roll:imageContext.roll.number
                                 frame:imageContext.frame.name
                                 extension:imageContext.frame.extension
-                                version:@"CCSTransfer 3.0.1.7"
+                                version:@"CCSTransfer"
                                 bypassPassword:NO
                                 fullsizeImage:imageContext.fullsizeImage
                                 previewImage:imageContext.previewImage
@@ -390,20 +409,19 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                                 originalHeight:imageContext.frame.height
                                 previewWidth:imageContext.previewWidth
                                 previewHeight:imageContext.previewHeight
-                                pngWidth:imageContext.pngWidth ? imageContext.pngWidth : -1
-                                pngHeight:imageContext.pngHeight ? imageContext.pngHeight : -1
+                                pngWidth:imageContext.pngWidth
+                                pngHeight:imageContext.pngHeight
                                 photographer:@"Blagovest"
                                 photoDateTime:imageContext.frame.lastModified
                                 createPreviewAndThumb:NO
                                 complete:^(PostImageDataResult *result) {
-                                    NSLog(@"image slot thumbs: %ld", imageContext.slot);
-                                    
                                     if (!result.error && [result.status isEqualToString:@"Successful"]) {
-                                        imageContext.frame.thumbsSent = YES;
                                     } else {
                                         
                                     }
                                     
+                                    imageContext.frame.thumbsSent = YES;
+                                    endedUploadingImage(imageContext.slot);
                                     imageContext.state = kImageTransferStateIdle;
                                 }
                             ];
@@ -417,6 +435,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
             if (numIdleSlots == context.imageContexts.count) {
                 context.pendingRollIndex = 0;
                 context.pendingFrameIndex = 0;
+                transferStateChanged(@"Activating previews and thumbnails");
                 context.state = kRunningTransferStateActivatingThumbs;
             }
         } break;
@@ -430,8 +449,10 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                     complete:^(ActivatePreviewsAndThumbsResult *result) {
                         if (!result.error && [result.status isEqualToString:@"AuthenticationSuccessful"]) {
                             if (currentlyRunningTransfer.uploadFullsize) {
+                                transferStateChanged(@"Sending full-size images");
                                 context.state = kRunningTransferStateSendingFullSize;
                             } else {
+                                transferStateChanged(@"Finished");
                                 context.state = kRunningTransferStateFinished;
                             }
                         } else {
@@ -450,9 +471,13 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                     case kImageTransferStateIdle: {
                         if ([self nextPendingFrame]) {
                             imageContext.roll = context.orderModel.rolls[context.pendingRollIndex];
-                            imageContext.frame = imageContext.roll.frames[context.pendingFrameIndex];
-                            context.pendingFrameIndex++;
+                            imageContext.frame = imageContext.roll.frames[context.pendingFrameIndex++];
 
+                            NSString *pathToFullSizeImage = [[[context.orderModel.rootDir stringByAppendingPathComponent:imageContext.roll.number]
+                                stringByAppendingPathComponent:imageContext.frame.name] stringByAppendingPathExtension:imageContext.frame.extension];
+                            
+                            startedUploadingImage(imageContext.slot, pathToFullSizeImage);
+                            
                             if (imageContext.frame.orientation > 1) {
                                 imageContext.state = kImageTransferStateFixingOrientation;
                                 
@@ -505,14 +530,13 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                                 bypassPassword:NO
                                 createPreviewAndThumb:NO
                                 complete:^(FullSizePostedResult *result) {
-                                    NSLog(@"image slot fullsize: %ld", imageContext.slot);
-                                    
                                     if (!result.error && [result.status isEqualToString:@"Successful"]) {
                                         imageContext.frame.fullsizeSent = YES;
                                     } else {
                                         
                                     }
                                     
+                                    endedUploadingImage(imageContext.slot);
                                     imageContext.state = kImageTransferStateIdle;
                                 }
                             ];
@@ -526,6 +550,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
             if (numIdleSlots == context.imageContexts.count) {
                 context.pendingRollIndex = 0;
                 context.pendingFrameIndex = 0;
+                transferStateChanged(@"Activating full-size images");
                 context.state = kRunningTransferStateActivatingFullSize;
             }
         } break;
@@ -538,6 +563,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                     orderNumber:currentlyRunningTransfer.orderNumber
                     complete:^(ActivateFullSizeResult *result) {
                         if (!result.error && [result.status isEqualToString:@"AuthenticationSuccessful"]) {
+                            transferStateChanged(@"Finished");
                             context.state = kRunningTransferStateFinished;
                         } else {
                             [self abortTransfer:@"Unable to activate full-size images."];
@@ -552,6 +578,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
             currentlyRunningTransfer.status = kTransferStatusComplete;
             currentlyRunningTransfer.context = nil;
             currentlyRunningTransfer = nil;
+            reloadTransfers();
         } break;
     }
 }
@@ -660,7 +687,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
         transfer.context = [RunningTransferContext new];
         transfer.context.imageContexts = [NSMutableArray new];
         
-        for (NSInteger i = 0; i < 1; ++i) {
+        for (NSInteger i = 0; i < 8; ++i) {
             ImageTransferContext *imageTransferContext = [ImageTransferContext new];
             
             imageTransferContext.slot = i;
@@ -713,6 +740,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
     newTransfer.datePushed = [NSDate date];
     
     [transfers addObject:newTransfer];
+    reloadTransfers();
 }
 
 - (BOOL)save

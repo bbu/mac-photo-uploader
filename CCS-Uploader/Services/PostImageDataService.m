@@ -32,10 +32,14 @@
 
 - (NSString *)escapedBase64:(NSString *)base64
 {
-    return [[[base64
+    /*return [[[base64
         stringByReplacingOccurrencesOfString:@"+" withString:@"%2B"]
         stringByReplacingOccurrencesOfString:@"=" withString:@"%3D"]
-        stringByReplacingOccurrencesOfString:@"/" withString:@"%2F"];
+        stringByReplacingOccurrencesOfString:@"/" withString:@"%2F"];*/
+
+    return [[base64
+              stringByReplacingOccurrencesOfString:@"+" withString:@"%2B"]
+             stringByReplacingOccurrencesOfString:@"=" withString:@"%3D"];
     
 }
 
@@ -67,7 +71,7 @@
     }
     
     NSString *postBody = [NSString stringWithFormat:
-        @"<?xml version=\"1.0\" encoding=\"utf-8\"?>"
+        /*@"<?xml version=\"1.0\" encoding=\"utf-8\"?>"
         @"<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">"
         @"<soap:Body>"
         @"<postImageData xmlns=\"http://candid.com/webservices/\">"
@@ -96,14 +100,14 @@
         @"<createPreviewandThumb>%@</createPreviewandThumb>"
         @"</postImageData>"
         @"</soap:Body>"
-        @"</soap:Envelope>",
-        /*
+        @"</soap:Envelope>",*/
+        
         @"acctNo=%@&password=%@&orderNo=%@&roll=%@&frame=%@&extension=%@&version=%@&bypassPassword=%@&"
         @"fullsizeImage=%@&previewImage=%@&thumbnailImage=%@&pngImage=%@&mediumresImage=%@&"
         @"OriginalImageSize=%ld&OriginalWidth=%ld&OriginalHeight=%ld&"
         @"previewWidth=%ld&previewHeight=%ld&pngWidth=%ld&pngHeight=%ld&"
         @"photographer=%@&photodatetime=%@&createPreviewandThumb=%@",
-        */
+        
                           
         [account stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
         [password stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
@@ -114,11 +118,11 @@
         [version stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
         bypassPassword ? @"1" : @"0",
 
-        fullsizeImage ? fullsizeImage.base64EncodedString : @"",
-        previewImage ? previewImage.base64EncodedString : @"",
-        thumbnailImage ? thumbnailImage.base64EncodedString : @"",
-        pngImage ? pngImage.base64EncodedString : @"",
-        mediumResImage ? mediumResImage.base64EncodedString : @"",
+        fullsizeImage ? [self escapedBase64:fullsizeImage.base64EncodedString] : @"",
+        previewImage ? [self escapedBase64:previewImage.base64EncodedString] : @"",
+        thumbnailImage ? [self escapedBase64:thumbnailImage.base64EncodedString] : @"",
+        pngImage ? [self escapedBase64:pngImage.base64EncodedString] : @"",
+        mediumResImage ? [self escapedBase64:mediumResImage.base64EncodedString] : @"",
 
         originalImageSize,
         originalWidth,
@@ -134,12 +138,15 @@
         createPreviewAndThumb ? @"true" : @"false"
     ];
     
-    NSLog(@"POST Body:\r-------------\r%@\r-------------\r\r", postBody);
-    
     NSMutableURLRequest *request = [Service postRequestWithURL:[self serviceURL] body:postBody];
-    //[request setValue:@"text/xml" forHTTPHeaderField:@"Content-Type"];
-    [request setValue:@"\"http://candid.com/webservices/postImageData\"" forHTTPHeaderField:@"SOAPAction"];
+    
+    //[request setValue:@"100-continue" forHTTPHeaderField:@"Expect"];
+    //[request setValue:@"\"http://candid.com/webservices/postImageData\"" forHTTPHeaderField:@"SOAPAction"];
+    //[request setValue:[NSString stringWithFormat:@"%ld", postBody.length] forHTTPHeaderField:@"Content-Length"];
 
+    //NSLog(@"Headers:\r%@\r\r", [request allHTTPHeaderFields]);
+    //NSLog(@"POST Body:\r-------------\r%@\r-------------\r\r", postBody);
+    
     postImageDataResult = [PostImageDataResult new];
     finished = block;
     
@@ -153,8 +160,8 @@
 {
     urlConnection = nil, started = NO;
     
-    NSString *response = [[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding];
-    NSLog(@"Response: %@", response);
+    //NSString *response = [[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding];
+    //NSLog(@"Response: %@", response);
     
     NSXMLParser *parser = [[NSXMLParser alloc] initWithData:responseData];
     parser.delegate = self;

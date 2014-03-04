@@ -1,8 +1,5 @@
 #import "AppDelegate.h"
 
-#import "Utils/ImageUtil.h"
-#import "Utils/FileUtil.h"
-
 @interface AppDelegate () {
     IBOutlet NSMenu *statusBarMenu;
     NSStatusItem *statusItem;
@@ -19,10 +16,6 @@
     statusItem.menu = statusBarMenu;
     statusItem.highlightMode = YES;
     
-    /*
-    [ImageUtil resizeAndRotateImage:@"/Users/blagovest/Downloads/lotus8.jpg" outputImageFilename:@"/Users/blagovest/Downloads/lotus.jpg"
-        resizeToMaxSide:200 rotate:kDontRotate compressionQuality:1];
-    */
     //NSString *domainName = [[NSBundle mainBundle] bundleIdentifier];
     //[[NSUserDefaults standardUserDefaults] removePersistentDomainForName:domainName];
 }

@@ -181,6 +181,7 @@
                     autoNumberFrames:chkAutoNumberFrames.state == NSOnState ? YES : NO];
 
                 [tblRolls reloadData];
+                [orderModel save];
             }
         }
     ];
@@ -454,6 +455,8 @@
             
             [alert beginSheetModalForWindow:wizardWindowController.window completionHandler:nil];
             textField.stringValue = oldName;
+        } else {
+            [orderModel save];
         }
     }
 }
@@ -480,6 +483,7 @@
         completionHandler:^(NSModalResponse response) {
             if (response == NSModalResponseOK) {
                 [orderModel deleteRollAtIndex:row];
+                [orderModel save];
                 [tblRolls removeRowsAtIndexes:[NSIndexSet indexSetWithIndex:row] withAnimation:NSTableViewAnimationEffectFade];
             }
         }
