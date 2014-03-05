@@ -8,6 +8,7 @@
     IBOutlet NSMenu *menuThumbnails;
     IBOutlet NSBox *currentTransfer;
     IBOutlet NSProgressIndicator *transferProgress;
+    IBOutlet NSTextField *transferProgressTitle;
     IBOutlet NSImageView
         *imgUploading1, *imgUploading2, *imgUploading3, *imgUploading4,
         *imgUploading5, *imgUploading6, *imgUploading7, *imgUploading8;
@@ -93,13 +94,13 @@
     static NSString *transferStatuses[] = {@"Queued to run", @"Running", @"Scheduled", @"Aborted", @"Stopped", @"Complete"};
     
     if ([tableColumn.identifier isEqualToString:@"Event"]) {
-        result.textField.stringValue = [NSString stringWithFormat:@"%@ (%@) - %@", transfer.eventName, transfer.orderNumber, transfer.uploadThumbs && transfer.uploadFullsize ? @"Thumbs & Full-size" : (transfer.uploadThumbs ? @"Thumbs Only" : @"Full-size Only")];
+        result.textField.stringValue = [NSString stringWithFormat:@"%@ (%@)", transfer.eventName, transfer.orderNumber];
     } else if ([tableColumn.identifier isEqualToString:@"Status"]) {
         result.textField.stringValue = transferStatuses[transfer.status];
     } else if ([tableColumn.identifier isEqualToString:@"Thumbs"]) {
-        result.textField.stringValue = @"";
+        result.textField.stringValue = transfer.uploadThumbs ? (transfer.thumbsUploaded ? @"Uploaded" : @"Not yet active") : @"Not included";
     } else if ([tableColumn.identifier isEqualToString:@"Fullsize"]) {
-        result.textField.stringValue = @"";
+        result.textField.stringValue = transfer.uploadFullsize ? (transfer.fullsizeUploaded ? @"Uploaded" : @"Not yet active") : @"Not included";
     } else if ([tableColumn.identifier isEqualToString:@"Date"]) {
         result.textField.stringValue = [dateFormatter stringFromDate:transfer.datePushed];
     } else if ([tableColumn.identifier isEqualToString:@"Progress"]) {
@@ -143,18 +144,13 @@
 {
     [super windowDidLoad];
     
-    [NSTimer scheduledTimerWithTimeInterval:0.2 target:transferManager
-        selector:@selector(processTransfers) userInfo:nil repeats:YES];
-
     transferManager.reloadTransfers = ^(void) {
         NSInteger selectedRow = tblTransfers.selectedRow;
         [tblTransfers reloadData];
-        [tblTransfers selectRow:selectedRow byExtendingSelection:NO];
+        [tblTransfers selectRowIndexes:[NSIndexSet indexSetWithIndex:selectedRow] byExtendingSelection:NO];
     };
     
     transferManager.startedUploadingImage = ^(NSInteger slot, NSString *pathToImage) {
-        NSLog(@"started %@", pathToImage);
-        
         NSArray *imageViews = [NSArray arrayWithObjects:
             imgUploading1, imgUploading2, imgUploading3, imgUploading4,
             imgUploading5, imgUploading6, imgUploading7, imgUploading8, nil];
@@ -171,8 +167,6 @@
         
         NSImageView *imageView = imageViews[slot];
         imageView.image = nil;
-        
-        transferProgress.doubleValue = 25;
     };
     
     transferManager.transferStateChanged = ^(NSString *message) {
@@ -181,6 +175,15 @@
             transferManager.currentlyRunningTransfer.orderNumber,
             message];
     };
+
+    [transferProgress startAnimation:nil];
+    transferProgressTitle.stringValue = @"";
+    transferManager.progressIndicator = transferProgress;
+    transferManager.progressTitle = transferProgressTitle;
+    currentTransfer.title = @"";
+    
+    [NSTimer scheduledTimerWithTimeInterval:0.2 target:transferManager
+        selector:@selector(processTransfers) userInfo:nil repeats:YES];
     
     [transferManager pushTransfer];
 }

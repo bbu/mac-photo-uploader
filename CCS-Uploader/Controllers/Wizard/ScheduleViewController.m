@@ -21,4 +21,9 @@
     return self;
 }
 
+- (void)resetFormState
+{
+    
+}
+
 @end

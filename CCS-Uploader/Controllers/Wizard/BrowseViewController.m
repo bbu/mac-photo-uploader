@@ -144,6 +144,7 @@
         autoNumberRolls:chkAutoNumberRolls.state == NSOnState ? YES : NO
         autoNumberFrames:chkAutoNumberFrames.state == NSOnState ? YES : NO];
     
+    [orderModel save];
     [tblRolls reloadData];
     return YES;
 }
@@ -229,10 +230,10 @@
         cell.imageView.image = row % 2 ? [NSImage imageNamed:@"NSStatusNone"] : [NSImage imageNamed:@"NSStatusNone"];
     } else if ([columnID isEqualToString:@"CurrentTask"]) {
         NSTableCellView *cell = view;
-        cell.textField.stringValue = @"Uploading thumbnails...";
-        [((NSProgressIndicator *)cell.subviews[1]) setHidden:NO];
-        [((NSTextField *)cell.subviews[0]) setHidden:NO];
-        [((NSProgressIndicator *)cell.subviews[1]) startAnimation:nil];
+        //cell.textField.stringValue = @"Uploading thumbnails...";
+        [((NSProgressIndicator *)cell.subviews[1]) setHidden:YES];
+        [((NSTextField *)cell.subviews[0]) setHidden:YES];
+        //[((NSProgressIndicator *)cell.subviews[1]) startAnimation:nil];
     }
     
     return view;

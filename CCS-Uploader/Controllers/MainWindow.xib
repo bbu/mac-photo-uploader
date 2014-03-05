@@ -17,7 +17,9 @@
                 <outlet property="imgUploading8" destination="D64-CH-rcD" id="23P-XL-Io2"/>
                 <outlet property="tblThumbnails" destination="JY5-x5-eh4" id="wPG-Um-uic"/>
                 <outlet property="tblTransfers" destination="JY5-x5-eh4" id="NLv-a7-0eU"/>
-                <outlet property="transferProgress" destination="2lg-fm-kCc" id="FBi-2n-0iL"/>
+                <outlet property="transferProgress" destination="2lg-fm-kCc" id="WrN-R9-1nP"/>
+                <outlet property="transferProgressTitle" destination="58I-Fv-iTl" id="tP3-YN-V5G"/>
+                <outlet property="transferTitle" destination="58I-Fv-iTl" id="X4i-aX-GYb"/>
                 <outlet property="window" destination="MDX-NV-dqb" id="ZjA-35-8e1"/>
             </connections>
         </customObject>
@@ -213,7 +215,7 @@
                                                             </tableCellView>
                                                         </prototypeCellViews>
                                                     </tableColumn>
-                                                    <tableColumn identifier="Progress" width="30.9140625" minWidth="10" maxWidth="3.4028234663852886e+38" id="bgW-II-2iQ">
+                                                    <tableColumn identifier="Progress" width="18.05078125" minWidth="10" maxWidth="3.4028234663852886e+38" id="bgW-II-2iQ">
                                                         <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
                                                             <font key="font" metaFont="smallSystem"/>
                                                             <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -228,11 +230,11 @@
                                                         <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                         <prototypeCellViews>
                                                             <customView id="9PM-Ck-ibN">
-                                                                <rect key="frame" x="792" y="1" width="31" height="21"/>
+                                                                <rect key="frame" x="792" y="1" width="18" height="21"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                 <subviews>
                                                                     <progressIndicator horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" maxValue="100" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="KOp-N1-4X6">
-                                                                        <rect key="frame" x="7" y="4" width="16" height="16"/>
+                                                                        <rect key="frame" x="0.0" y="4" width="16" height="16"/>
                                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                     </progressIndicator>
                                                                 </subviews>
@@ -253,7 +255,7 @@
                                                         <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                         <prototypeCellViews>
                                                             <button verticalHuggingPriority="750" id="J23-YR-5ef">
-                                                                <rect key="frame" x="826" y="1" width="57" height="15"/>
+                                                                <rect key="frame" x="813" y="1" width="57" height="15"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                 <buttonCell key="cell" type="inline" title="Stop" bezelStyle="inline" alignment="center" borderStyle="border" inset="2" id="awf-Ia-cjf">
                                                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -276,7 +278,7 @@
                                                         <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                         <prototypeCellViews>
                                                             <button verticalHuggingPriority="750" id="ZkG-5Y-Q7T">
-                                                                <rect key="frame" x="886" y="1" width="57" height="15"/>
+                                                                <rect key="frame" x="873" y="1" width="57" height="15"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                 <buttonCell key="cell" type="inline" title="Delete" bezelStyle="inline" alignment="center" borderStyle="border" inset="2" id="IVr-Sn-1Qw">
                                                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -377,52 +379,49 @@
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 </progressIndicator>
                                 <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="F6j-5e-CRm">
-                                    <rect key="frame" x="15" y="37" width="128" height="111"/>
+                                    <rect key="frame" x="15" y="64" width="128" height="84"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <imageCell key="cell" enabled="NO" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" imageFrameStyle="grayBezel" id="dUh-JC-vmT"/>
                                 </imageView>
                                 <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="qKP-2t-Ivs">
-                                    <rect key="frame" x="145" y="37" width="128" height="111"/>
+                                    <rect key="frame" x="145" y="64" width="128" height="84"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <imageCell key="cell" enabled="NO" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" imageFrameStyle="grayBezel" id="TyX-Yc-cau"/>
                                 </imageView>
                                 <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="qOC-lp-TkT">
-                                    <rect key="frame" x="275" y="37" width="128" height="111"/>
+                                    <rect key="frame" x="275" y="64" width="128" height="84"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <imageCell key="cell" enabled="NO" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" imageFrameStyle="grayBezel" id="HHW-iS-wjm"/>
                                 </imageView>
                                 <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="uGn-gM-CVy">
-                                    <rect key="frame" x="405" y="37" width="128" height="111"/>
+                                    <rect key="frame" x="405" y="64" width="128" height="84"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <imageCell key="cell" enabled="NO" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" imageFrameStyle="grayBezel" id="gLW-Ln-0pr"/>
                                 </imageView>
                                 <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="ceU-qC-Ad1">
-                                    <rect key="frame" x="535" y="37" width="128" height="111"/>
+                                    <rect key="frame" x="535" y="64" width="128" height="84"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <imageCell key="cell" enabled="NO" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" imageFrameStyle="grayBezel" id="BIa-Vq-zcI"/>
                                 </imageView>
                                 <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="rFX-6L-bZq">
-                                    <rect key="frame" x="665" y="37" width="128" height="111"/>
+                                    <rect key="frame" x="665" y="64" width="128" height="84"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <imageCell key="cell" enabled="NO" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" imageFrameStyle="grayBezel" id="ukR-js-5ig"/>
                                 </imageView>
                                 <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="NzJ-iB-wng">
-                                    <rect key="frame" x="795" y="37" width="128" height="111"/>
+                                    <rect key="frame" x="795" y="64" width="128" height="84"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <imageCell key="cell" enabled="NO" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" imageFrameStyle="grayBezel" id="QLJ-Ce-lFb"/>
                                 </imageView>
                                 <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="D64-CH-rcD">
-                                    <rect key="frame" x="925" y="37" width="128" height="111"/>
+                                    <rect key="frame" x="925" y="64" width="128" height="84"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <imageCell key="cell" enabled="NO" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" imageFrameStyle="grayBezel" id="jen-ge-hTb"/>
                                 </imageView>
                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="58I-Fv-iTl">
-                                    <rect key="frame" x="400" y="15" width="267" height="17"/>
+                                    <rect key="frame" x="16" y="40" width="1035" height="17"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                    <constraints>
-                                        <constraint firstAttribute="width" constant="263" id="RvN-yf-qYR"/>
-                                    </constraints>
-                                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="Label" id="G2X-H8-mhj">
+                                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="Progress Title" id="G2X-H8-mhj">
                                         <font key="font" metaFont="system"/>
                                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
@@ -431,27 +430,28 @@
                             </subviews>
                         </view>
                         <constraints>
-                            <constraint firstItem="2lg-fm-kCc" firstAttribute="top" secondItem="uGn-gM-CVy" secondAttribute="bottom" constant="8" id="1eW-oi-rND"/>
+                            <constraint firstItem="2lg-fm-kCc" firstAttribute="top" secondItem="uGn-gM-CVy" secondAttribute="bottom" constant="35" id="1eW-oi-rND"/>
                             <constraint firstItem="D64-CH-rcD" firstAttribute="leading" secondItem="NzJ-iB-wng" secondAttribute="trailing" constant="8" id="2Oa-kl-A5e"/>
                             <constraint firstItem="qOC-lp-TkT" firstAttribute="leading" secondItem="qKP-2t-Ivs" secondAttribute="trailing" constant="8" id="2Ob-9Y-xxg"/>
                             <constraint firstItem="rFX-6L-bZq" firstAttribute="leading" secondItem="ceU-qC-Ad1" secondAttribute="trailing" constant="8" id="5qk-8B-R5I"/>
                             <constraint firstItem="NzJ-iB-wng" firstAttribute="top" secondItem="nxh-xn-o2P" secondAttribute="top" constant="27" id="8iS-9R-WTW"/>
                             <constraint firstItem="uGn-gM-CVy" firstAttribute="width" secondItem="D64-CH-rcD" secondAttribute="width" id="CRG-ix-siQ"/>
+                            <constraint firstItem="58I-Fv-iTl" firstAttribute="leading" secondItem="nxh-xn-o2P" secondAttribute="leading" constant="16" id="E6b-n4-Uwc"/>
                             <constraint firstItem="uGn-gM-CVy" firstAttribute="leading" secondItem="qOC-lp-TkT" secondAttribute="trailing" constant="8" id="Eh6-yv-1Us"/>
                             <constraint firstItem="uGn-gM-CVy" firstAttribute="width" secondItem="rFX-6L-bZq" secondAttribute="width" id="FC8-t9-UaX"/>
                             <constraint firstItem="2lg-fm-kCc" firstAttribute="leading" secondItem="nxh-xn-o2P" secondAttribute="leading" constant="16" id="GUT-4A-8Bn"/>
                             <constraint firstAttribute="height" constant="169" id="PbJ-e3-rbH"/>
                             <constraint firstItem="uGn-gM-CVy" firstAttribute="width" secondItem="qOC-lp-TkT" secondAttribute="width" id="PzP-mm-cZT"/>
                             <constraint firstItem="uGn-gM-CVy" firstAttribute="top" secondItem="nxh-xn-o2P" secondAttribute="top" constant="27" id="Qfz-vb-X25"/>
-                            <constraint firstAttribute="bottom" secondItem="58I-Fv-iTl" secondAttribute="bottom" constant="12" id="VCD-e9-vtU"/>
-                            <constraint firstItem="2lg-fm-kCc" firstAttribute="top" secondItem="F6j-5e-CRm" secondAttribute="bottom" constant="8" id="VWk-bA-tEU"/>
+                            <constraint firstAttribute="bottom" secondItem="58I-Fv-iTl" secondAttribute="bottom" constant="37" id="VCD-e9-vtU"/>
+                            <constraint firstItem="2lg-fm-kCc" firstAttribute="top" secondItem="F6j-5e-CRm" secondAttribute="bottom" constant="35" id="VWk-bA-tEU"/>
                             <constraint firstItem="ceU-qC-Ad1" firstAttribute="leading" secondItem="uGn-gM-CVy" secondAttribute="trailing" constant="8" id="Y0e-X6-DxP"/>
                             <constraint firstItem="qKP-2t-Ivs" firstAttribute="top" secondItem="nxh-xn-o2P" secondAttribute="top" constant="27" id="Z6i-F6-K8D"/>
                             <constraint firstItem="D64-CH-rcD" firstAttribute="top" secondItem="nxh-xn-o2P" secondAttribute="top" constant="27" id="ZPg-v7-Vk0"/>
                             <constraint firstItem="ceU-qC-Ad1" firstAttribute="top" secondItem="nxh-xn-o2P" secondAttribute="top" constant="27" id="aIR-P6-dCj"/>
-                            <constraint firstItem="2lg-fm-kCc" firstAttribute="top" secondItem="qKP-2t-Ivs" secondAttribute="bottom" constant="8" id="bTw-JI-wZU"/>
+                            <constraint firstItem="2lg-fm-kCc" firstAttribute="top" secondItem="qKP-2t-Ivs" secondAttribute="bottom" constant="35" id="bTw-JI-wZU"/>
                             <constraint firstAttribute="trailing" secondItem="D64-CH-rcD" secondAttribute="trailing" constant="15" id="bVZ-bo-j1e"/>
-                            <constraint firstItem="2lg-fm-kCc" firstAttribute="top" secondItem="ceU-qC-Ad1" secondAttribute="bottom" constant="8" id="chs-b0-zXM"/>
+                            <constraint firstItem="2lg-fm-kCc" firstAttribute="top" secondItem="ceU-qC-Ad1" secondAttribute="bottom" constant="35" id="chs-b0-zXM"/>
                             <constraint firstAttribute="trailing" secondItem="2lg-fm-kCc" secondAttribute="trailing" constant="16" id="dTr-AO-Tu1"/>
                             <constraint firstItem="uGn-gM-CVy" firstAttribute="width" secondItem="ceU-qC-Ad1" secondAttribute="width" id="dip-cm-Fzd"/>
                             <constraint firstItem="uGn-gM-CVy" firstAttribute="width" secondItem="qKP-2t-Ivs" secondAttribute="width" id="gEn-4u-Bu2"/>
@@ -460,15 +460,16 @@
                             <constraint firstItem="uGn-gM-CVy" firstAttribute="width" secondItem="NzJ-iB-wng" secondAttribute="width" id="j6I-Za-jJS"/>
                             <constraint firstItem="NzJ-iB-wng" firstAttribute="leading" secondItem="rFX-6L-bZq" secondAttribute="trailing" constant="8" id="jYb-HZ-G3a"/>
                             <constraint firstItem="qOC-lp-TkT" firstAttribute="top" secondItem="nxh-xn-o2P" secondAttribute="top" constant="27" id="n2I-RM-Kse"/>
-                            <constraint firstItem="2lg-fm-kCc" firstAttribute="top" secondItem="rFX-6L-bZq" secondAttribute="bottom" constant="8" id="nSS-r1-6kv"/>
+                            <constraint firstItem="2lg-fm-kCc" firstAttribute="top" secondItem="rFX-6L-bZq" secondAttribute="bottom" constant="35" id="nSS-r1-6kv"/>
                             <constraint firstAttribute="bottom" secondItem="2lg-fm-kCc" secondAttribute="bottom" constant="11" id="pH9-Oq-iwM"/>
                             <constraint firstItem="qKP-2t-Ivs" firstAttribute="leading" secondItem="F6j-5e-CRm" secondAttribute="trailing" constant="8" id="pnc-QA-vEM"/>
-                            <constraint firstItem="2lg-fm-kCc" firstAttribute="top" secondItem="qOC-lp-TkT" secondAttribute="bottom" constant="8" id="raW-uw-ILn"/>
+                            <constraint firstItem="2lg-fm-kCc" firstAttribute="top" secondItem="qOC-lp-TkT" secondAttribute="bottom" constant="35" id="raW-uw-ILn"/>
                             <constraint firstItem="F6j-5e-CRm" firstAttribute="top" secondItem="nxh-xn-o2P" secondAttribute="top" constant="27" id="rmf-hQ-cFD"/>
-                            <constraint firstItem="2lg-fm-kCc" firstAttribute="top" secondItem="D64-CH-rcD" secondAttribute="bottom" constant="8" id="uAC-4f-OuF"/>
+                            <constraint firstAttribute="trailing" secondItem="58I-Fv-iTl" secondAttribute="trailing" constant="16" id="tIq-SL-zJe"/>
+                            <constraint firstItem="2lg-fm-kCc" firstAttribute="top" secondItem="D64-CH-rcD" secondAttribute="bottom" constant="35" id="uAC-4f-OuF"/>
                             <constraint firstItem="uGn-gM-CVy" firstAttribute="width" secondItem="F6j-5e-CRm" secondAttribute="width" id="xTV-Tu-4fb"/>
                             <constraint firstAttribute="centerX" secondItem="58I-Fv-iTl" secondAttribute="centerX" id="ymR-Lf-NQT"/>
-                            <constraint firstItem="2lg-fm-kCc" firstAttribute="top" secondItem="NzJ-iB-wng" secondAttribute="bottom" constant="8" id="z6Y-VE-9Mc"/>
+                            <constraint firstItem="2lg-fm-kCc" firstAttribute="top" secondItem="NzJ-iB-wng" secondAttribute="bottom" constant="35" id="z6Y-VE-9Mc"/>
                         </constraints>
                         <font key="titleFont" size="12" name="LucidaGrande-Bold"/>
                     </box>

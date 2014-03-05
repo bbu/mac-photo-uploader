@@ -15,7 +15,7 @@ typedef NS_ENUM(NSInteger, TransferStatus) {
 @property NSString *orderNumber;
 @property NSString *eventName;
 @property TransferStatus status;
-@property BOOL uploadThumbs, uploadFullsize;
+@property BOOL uploadThumbs, thumbsUploaded, uploadFullsize, fullsizeUploaded;
 @property NSDate *datePushed, *dateScheduled;
 @property RunningTransferContext *context;
 @end
@@ -33,5 +33,7 @@ typedef NS_ENUM(NSInteger, TransferStatus) {
 @property (nonatomic, copy) void (^transferStateChanged)(NSString *message);
 @property (nonatomic, copy) void (^startedUploadingImage)(NSInteger slot, NSString *pathToImage);
 @property (nonatomic, copy) void (^endedUploadingImage)(NSInteger slot);
+@property NSProgressIndicator *progressIndicator;
+@property NSTextField *progressTitle;
 
 @end

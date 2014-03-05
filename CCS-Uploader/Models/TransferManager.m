@@ -1,5 +1,6 @@
 #import "TransferManager.h"
 #import "../Utils/ImageUtil.h"
+#import "../Utils/FileUtil.h"
 
 #import "OrderModel.h"
 
@@ -67,6 +68,8 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
 @property EventSettingsResult *eventSettings;
 @property VerifyOrderResult *verifyOrderResult;
 @property NSMutableArray *imageContexts;
+@property BOOL estimated;
+@property NSInteger imagesSent, sizeSent, totalCount, totalSize;
 @end
 
 @implementation RunningTransferContext
@@ -85,7 +88,9 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
         _eventName = [decoder decodeObjectForKey:@"eventName"];
         _status = [decoder decodeIntegerForKey:@"status"];
         _uploadThumbs = [decoder decodeBoolForKey:@"uploadThumbs"];
+        _thumbsUploaded = [decoder decodeBoolForKey:@"thumbsUploaded"];
         _uploadFullsize = [decoder decodeBoolForKey:@"uploadFullsize"];
+        _fullsizeUploaded = [decoder decodeBoolForKey:@"fullsizeUploaded"];
         _datePushed = [decoder decodeObjectForKey:@"datePushed"];
         _dateScheduled = [decoder decodeObjectForKey:@"dateScheduled"];
     }
@@ -99,7 +104,9 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
     [encoder encodeObject:_eventName forKey:@"eventName"];
     [encoder encodeInteger:_status forKey:@"status"];
     [encoder encodeBool:_uploadThumbs forKey:@"uploadThumbs"];
+    [encoder encodeBool:_thumbsUploaded forKey:@"thumbsUploaded"];
     [encoder encodeBool:_uploadFullsize forKey:@"uploadFullsize"];
+    [encoder encodeBool:_fullsizeUploaded forKey:@"fullsizeUploaded"];
     [encoder encodeObject:_datePushed forKey:@"datePushed"];
     [encoder encodeObject:_dateScheduled forKey:@"dateScheduled"];
 }
@@ -125,6 +132,8 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
 @synthesize transferStateChanged;
 @synthesize startedUploadingImage;
 @synthesize endedUploadingImage;
+@synthesize progressIndicator;
+@synthesize progressTitle;
 
 - (id)init
 {
@@ -322,6 +331,47 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
     return @[@"-T", pathToFullSizeImage, ftpDestinationPath, @"--user", ftpCredentials, @"--silent"];
 }
 
+- (void)estimateTransfer
+{
+    RunningTransferContext *context = currentlyRunningTransfer.context;
+
+    progressTitle.stringValue = @"";
+    progressIndicator.minValue = 0;
+    progressIndicator.doubleValue = 0;
+    
+    context.totalCount = 0;
+    context.totalSize = 0;
+    context.imagesSent = 0;
+    context.sizeSent = 0;
+
+    if (context.state == kRunningTransferStateSendingThumbs) {
+        for (RollModel *roll in context.orderModel.rolls) {
+            for (FrameModel *frame in roll.frames) {
+                if (1) {
+                //if (!frame.thumbsSent) {
+                    context.totalCount++;
+                }
+            }
+        }
+        
+        progressIndicator.maxValue = context.totalCount;
+    } else if (context.state == kRunningTransferStateSendingFullSize) {
+        for (RollModel *roll in context.orderModel.rolls) {
+            for (FrameModel *frame in roll.frames) {
+                if (1) {
+                //if (!frame.fullsizeSent) {
+                    context.totalCount++;
+                    context.totalSize += frame.filesize;
+                }
+            }
+        }
+        
+        progressIndicator.maxValue = context.totalSize;
+    }
+    
+    context.estimated = YES;
+}
+
 - (void)processTransfers
 {
     if (!currentlyRunningTransfer) {
@@ -360,6 +410,10 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
         case kRunningTransferStateSendingThumbs: {
             NSInteger numIdleSlots = 0;
             
+            if (!context.estimated) {
+                [self estimateTransfer];
+            }
+            
             for (ImageTransferContext *imageContext in context.imageContexts) {
                 switch (imageContext.state) {
                     case kImageTransferStateIdle: {
@@ -367,11 +421,6 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                             imageContext.roll = context.orderModel.rolls[context.pendingRollIndex];
                             imageContext.frame = imageContext.roll.frames[context.pendingFrameIndex++];
                             imageContext.state = kImageTransferStateGeneratingThumbs;
-                            
-                            NSString *pathToFullSizeImage = [[[context.orderModel.rootDir stringByAppendingPathComponent:imageContext.roll.number]
-                                stringByAppendingPathComponent:imageContext.frame.name] stringByAppendingPathExtension:imageContext.frame.extension];
-
-                            startedUploadingImage(imageContext.slot, pathToFullSizeImage);
                             
                             imageContext.imageProcessingThread = [[NSThread alloc] initWithTarget:self
                                 selector:@selector(processImage:) object:imageContext];
@@ -385,6 +434,11 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                     case kImageTransferStateGeneratingThumbs: {
                         if (imageContext.imageProcessingThread.isFinished) {
                             imageContext.state = kImageTransferStateSendingThumbs;
+                            
+                            NSString *pathToFullSizeImage = [[[context.orderModel.rootDir stringByAppendingPathComponent:imageContext.roll.number]
+                                stringByAppendingPathComponent:imageContext.frame.name] stringByAppendingPathExtension:imageContext.frame.extension];
+                            
+                            startedUploadingImage(imageContext.slot, pathToFullSizeImage);
                         }
                     } break;
                         
@@ -421,6 +475,13 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                                     }
                                     
                                     imageContext.frame.thumbsSent = YES;
+                                    context.imagesSent++;
+                                    
+                                    progressTitle.stringValue = [NSString stringWithFormat:@"%ld of %ld thumbs sent",
+                                        context.imagesSent, context.totalCount];
+                                    
+                                    progressIndicator.doubleValue++;
+                                    
                                     endedUploadingImage(imageContext.slot);
                                     imageContext.state = kImageTransferStateIdle;
                                 }
@@ -435,6 +496,9 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
             if (numIdleSlots == context.imageContexts.count) {
                 context.pendingRollIndex = 0;
                 context.pendingFrameIndex = 0;
+                context.estimated = NO;
+                progressIndicator.doubleValue = 0;
+                progressTitle.stringValue = @"";
                 transferStateChanged(@"Activating previews and thumbnails");
                 context.state = kRunningTransferStateActivatingThumbs;
             }
@@ -448,6 +512,9 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                     orderNumber:currentlyRunningTransfer.orderNumber
                     complete:^(ActivatePreviewsAndThumbsResult *result) {
                         if (!result.error && [result.status isEqualToString:@"AuthenticationSuccessful"]) {
+                            currentlyRunningTransfer.thumbsUploaded = YES;
+                            reloadTransfers();
+
                             if (currentlyRunningTransfer.uploadFullsize) {
                                 transferStateChanged(@"Sending full-size images");
                                 context.state = kRunningTransferStateSendingFullSize;
@@ -466,6 +533,10 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
         case kRunningTransferStateSendingFullSize: {
             NSInteger numIdleSlots = 0;
             
+            if (!context.estimated) {
+                [self estimateTransfer];
+            }
+            
             for (ImageTransferContext *imageContext in context.imageContexts) {
                 switch (imageContext.state) {
                     case kImageTransferStateIdle: {
@@ -473,11 +544,6 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                             imageContext.roll = context.orderModel.rolls[context.pendingRollIndex];
                             imageContext.frame = imageContext.roll.frames[context.pendingFrameIndex++];
 
-                            NSString *pathToFullSizeImage = [[[context.orderModel.rootDir stringByAppendingPathComponent:imageContext.roll.number]
-                                stringByAppendingPathComponent:imageContext.frame.name] stringByAppendingPathExtension:imageContext.frame.extension];
-                            
-                            startedUploadingImage(imageContext.slot, pathToFullSizeImage);
-                            
                             if (imageContext.frame.orientation > 1) {
                                 imageContext.state = kImageTransferStateFixingOrientation;
                                 
@@ -491,6 +557,11 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                                 imageContext.ftpUploadTask.launchPath = @"/usr/bin/curl";
                                 imageContext.ftpUploadTask.arguments = [self curlParameters:imageContext];
                                 [imageContext.ftpUploadTask launch];
+                                
+                                NSString *pathToFullSizeImage = [[[context.orderModel.rootDir stringByAppendingPathComponent:imageContext.roll.number]
+                                    stringByAppendingPathComponent:imageContext.frame.name] stringByAppendingPathExtension:imageContext.frame.extension];
+                                
+                                startedUploadingImage(imageContext.slot, pathToFullSizeImage);
                             }
                         } else {
                             numIdleSlots++;
@@ -504,6 +575,11 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                             imageContext.ftpUploadTask.launchPath = @"/usr/bin/curl";
                             imageContext.ftpUploadTask.arguments = [self curlParameters:imageContext];
                             [imageContext.ftpUploadTask launch];
+                            
+                            NSString *pathToFullSizeImage = [[[context.orderModel.rootDir stringByAppendingPathComponent:imageContext.roll.number]
+                                stringByAppendingPathComponent:imageContext.frame.name] stringByAppendingPathExtension:imageContext.frame.extension];
+                            
+                            startedUploadingImage(imageContext.slot, pathToFullSizeImage);
                         }
                     } break;
 
@@ -536,6 +612,17 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                                         
                                     }
                                     
+                                    context.imagesSent++;
+                                    context.sizeSent += imageContext.frame.filesize;
+                                    
+                                    progressIndicator.doubleValue += imageContext.frame.filesize;
+                                    progressTitle.stringValue = [NSString stringWithFormat:@"%ld of %ld full-size images sent (%@ of %@)",
+                                        context.imagesSent,
+                                        context.totalCount,
+                                        [FileUtil humanFriendlyFilesize:context.sizeSent],
+                                        [FileUtil humanFriendlyFilesize:context.totalSize]
+                                    ];
+
                                     endedUploadingImage(imageContext.slot);
                                     imageContext.state = kImageTransferStateIdle;
                                 }
@@ -550,6 +637,8 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
             if (numIdleSlots == context.imageContexts.count) {
                 context.pendingRollIndex = 0;
                 context.pendingFrameIndex = 0;
+                progressIndicator.doubleValue = 0;
+                progressTitle.stringValue = @"";
                 transferStateChanged(@"Activating full-size images");
                 context.state = kRunningTransferStateActivatingFullSize;
             }
@@ -564,6 +653,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                     complete:^(ActivateFullSizeResult *result) {
                         if (!result.error && [result.status isEqualToString:@"AuthenticationSuccessful"]) {
                             transferStateChanged(@"Finished");
+                            currentlyRunningTransfer.fullsizeUploaded = YES;
                             context.state = kRunningTransferStateFinished;
                         } else {
                             [self abortTransfer:@"Unable to activate full-size images."];
@@ -735,7 +825,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
     newTransfer.status = kTransferStatusQueued;
     newTransfer.orderNumber = @"26710612";
     newTransfer.eventName = @"Test Event";
-    newTransfer.uploadThumbs = YES;
+    newTransfer.uploadThumbs = NO;
     newTransfer.uploadFullsize = YES;
     newTransfer.datePushed = [NSDate date];
     

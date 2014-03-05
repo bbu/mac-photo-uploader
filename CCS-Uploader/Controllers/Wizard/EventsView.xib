@@ -184,11 +184,11 @@
             </connections>
         </popover>
         <customView id="EPI-3f-56G">
-            <rect key="frame" x="0.0" y="0.0" width="391" height="172"/>
+            <rect key="frame" x="0.0" y="0.0" width="391" height="157"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <subviews>
                 <button id="4Sh-KL-fXq">
-                    <rect key="frame" x="18" y="129" width="355" height="25"/>
+                    <rect key="frame" x="18" y="114" width="355" height="25"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Hide events that are not assigned to me (QEMS only)" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="iiP-eW-zzb">
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -196,7 +196,7 @@
                     </buttonCell>
                 </button>
                 <button id="GBt-oj-5a8">
-                    <rect key="frame" x="18" y="102" width="355" height="25"/>
+                    <rect key="frame" x="18" y="92" width="355" height="25"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Hide events with no date" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="qj6-ky-FB1">
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -204,7 +204,7 @@
                     </buttonCell>
                 </button>
                 <button id="XmP-nR-Kk7">
-                    <rect key="frame" x="18" y="75" width="355" height="25"/>
+                    <rect key="frame" x="18" y="70" width="355" height="25"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Hide active events" bezelStyle="regularSquare" imagePosition="left" inset="2" id="289-NG-1bJ">
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
