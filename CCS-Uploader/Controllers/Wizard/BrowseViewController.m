@@ -239,17 +239,6 @@
     return view;
 }
 
-- (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
-{
-    NSString *columnID = tableColumn.identifier;
-    
-    if ([columnID isEqualToString:@"Folder"]) {
-        return [NSNumber numberWithInt:1];
-    }
-    
-    return @"test";
-}
-
 - (void)startLoadEvent:(EventRow *)event fromWizard:(BOOL)fromWizard
 {
     void (^terminate)(NSString *) = ^(NSString *message) {
@@ -360,6 +349,8 @@
 
 - (void)loadEvent
 {
+    wizardWindowController.eventRow = orderModel.eventRow;
+    
     NSData *storedMarketRows = [[NSUserDefaults standardUserDefaults] objectForKey:@"marketSettingsRows"];
     NSArray *marketSettingsRows = nil;
     

@@ -32,6 +32,8 @@
 @synthesize effectiveUser, effectivePass;
 @synthesize effectiveService;
 @synthesize effectiveCoreDomain;
+@synthesize mainWindowController;
+@synthesize eventRow;
 
 @synthesize
     loadingViewController,
@@ -69,6 +71,7 @@
 - (IBAction)btnCancelClicked:(id)sender
 {
     [self.window close];
+    
 }
 
 - (IBAction)btnBackClicked:(id)sender
@@ -116,10 +119,12 @@
         } break;
             
         case kWizardStepReview: {
+            [scheduleViewController resetFormState];
             [self showStep:kWizardStepSchedule];
         } break;
             
         case kWizardStepSchedule: {
+            [scheduleViewController pushTransfer];
             [self.window close];
         } break;
             

@@ -13,9 +13,8 @@
         *imgUploading1, *imgUploading2, *imgUploading3, *imgUploading4,
         *imgUploading5, *imgUploading6, *imgUploading7, *imgUploading8;
     
-    IBOutlet WizardWindowController *wizardWindowController;
-
     TransferManager *transferManager;
+    NSMutableArray *filteredTransfers;
     NSDateFormatter *dateFormatter;
 }
 
@@ -37,22 +36,39 @@
     return self;
 }
 
--(NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
 {
     return transferManager.transfers.count;
 }
 
--(CGFloat)tableView:(NSTableView *)tableView heightOfRow:(NSInteger)row
+- (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(NSInteger)row
 {
     return 18;
 }
 
--(IBAction)deleteRowFromThumbnails:(id)sender
+- (IBAction)stopOrResumeTransfer:(id)sender
+{
+    NSInteger clickedRow = [tblTransfers rowForView:sender];
+
+    if (clickedRow != -1) {
+        Transfer *transfer = transferManager.transfers[clickedRow];
+        
+        if (transfer.status == kTransferStatusStopped) {
+            transfer.status = kTransferStatusQueued;
+            transferManager.reloadTransfers();
+        } else if (transfer.status == kTransferStatusRunning) {
+            [transferManager stopCurrentTransfer];
+        }
+    }
+}
+
+- (IBAction)removeTransfer:(id)sender
 {
     NSInteger clickedRow = [tblTransfers rowForView:sender];
 
     if (clickedRow != -1) {
         [tblTransfers removeRowsAtIndexes:[NSIndexSet indexSetWithIndex:clickedRow] withAnimation:NSTableViewAnimationEffectFade];
+        [transferManager.transfers removeObjectAtIndex:clickedRow];
     }
 }
 
@@ -96,11 +112,17 @@
     if ([tableColumn.identifier isEqualToString:@"Event"]) {
         result.textField.stringValue = [NSString stringWithFormat:@"%@ (%@)", transfer.eventName, transfer.orderNumber];
     } else if ([tableColumn.identifier isEqualToString:@"Status"]) {
-        result.textField.stringValue = transferStatuses[transfer.status];
+        if (transfer.status != kTransferStatusScheduled) {
+            result.textField.stringValue = transferStatuses[transfer.status];
+        } else {
+            result.textField.stringValue = [NSString stringWithFormat:@"Scheduled for %@", transfer.dateScheduled];
+        }
     } else if ([tableColumn.identifier isEqualToString:@"Thumbs"]) {
-        result.textField.stringValue = transfer.uploadThumbs ? (transfer.thumbsUploaded ? @"Uploaded" : @"Not yet active") : @"Not included";
+        result.textField.stringValue = transfer.uploadThumbs ?
+            (transfer.thumbsUploaded ? @"Uploaded" : @"Not yet active") : @"Not included";
     } else if ([tableColumn.identifier isEqualToString:@"Fullsize"]) {
-        result.textField.stringValue = transfer.uploadFullsize ? (transfer.fullsizeUploaded ? @"Uploaded" : @"Not yet active") : @"Not included";
+        result.textField.stringValue = transfer.uploadFullsize ?
+            (transfer.fullsizeUploaded ? @"Uploaded" : @"Not yet active") : @"Not included";
     } else if ([tableColumn.identifier isEqualToString:@"Date"]) {
         result.textField.stringValue = [dateFormatter stringFromDate:transfer.datePushed];
     } else if ([tableColumn.identifier isEqualToString:@"Progress"]) {
@@ -113,8 +135,26 @@
             [progressIndicator stopAnimation:nil];
             [progressIndicator setHidden:YES];
         }
-    }
+    } else if ([tableColumn.identifier isEqualToString:@"Stop"]) {
+        NSButtonCell *btn = (NSButtonCell *)result;
         
+        if (transfer.status == kTransferStatusRunning) {
+            btn.title = @"Stop";
+            [result setHidden:NO];
+        } else if (transfer.status == kTransferStatusStopped) {
+            btn.title = @"Resume";
+            [result setHidden:NO];
+        } else {
+            [result setHidden:YES];
+        }
+    } else if ([tableColumn.identifier isEqualToString:@"Delete"]) {
+        if (transfer.status == kTransferStatusRunning) {
+            [result setHidden:YES];
+        } else {
+            [result setHidden:NO];
+        }
+    }
+    
     return result;
 }
 
@@ -133,10 +173,7 @@
 
 - (IBAction)startWizard:(id)sender
 {
-    if (wizardWindowController == nil) {
-        wizardWindowController = [[WizardWindowController alloc] initWithMainWindowController:self];
-    }
-    
+    WizardWindowController *wizardWindowController = [[WizardWindowController alloc] initWithMainWindowController:self];
     [wizardWindowController showWindow:self];
 }
 
@@ -184,8 +221,6 @@
     
     [NSTimer scheduledTimerWithTimeInterval:0.2 target:transferManager
         selector:@selector(processTransfers) userInfo:nil repeats:YES];
-    
-    [transferManager pushTransfer];
 }
 
 @end

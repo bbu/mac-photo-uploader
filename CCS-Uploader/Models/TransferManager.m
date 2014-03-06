@@ -188,8 +188,8 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
         for (NSInteger j = context.pendingFrameIndex; j < roll.frames.count; ++j) {
             FrameModel *frame = roll.frames[j];
             
-            //if (context.state == kRunningTransferStateSendingThumbs ? !frame.thumbsSent : !frame.fullsizeSent) {
-            if (1) {
+            if (context.state == kRunningTransferStateSendingThumbs ? !frame.thumbsSent : !frame.fullsizeSent) {
+            //if (1) {
                 context.pendingRollIndex = i;
                 context.pendingFrameIndex = j;
                 return YES;
@@ -347,8 +347,8 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
     if (context.state == kRunningTransferStateSendingThumbs) {
         for (RollModel *roll in context.orderModel.rolls) {
             for (FrameModel *frame in roll.frames) {
-                if (1) {
-                //if (!frame.thumbsSent) {
+                //if (1) {
+                if (!frame.thumbsSent) {
                     context.totalCount++;
                 }
             }
@@ -358,8 +358,8 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
     } else if (context.state == kRunningTransferStateSendingFullSize) {
         for (RollModel *roll in context.orderModel.rolls) {
             for (FrameModel *frame in roll.frames) {
-                if (1) {
-                //if (!frame.fullsizeSent) {
+                //if (1) {
+                if (!frame.fullsizeSent) {
                     context.totalCount++;
                     context.totalSize += frame.filesize;
                 }
@@ -818,19 +818,24 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
     return nil;
 }
 
-- (void)pushTransfer
+- (void)stopCurrentTransfer
 {
-    Transfer *newTransfer = [Transfer new];
-    
-    newTransfer.status = kTransferStatusQueued;
-    newTransfer.orderNumber = @"26710612";
-    newTransfer.eventName = @"Test Event";
-    newTransfer.uploadThumbs = NO;
-    newTransfer.uploadFullsize = YES;
-    newTransfer.datePushed = [NSDate date];
-    
-    [transfers addObject:newTransfer];
-    reloadTransfers();
+    if (currentlyRunningTransfer) {
+        currentlyRunningTransfer.status = kTransferStatusStopped;
+        transferStateChanged(@"Stopped");
+        
+        for (ImageTransferContext *imageContext in currentlyRunningTransfer.context.imageContexts) {
+            [imageContext.postImageDataService cancel];
+            [imageContext.fullSizePostedService cancel];
+            endedUploadingImage(imageContext.slot);
+        }
+        
+        progressIndicator.doubleValue = 0;
+        progressTitle.stringValue = @"";
+        
+        currentlyRunningTransfer = nil;
+        reloadTransfers();
+    }
 }
 
 - (BOOL)save
@@ -843,6 +848,11 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
     
     return [NSKeyedArchiver archiveRootObject:transfers toFile:pathToDataFile] &&
         (currentlyRunningTransfer.context.orderModel ? [currentlyRunningTransfer.context.orderModel save] : YES);
+}
+
+- (void)reload
+{
+    reloadTransfers();
 }
 
 @end

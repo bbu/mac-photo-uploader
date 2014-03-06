@@ -36,4 +36,7 @@ typedef NS_ENUM(NSUInteger, WizardStep) {
 @property NSInteger effectiveService;
 @property NSString *effectiveCoreDomain;
 
+@property (readonly) MainWindowController *mainWindowController;
+@property EventRow *eventRow;
+
 @end

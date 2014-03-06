@@ -23,8 +23,9 @@ typedef NS_ENUM(NSInteger, TransferStatus) {
 @interface TransferManager : NSObject
 
 - (void)processTransfers;
-- (void)pushTransfer;
 - (BOOL)save;
+- (void)stopCurrentTransfer;
+- (void)reload;
 
 @property (readonly) NSMutableArray *transfers;
 @property (readonly) Transfer *currentlyRunningTransfer;
