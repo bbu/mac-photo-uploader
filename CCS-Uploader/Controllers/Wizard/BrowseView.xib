@@ -9,6 +9,11 @@
         <customObject id="-2" userLabel="File's Owner" customClass="BrowseViewController">
             <connections>
                 <outlet property="advancedOptionsPopover" destination="Ev0-cL-VcC" id="aUQ-CH-x6i"/>
+                <outlet property="btnAdvancedOptions" destination="3qT-86-83T" id="PEa-z6-76Z"/>
+                <outlet property="btnBrowse" destination="AXN-uX-0NY" id="Y25-DJ-1rO"/>
+                <outlet property="btnDeleteSelectedFrames" destination="GRS-Ng-0qk" id="c4i-qZ-TYP"/>
+                <outlet property="btnGreenScreen" destination="3tM-Sx-CYf" id="AgI-cM-ZBg"/>
+                <outlet property="btnPhotographers" destination="4PM-wW-Wr1" id="g9W-Q7-Kcc"/>
                 <outlet property="btnRotationDegrees" destination="glx-9l-D8b" id="ArC-3P-BVm"/>
                 <outlet property="btnRotationDirection" destination="wkX-R8-wgd" id="Jnn-oE-cm7"/>
                 <outlet property="chkAutoCategorizeImages" destination="QfY-Fh-1Qt" id="poa-5n-WWt"/>
@@ -19,6 +24,8 @@
                 <outlet property="imageBrowserTitle" destination="bzN-R5-MAb" id="i2f-2O-cLB"/>
                 <outlet property="imageBrowserView" destination="4Ng-qR-G4T" id="Mtc-Jn-cPc"/>
                 <outlet property="includeNewlyAddedImagesSheet" destination="rMF-xz-va9" id="Coe-iE-tWO"/>
+                <outlet property="loadingIndicator" destination="5CT-3c-Mnq" id="9i3-k3-k1C"/>
+                <outlet property="loadingTitle" destination="NS3-3q-xBI" id="elV-Vt-Ptd"/>
                 <outlet property="tblRolls" destination="Eum-26-wUS" id="Cjw-xt-uA5"/>
                 <outlet property="txtNewFiles" destination="etA-Be-cCt" id="LaC-yF-YDb"/>
                 <outlet property="view" destination="1" id="2"/>
@@ -375,6 +382,19 @@
                         <font key="font" metaFont="system"/>
                     </buttonCell>
                 </button>
+                <progressIndicator horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" id="5CT-3c-Mnq">
+                    <rect key="frame" x="159" y="441" width="16" height="16"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                </progressIndicator>
+                <textField hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="750" id="NS3-3q-xBI">
+                    <rect key="frame" x="181" y="441" width="272" height="17"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Loading" id="P2M-oD-Emb">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
             </subviews>
         </customView>
         <customView id="Uko-gK-bVM">
@@ -575,7 +595,7 @@
                 <button verticalHuggingPriority="750" id="GRS-Ng-0qk">
                     <rect key="frame" x="630" y="41" width="195" height="32"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <buttonCell key="cell" type="push" title="Delete Selected" bezelStyle="rounded" image="NSStopProgressFreestandingTemplate" imagePosition="left" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="rMt-93-GvM">
+                    <buttonCell key="cell" type="push" title="Delete Selected" bezelStyle="rounded" image="NSStopProgressFreestandingTemplate" imagePosition="left" alignment="center" enabled="NO" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="rMt-93-GvM">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                         <string key="keyEquivalent" base64-UTF8="YES">

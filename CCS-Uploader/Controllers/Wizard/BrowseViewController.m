@@ -53,7 +53,7 @@
 
 - (id)imageSubtitle
 {
-    return [NSString stringWithFormat:@"%ld × %ld", frameModel.width, frameModel.height];
+    return [NSString stringWithFormat:@"%@%ld × %ld", frameModel.fullsizeSent ? @"[Sent] " : @"", frameModel.width, frameModel.height];
 }
 
 - (NSUInteger)imageVersion
@@ -67,6 +67,9 @@
     WizardWindowController *wizardWindowController;
 
     IBOutlet NSTableView *tblRolls;
+    IBOutlet NSTextField *loadingTitle;
+    IBOutlet NSProgressIndicator *loadingIndicator;
+    IBOutlet NSButton *btnBrowse, *btnGreenScreen, *btnPhotographers, *btnAdvancedOptions;
     IBOutlet NSButton
         *chkAutoCategorizeImages,
         *chkPutImagesInCurrentlySelectedRoll,
@@ -81,6 +84,7 @@
     IBOutlet IKImageBrowserView *imageBrowserView;
     IBOutlet NSTextField *imageBrowserTitle;
     IBOutlet NSPopUpButton *btnRotationDegrees, *btnRotationDirection;
+    IBOutlet NSButton *btnDeleteSelectedFrames;
     NSMutableArray *imagesInBrowser;
     BOOL rollsNeedReload;
     
@@ -126,6 +130,21 @@
     [tblRolls registerForDraggedTypes:[NSArray arrayWithObject:(NSString *)kUTTypeFileURL]];
 }
 
+- (void)copyImagesInBackground:(NSDictionary *)params
+{
+    [orderModel addNewImages:params[@"URLs"]
+        inRoll:((NSNumber *)params[@"inRoll"]).integerValue
+        framesPerRoll:((NSNumber *)params[@"framesPerRoll"]).integerValue
+        autoNumberRolls:((NSNumber *)params[@"autoNumberRolls"]).boolValue
+        autoNumberFrames:((NSNumber *)params[@"autoNumberFrames"]).boolValue
+        statusField:loadingTitle];
+
+    [orderModel save];
+
+    [tblRolls performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:YES];
+    [self performSelectorOnMainThread:@selector(enableControls) withObject:nil waitUntilDone:YES];
+}
+
 - (BOOL)tableView:(NSTableView*)tv acceptDrop:(id<NSDraggingInfo>)info row:(NSInteger)row dropOperation:(NSTableViewDropOperation)op
 {
     NSPasteboard *pasteboard = info.draggingPasteboard;
@@ -138,14 +157,17 @@
         }
     ];
     
-    [orderModel addNewImages:URLs
-        inRoll:chkPutImagesInCurrentlySelectedRoll.state == NSOnState ? tblRolls.selectedRow : (op == NSTableViewDropOn ? row : -1)
-        framesPerRoll:chkHonourFramesPerRoll.state == NSOnState ? framesPerRoll : 9999
-        autoNumberRolls:chkAutoNumberRolls.state == NSOnState ? YES : NO
-        autoNumberFrames:chkAutoNumberFrames.state == NSOnState ? YES : NO];
+    NSDictionary *params = @{
+        @"URLs": URLs,
+        @"inRoll": [NSNumber numberWithInteger:chkPutImagesInCurrentlySelectedRoll.state == NSOnState ? tblRolls.selectedRow : (op == NSTableViewDropOn ? row : -1)],
+        @"framesPerRoll": [NSNumber numberWithInteger:chkHonourFramesPerRoll.state == NSOnState ? framesPerRoll : 9999],
+        @"autoNumberRolls": [NSNumber numberWithBool:chkAutoNumberRolls.state == NSOnState ? YES : NO],
+        @"autoNumberFrames": [NSNumber numberWithBool:chkAutoNumberFrames.state == NSOnState ? YES : NO]
+    };
     
-    [orderModel save];
-    [tblRolls reloadData];
+    [self disableControls:@"Preparing to copy files"];
+    [self performSelectorInBackground:@selector(copyImagesInBackground:) withObject:params];
+    
     return YES;
 }
 
@@ -171,21 +193,56 @@
     if (defaultLocation) {
         [openPanel setDirectoryURL:[NSURL fileURLWithPath:defaultLocation]];
     }
-
+    
     [openPanel beginSheetModalForWindow:wizardWindowController.window
         completionHandler:^(NSInteger result) {
             if (result == NSFileHandlingPanelOKButton) {
-                [orderModel addNewImages:openPanel.URLs
-                    inRoll:chkPutImagesInCurrentlySelectedRoll.state == NSOnState ? tblRolls.selectedRow : -1
-                    framesPerRoll:chkHonourFramesPerRoll.state == NSOnState ? framesPerRoll : 9999
-                    autoNumberRolls:chkAutoNumberRolls.state == NSOnState ? YES : NO
-                    autoNumberFrames:chkAutoNumberFrames.state == NSOnState ? YES : NO];
-
-                [tblRolls reloadData];
-                [orderModel save];
+                NSDictionary *params = @{
+                    @"URLs": openPanel.URLs,
+                    @"inRoll": [NSNumber numberWithInteger:chkPutImagesInCurrentlySelectedRoll.state == NSOnState ? tblRolls.selectedRow : -1],
+                    @"framesPerRoll": [NSNumber numberWithInteger:chkHonourFramesPerRoll.state == NSOnState ? framesPerRoll : 9999],
+                    @"autoNumberRolls": [NSNumber numberWithBool:chkAutoNumberRolls.state == NSOnState ? YES : NO],
+                    @"autoNumberFrames": [NSNumber numberWithBool:chkAutoNumberFrames.state == NSOnState ? YES : NO]
+                };
+                
+                [self disableControls:@"Preparing to copy files"];
+                [self performSelectorInBackground:@selector(copyImagesInBackground:) withObject:params];
             }
         }
     ];
+}
+
+- (void)disableControls:(NSString *)status
+{
+    [btnBrowse setEnabled:NO];
+    [btnGreenScreen setEnabled:NO];
+    [btnPhotographers setEnabled:NO];
+    [btnAdvancedOptions setEnabled:NO];
+    [tblRolls setEnabled:NO];
+    
+    [wizardWindowController.btnCancel setEnabled:NO];
+    [wizardWindowController.btnBack setEnabled:NO];
+    [wizardWindowController.btnNext setEnabled:NO];
+    
+    [loadingIndicator startAnimation:nil];
+    [loadingTitle setStringValue:status];
+    [loadingTitle setHidden:NO];
+}
+
+- (void)enableControls
+{
+    [btnBrowse setEnabled:YES];
+    [btnGreenScreen setEnabled:YES];
+    [btnPhotographers setEnabled:YES];
+    [btnAdvancedOptions setEnabled:YES];
+    [tblRolls setEnabled:YES];
+    
+    [wizardWindowController.btnCancel setEnabled:YES];
+    [wizardWindowController.btnBack setEnabled:YES];
+    [wizardWindowController.btnNext setEnabled:YES];
+    
+    [loadingIndicator stopAnimation:nil];
+    [loadingTitle setHidden:YES];
 }
 
 - (IBAction)advancedOptionsClicked:(id)sender
@@ -280,6 +337,11 @@
             effectiveService = kServiceRootCore;
             effectiveCoreDomain = [defaults objectForKey:kCoreDomain];
         }
+        
+        wizardWindowController.effectiveUser = effectiveUser;
+        wizardWindowController.effectivePass = effectivePass;
+        wizardWindowController.effectiveService = effectiveService;
+        wizardWindowController.effectiveCoreDomain = effectiveCoreDomain;
     }
     
     [checkOrderNumberService setEffectiveServiceRoot:effectiveService coreDomain:effectiveCoreDomain];
@@ -533,6 +595,31 @@
 
 - (IBAction)rotateSelectedFrames:(id)sender
 {
+    /*
+    static NSInteger exifTransTable[2][8][3] = {
+        {
+            {8, 3, 6},
+            {7, 4, 5},
+            {6, 1, 8},
+            {5, 2, 7},
+            {2, 7, 4},
+            {1, 8, 3},
+            {4, 5, 2},
+            {3, 6, 1},
+        },
+        {
+            {6, 3, 8},
+            {5, 4, 7},
+            {8, 1, 6},
+            {7, 2, 5},
+            {4, 7, 2},
+            {3, 8, 1},
+            {2, 5, 4},
+            {1, 6, 3},
+        },
+    };
+    */
+    
     NSString *rollPath = [orderModel.rootDir stringByAppendingPathComponent:rollModelShown.number];
     
     [imageBrowserView.selectionIndexes
@@ -566,7 +653,7 @@
             
             frame.width = newSize.width;
             frame.height = newSize.height;
-            
+
             NSDictionary *fileAttrs = [[NSFileManager defaultManager] attributesOfItemAtPath:filepath error:nil];
             
             if (fileAttrs) {
@@ -622,6 +709,23 @@
 {
     NSSlider *slider = sender;
     imageBrowserView.zoomValue = slider.floatValue / 100.;
+}
+
+- (void)imageBrowserSelectionDidChange:(IKImageBrowserView *)view
+{
+    //NSLog(@"selection changed: %lu", imageBrowserView.selectionIndexes.count);
+    NSUInteger numSelected = imageBrowserView.selectionIndexes.count;
+    
+    if (numSelected == 1) {
+        btnDeleteSelectedFrames.title = @"Delete Selected";
+        [btnDeleteSelectedFrames setEnabled:YES];
+    } else if (numSelected > 1) {
+        btnDeleteSelectedFrames.title = [NSString stringWithFormat:@"Delete Selected (%lu)", numSelected];
+        [btnDeleteSelectedFrames setEnabled:YES];
+    } else {
+        btnDeleteSelectedFrames.title = @"Delete Selected";
+        [btnDeleteSelectedFrames setEnabled:NO];
+    }
 }
 
 - (NSUInteger)numberOfItemsInImageBrowser:(IKImageBrowserView *)view

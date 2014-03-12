@@ -63,6 +63,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
 @property NSInteger pendingRollIndex;
 @property NSInteger pendingFrameIndex;
 @property OrderModel *orderModel;
+@property NSString *effectiveUser, *effectivePass;
 @property EventRow *eventRow;
 @property NSString *ccsPassword;
 @property EventSettingsResult *eventSettings;
@@ -93,6 +94,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
         _fullsizeUploaded = [decoder decodeBoolForKey:@"fullsizeUploaded"];
         _datePushed = [decoder decodeObjectForKey:@"datePushed"];
         _dateScheduled = [decoder decodeObjectForKey:@"dateScheduled"];
+        _isQuicPost = [decoder decodeBoolForKey:@"isQuicPost"];
     }
     
     return self;
@@ -109,6 +111,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
     [encoder encodeBool:_fullsizeUploaded forKey:@"fullsizeUploaded"];
     [encoder encodeObject:_datePushed forKey:@"datePushed"];
     [encoder encodeObject:_dateScheduled forKey:@"dateScheduled"];
+    [encoder encodeBool:_isQuicPost forKey:@"isQuicPost"];
 }
 
 @end
@@ -677,11 +680,29 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
 {
     RunningTransferContext *context = currentlyRunningTransfer.context;
     
+    if (!context.effectiveUser) {
+        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+
+        if (currentlyRunningTransfer.isQuicPost) {
+            context.effectiveUser = [defaults objectForKey:kQuicPostUser];
+            context.effectivePass = [defaults objectForKey:kQuicPostPass];
+            
+            [listEventService setEffectiveServiceRoot:kServiceRootQuicPost coreDomain:nil];
+            [checkOrderNumberService setEffectiveServiceRoot:kServiceRootQuicPost coreDomain:nil];
+        } else {
+            context.effectiveUser = [defaults objectForKey:kCoreUser];
+            context.effectivePass = [defaults objectForKey:kCorePass];
+
+            [listEventService setEffectiveServiceRoot:kServiceRootCore coreDomain:[defaults objectForKey:kCoreDomain]];
+            [checkOrderNumberService setEffectiveServiceRoot:kServiceRootCore coreDomain:[defaults objectForKey:kCoreDomain]];
+        }
+    }
+    
     if (!context.eventRow) {
         if (!listEventService.started) {
             [listEventService
-                startListEvent:@"ccsmacuploader"
-                password:@"candid123"
+                startListEvent:context.effectiveUser
+                password:context.effectivePass
                 orderNumber:currentlyRunningTransfer.orderNumber
                 complete:^(ListEventsResult *result) {
                     if (!result.error && result.loginSuccess && result.processSuccess && result.events.count == 1) {
@@ -699,8 +720,8 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
     if (!context.ccsPassword) {
         if (!checkOrderNumberService.started) {
             [checkOrderNumberService
-                startCheckOrderNumber:@"ccsmacuploader"
-                password:@"candid123"
+                startCheckOrderNumber:context.effectiveUser
+                password:context.effectivePass
                 orderNumber:currentlyRunningTransfer.orderNumber
                 complete:^(CheckOrderNumberResult *result) {
                     if (!result.error && result.loginSuccess && result.processSuccess) {
@@ -810,7 +831,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
             NSComparisonResult cmp = [now compare:transfer.dateScheduled];
             
             if (cmp == NSOrderedSame || cmp == NSOrderedDescending) {
-                return initRunningTransfer(transfer);
+                transfer.status = kTransferStatusQueued;
             }
         }
     }
@@ -822,6 +843,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
 {
     if (currentlyRunningTransfer) {
         currentlyRunningTransfer.status = kTransferStatusStopped;
+        [currentlyRunningTransfer.context.orderModel save];
         transferStateChanged(@"Stopped");
         
         for (ImageTransferContext *imageContext in currentlyRunningTransfer.context.imageContexts) {

@@ -339,7 +339,7 @@
 }
 
 - (void)addNewImages:(NSArray *)URLs inRoll:(NSInteger)rollIndex framesPerRoll:(NSInteger)framesPerRoll
-    autoNumberRolls:(BOOL)autoNumberRolls autoNumberFrames:(BOOL)autoNumberFrames
+    autoNumberRolls:(BOOL)autoNumberRolls autoNumberFrames:(BOOL)autoNumberFrames statusField:(NSTextField *)statusField
 {
     NSError *error = nil;
     NSString *tempDir = [rootDir stringByAppendingPathComponent:kTempFolderName];
@@ -353,6 +353,7 @@
     RollModel *tempRoll = [RollModel new];
     tempRoll.frames = [NSMutableArray new];
     NSString *derivedRollName = nil;
+    NSInteger copiedFiles = 0;
     
     for (NSURL *url in URLs) {
         BOOL isDirectory;
@@ -365,7 +366,7 @@
             
             if (isDirectory) {
                 NSMutableArray *filesToCopy = [FileUtil filesInDirectory:url.path
-                    extensionSet:[NSSet setWithObjects:@"jpg", @"png", nil] recursive:YES absolutePaths:YES];
+                    extensionSet:[NSSet setWithObjects:@"jpg", @"jpeg", @"png", nil] recursive:YES absolutePaths:YES];
                 
                 if (!filesToCopy) {
                     continue;
@@ -395,13 +396,19 @@
                             newFrame.imageType = imageType;
                             
                             [tempRoll.frames addObject:newFrame];
+                            
+                            copiedFiles++;
+                            [statusField performSelectorOnMainThread:@selector(setStringValue:)
+                                withObject:[NSString stringWithFormat:@"%ld files copied", copiedFiles] waitUntilDone:YES];
                         }
                     }
                 }
             } else {
                 NSString *fileToCopy = url.path;
-
-                if ([ImageUtil getImageProperties:fileToCopy size:&size type:imageType orientation:&orientation]) {
+                
+                if ([[NSSet setWithObjects:@"jpg", @"jpeg", @"png", nil] containsObject:fileToCopy.pathExtension] &&
+                    [ImageUtil getImageProperties:fileToCopy size:&size type:imageType orientation:&orientation]) {
+                    
                     NSString *destFilepath = [tempDir stringByAppendingPathComponent:fileToCopy.lastPathComponent];
                     
                     for (NSInteger dupNumber = 1; [fileMgr fileExistsAtPath:destFilepath]; dupNumber++) {
@@ -420,6 +427,10 @@
                         newFrame.imageType = imageType;
                         
                         [tempRoll.frames addObject:newFrame];
+
+                        copiedFiles++;
+                        [statusField performSelectorOnMainThread:@selector(setStringValue:)
+                            withObject:[NSString stringWithFormat:@"%ld files copied", copiedFiles] waitUntilDone:YES];
                     }
                 }
             }

@@ -68,75 +68,59 @@
     Transfer *newTransfer1 = [Transfer new];
     Transfer *newTransfer2 = [Transfer new];
     
+    newTransfer1.orderNumber = newTransfer2.orderNumber = wizardWindowController.eventRow.orderNumber;
+    newTransfer1.eventName = newTransfer2.eventName = wizardWindowController.eventRow.eventName;
+    newTransfer1.datePushed = newTransfer2.datePushed = wizardWindowController.eventRow.eventDate;
+    newTransfer1.isQuicPost = newTransfer2.isQuicPost = wizardWindowController.effectiveService == kServiceRootQuicPost ? YES : NO;
+    
     if (scheduleThumbsRadios.selectedTag == 1 && scheduleFullsizeRadios.selectedTag == 1) {
         newTransfer1.status = kTransferStatusQueued;
-        newTransfer1.orderNumber = wizardWindowController.eventRow.orderNumber;
-        newTransfer1.eventName = wizardWindowController.eventRow.eventName;
         newTransfer1.uploadThumbs = YES;
         newTransfer1.uploadFullsize = YES;
-        newTransfer1.datePushed = wizardWindowController.eventRow.eventDate;
         newTransfer1.dateScheduled = nil;
-        [wizardWindowController.mainWindowController.transferManager.transfers insertObject:newTransfer1 atIndex:0];
         
+        [wizardWindowController.mainWindowController.transferManager.transfers insertObject:newTransfer1 atIndex:0];
     } else if (scheduleThumbsRadios.selectedTag == 1 && scheduleFullsizeRadios.selectedTag == 2) {
         newTransfer1.status = kTransferStatusQueued;
-        newTransfer1.orderNumber = wizardWindowController.eventRow.orderNumber;
-        newTransfer1.eventName = wizardWindowController.eventRow.eventName;
         newTransfer1.uploadThumbs = YES;
         newTransfer1.uploadFullsize = NO;
-        newTransfer1.datePushed = wizardWindowController.eventRow.eventDate;
         newTransfer1.dateScheduled = nil;
-        [wizardWindowController.mainWindowController.transferManager.transfers insertObject:newTransfer1 atIndex:0];
         
         newTransfer2.status = kTransferStatusScheduled;
-        newTransfer2.orderNumber = wizardWindowController.eventRow.orderNumber;
-        newTransfer2.eventName = wizardWindowController.eventRow.eventName;
         newTransfer2.uploadThumbs = NO;
         newTransfer2.uploadFullsize = YES;
-        newTransfer2.datePushed = wizardWindowController.eventRow.eventDate;
         newTransfer2.dateScheduled = [dpScheduleFullsize.dateValue copy];
+
+        [wizardWindowController.mainWindowController.transferManager.transfers insertObject:newTransfer1 atIndex:0];
         [wizardWindowController.mainWindowController.transferManager.transfers insertObject:newTransfer2 atIndex:0];
-        
     } else if (scheduleThumbsRadios.selectedTag == 1 && scheduleFullsizeRadios.selectedTag == 3) {
         
     } else if (scheduleThumbsRadios.selectedTag == 2 && scheduleFullsizeRadios.selectedTag == 1) {
         newTransfer1.status = kTransferStatusScheduled;
-        newTransfer1.orderNumber = wizardWindowController.eventRow.orderNumber;
-        newTransfer1.eventName = wizardWindowController.eventRow.eventName;
         newTransfer1.uploadThumbs = YES;
         newTransfer1.uploadFullsize = NO;
-        newTransfer1.datePushed = wizardWindowController.eventRow.eventDate;
         newTransfer1.dateScheduled = [dpScheduleThumbs.dateValue copy];
-        [wizardWindowController.mainWindowController.transferManager.transfers insertObject:newTransfer1 atIndex:0];
         
         newTransfer2.status = kTransferStatusQueued;
-        newTransfer2.orderNumber = wizardWindowController.eventRow.orderNumber;
-        newTransfer2.eventName = wizardWindowController.eventRow.eventName;
         newTransfer2.uploadThumbs = NO;
         newTransfer2.uploadFullsize = YES;
-        newTransfer2.datePushed = wizardWindowController.eventRow.eventDate;
         newTransfer2.dateScheduled = nil;
+
+        [wizardWindowController.mainWindowController.transferManager.transfers insertObject:newTransfer1 atIndex:0];
         [wizardWindowController.mainWindowController.transferManager.transfers insertObject:newTransfer2 atIndex:0];
-        
     } else if (scheduleThumbsRadios.selectedTag == 2 && scheduleFullsizeRadios.selectedTag == 2) {
         newTransfer1.status = kTransferStatusScheduled;
-        newTransfer1.orderNumber = wizardWindowController.eventRow.orderNumber;
-        newTransfer1.eventName = wizardWindowController.eventRow.eventName;
         newTransfer1.uploadThumbs = YES;
         newTransfer1.uploadFullsize = NO;
-        newTransfer1.datePushed = wizardWindowController.eventRow.eventDate;
         newTransfer1.dateScheduled = [dpScheduleThumbs.dateValue copy];
-        [wizardWindowController.mainWindowController.transferManager.transfers insertObject:newTransfer1 atIndex:0];
         
         newTransfer2.status = kTransferStatusScheduled;
-        newTransfer2.orderNumber = wizardWindowController.eventRow.orderNumber;
-        newTransfer2.eventName = wizardWindowController.eventRow.eventName;
         newTransfer2.uploadThumbs = NO;
         newTransfer2.uploadFullsize = YES;
-        newTransfer2.datePushed = wizardWindowController.eventRow.eventDate;
         newTransfer2.dateScheduled = [dpScheduleFullsize.dateValue copy];
+
+        [wizardWindowController.mainWindowController.transferManager.transfers insertObject:newTransfer1 atIndex:0];
         [wizardWindowController.mainWindowController.transferManager.transfers insertObject:newTransfer2 atIndex:0];
-        
     } else if (scheduleThumbsRadios.selectedTag == 2 && scheduleFullsizeRadios.selectedTag == 3) {
     } else if (scheduleThumbsRadios.selectedTag == 3 && scheduleFullsizeRadios.selectedTag == 1) {
     } else if (scheduleThumbsRadios.selectedTag == 3 && scheduleFullsizeRadios.selectedTag == 2) {

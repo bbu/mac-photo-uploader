@@ -17,6 +17,7 @@ typedef NS_ENUM(NSInteger, TransferStatus) {
 @property TransferStatus status;
 @property BOOL uploadThumbs, thumbsUploaded, uploadFullsize, fullsizeUploaded;
 @property NSDate *datePushed, *dateScheduled;
+@property BOOL isQuicPost;
 @property RunningTransferContext *context;
 @end
 

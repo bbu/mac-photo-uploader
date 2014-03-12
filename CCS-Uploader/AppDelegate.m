@@ -15,7 +15,7 @@
     statusItem.image = [NSImage imageNamed:@"UploadIcon"];
     statusItem.menu = statusBarMenu;
     statusItem.highlightMode = YES;
-    
+
     //NSString *domainName = [[NSBundle mainBundle] bundleIdentifier];
     //[[NSUserDefaults standardUserDefaults] removePersistentDomainForName:domainName];
 }

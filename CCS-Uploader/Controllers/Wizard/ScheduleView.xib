@@ -50,7 +50,7 @@
 						<string key="NSFrame">{{592, 432}, {192, 24}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView" ref="619112581"/>
+						<reference key="NSNextKeyView" ref="599202327"/>
 						<string key="NSReuseIdentifierKey">_NS:397</string>
 						<string key="NSHuggingPriority">{251, 750}</string>
 						<bool key="NSEnabled">YES</bool>
@@ -101,6 +101,7 @@
 										<string key="NSFrame">{{18, 14}, {580, 81}}</string>
 										<reference key="NSSuperview" ref="539851001"/>
 										<reference key="NSWindow"/>
+										<reference key="NSNextKeyView"/>
 										<string key="NSReuseIdentifierKey">_NS:9</string>
 										<bool key="NSEnabled">YES</bool>
 										<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
@@ -1113,10 +1114,10 @@ AQABAAEAAQAB//+dkAEA//+PgAAE//+dkAEI//+dkAEMUERUAFBTVABQV1QAUFBUAAAAAAEAAAABA</b
 							<string>NeXT Encapsulated PostScript v1.2 pasteboard type</string>
 							<string>NeXT TIFF v4.0 pasteboard type</string>
 						</set>
-						<string key="NSFrame">{{-17, -38}, {512, 512}}</string>
+						<string key="NSFrame">{{75, 43}, {350, 350}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView" ref="198718945"/>
+						<reference key="NSNextKeyView" ref="619112581"/>
 						<string key="NSReuseIdentifierKey">_NS:9</string>
 						<string key="NSHuggingPriority">{251, 251}</string>
 						<bool key="NSEnabled">YES</bool>
@@ -1140,7 +1141,7 @@ AQABAAEAAQAB//+dkAEA//+PgAAE//+dkAEI//+dkAEMUERUAFBTVABQV1QAUFBUAAAAAAEAAAABA</b
 				<string key="NSFrameSize">{901, 460}</string>
 				<reference key="NSSuperview"/>
 				<reference key="NSWindow"/>
-				<reference key="NSNextKeyView" ref="599202327"/>
+				<reference key="NSNextKeyView" ref="198718945"/>
 				<string key="NSClassName">NSView</string>
 			</object>
 		</array>
@@ -1241,11 +1242,11 @@ AQABAAEAAQAB//+dkAEA//+PgAAE//+dkAEI//+dkAEMUERUAFBTVABQV1QAUFBUAAAAAAEAAAABA</b
 						<int key="objectID">1</int>
 						<reference key="object" ref="1005"/>
 						<array class="NSMutableArray" key="children">
-							<reference ref="599202327"/>
 							<reference ref="619112581"/>
 							<reference ref="59254800"/>
 							<reference ref="528265880"/>
 							<reference ref="198718945"/>
+							<reference ref="599202327"/>
 						</array>
 						<reference key="parent" ref="0"/>
 					</object>
@@ -1530,7 +1531,7 @@ AQABAAEAAQAB//+dkAEA//+PgAAE//+dkAEI//+dkAEMUERUAFBTVABQV1QAUFBUAAAAAAEAAAABA</b
 		<int key="IBDocument.defaultPropertyAccessControl">3</int>
 		<object class="NSMutableDictionary" key="IBDocument.LastKnownImageSizes">
 			<string key="NS.key.0">UploadBackground</string>
-			<string key="NS.object.0">{512, 512}</string>
+			<string key="NS.object.0">{1024, 1024}</string>
 		</object>
 	</data>
 </archive>

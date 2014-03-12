@@ -15,7 +15,7 @@
     
     TransferManager *transferManager;
     NSMutableArray *filteredTransfers;
-    NSDateFormatter *dateFormatter;
+    NSDateFormatter *dateFormatter, *timeFormatter;
 }
 
 @end
@@ -31,6 +31,9 @@
         transferManager = [TransferManager new];
         dateFormatter = [NSDateFormatter new];
         dateFormatter.dateFormat = @"MM/dd/Y";
+        
+        timeFormatter = [NSDateFormatter new];
+        timeFormatter.dateFormat = @"MM/dd/Y, hh:mm a";
     }
     
     return self;
@@ -115,7 +118,8 @@
         if (transfer.status != kTransferStatusScheduled) {
             result.textField.stringValue = transferStatuses[transfer.status];
         } else {
-            result.textField.stringValue = [NSString stringWithFormat:@"Scheduled for %@", transfer.dateScheduled];
+            result.textField.stringValue = [NSString stringWithFormat:@"Scheduled for %@",
+                [timeFormatter stringFromDate:transfer.dateScheduled]];
         }
     } else if ([tableColumn.identifier isEqualToString:@"Thumbs"]) {
         result.textField.stringValue = transfer.uploadThumbs ?
