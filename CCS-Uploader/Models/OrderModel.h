@@ -21,7 +21,8 @@
 - (void)ignoreNewlyAdded;
 - (void)includeNewlyAdded;
 - (void)addNewImages:(NSArray *)urls inRoll:(NSInteger)rollIndex framesPerRoll:(NSInteger)framesPerRoll
-    autoNumberRolls:(BOOL)autoNumberRolls autoNumberFrames:(BOOL)autoNumberFrames statusField:(NSTextField *)statusField;
+    autoNumberRolls:(BOOL)autoNumberRolls autoNumberFrames:(BOOL)autoNumberFrames
+    statusField:(NSTextField *)statusField errors:(NSMutableString *)errors;
 
 - (void)deleteRollAtIndex:(NSInteger)rollIndex;
 - (BOOL)renameRollAtIndex:(NSInteger)rollIndex newName:(NSString *)newName error:(NSError **)error;

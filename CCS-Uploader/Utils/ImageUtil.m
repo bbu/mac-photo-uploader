@@ -4,13 +4,26 @@
 
 @implementation ImageUtil
 
+static NSMutableString *lastError = nil;
+
++ (NSString *)lastError
+{
+    return lastError;
+}
+
 + (BOOL)getImageProperties:(NSString *)filename size:(CGSize *)size type:(NSMutableString *)imageType orientation:(NSUInteger *)orientation
 {
+    if (lastError == nil) {
+        lastError = [NSMutableString new];
+    } else {
+        lastError.string = @"";
+    }
+    
     NSURL *imageFileURL = [NSURL fileURLWithPath:filename];
     CGImageSourceRef imageSource = CGImageSourceCreateWithURL((__bridge CFURLRef)imageFileURL, NULL);
     
     if (imageSource == NULL) {
-        NSLog(@"Could not create image source for %@", filename);
+        [lastError appendFormat:@"%@: could not load image\r", filename];
         return NO;
     }
     
@@ -18,30 +31,66 @@
         [NSNumber numberWithBool:NO], (NSString *)kCGImageSourceShouldCache,
         nil];
     
-    BOOL result = NO;
+    NSString *type = (__bridge NSString *)CGImageSourceGetType(imageSource);
     
-    [imageType setString:(__bridge NSString *)CGImageSourceGetType(imageSource)];
+    if (type == nil || ([type compare:@"public.jpeg"] && [type compare:@"public.png"])) {
+        [lastError appendFormat:@"%@: not a JPEG or a PNG image\r", filename];
+        CFRelease(imageSource);
+        return NO;
+    }
+    
+    [imageType setString:type];
 
+    BOOL result = NO;
     CFDictionaryRef imageProperties = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, (__bridge CFDictionaryRef)options);
-    
+
     if (imageProperties) {
         CFIndex propertyCount = CFDictionaryGetCount(imageProperties);
 
         if (propertyCount) {
-            NSNumber *width = (NSNumber *)CFDictionaryGetValue(imageProperties, kCGImagePropertyPixelWidth);
-            NSNumber *height = (NSNumber *)CFDictionaryGetValue(imageProperties, kCGImagePropertyPixelHeight);
-            NSNumber *orientationNumber = (NSNumber *)CFDictionaryGetValue(imageProperties, kCGImagePropertyOrientation);
-            
+            NSNumber *width = (__bridge NSNumber *)CFDictionaryGetValue(imageProperties, kCGImagePropertyPixelWidth);
+            NSNumber *height = (__bridge NSNumber *)CFDictionaryGetValue(imageProperties, kCGImagePropertyPixelHeight);
+            NSNumber *orientationNumber = (__bridge NSNumber *)CFDictionaryGetValue(imageProperties, kCGImagePropertyOrientation);
+            NSString *colorModel = (__bridge NSString *)CFDictionaryGetValue(imageProperties, kCGImagePropertyColorModel);
+        
             size->width = width.floatValue;
             size->height = height.floatValue;
             *orientation = orientationNumber.unsignedIntegerValue;
             
-            result = YES;
+            BOOL isRGB = [colorModel compare:@"RGB"] == NSOrderedSame;
+            BOOL tooLarge = MAX(size->width, size->height) > 10000 || MIN(size->width, size->height) > 7500;
+            BOOL isProgressive = NO;
+            
+            CFDictionaryRef jfifProperties = (CFDictionaryRef)CFDictionaryGetValue(imageProperties, kCGImagePropertyJFIFDictionary);
+            
+            if (jfifProperties) {
+                CFBooleanRef isProgCFBool = (CFBooleanRef)CFDictionaryGetValue(jfifProperties, kCGImagePropertyJFIFIsProgressive);
+                
+                if (isProgCFBool) {
+                    isProgressive = CFBooleanGetValue(isProgCFBool);
+                }
+            }
+            
+            if (!isRGB) {
+                [lastError appendFormat:@"%@: image is not in the RGB colorspace\r", filename];
+            }
+            
+            if (tooLarge) {
+                [lastError appendFormat:@"%@: image is too large\r", filename];
+            }
+            
+            if (isProgressive) {
+                [lastError appendFormat:@"%@: image is a progressive JPEG\r", filename];
+            }
+
+            result = isRGB && !tooLarge && !isProgressive;
+        } else {
+            [lastError appendFormat:@"%@: image is corrupt\r", filename];
         }
 
         CFRelease(imageProperties);
     } else {
-        NSLog(@"Could not get image properties for %@", filename);
+        [lastError appendFormat:@"%@: could not get image properties\r", filename];
     }
     
     CFRelease(imageSource);
@@ -86,6 +135,20 @@ releaseSource:
     CFRelease(source);
 
     return result;
+}
+
++ (BOOL)jpegIsCorrupt:(NSString *)filename
+{
+    NSData *data = [NSData dataWithContentsOfFile:filename];
+    
+    if (!data || data.length < 4) {
+        return YES;
+    }
+    
+    NSUInteger totalBytes = data.length;
+    const uint8_t *bytes = (const uint8_t *) data.bytes;
+    
+    return !(bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[totalBytes - 2] == 0xFF && bytes[totalBytes - 1] == 0xD9);
 }
 
 + (void)generateThumbnailForImage:(NSImage *)image atPath:(NSString *)newFilePath forWidth:(int)width

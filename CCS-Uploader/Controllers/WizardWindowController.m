@@ -157,6 +157,18 @@
     [btnBack setEnabled:step == kWizardStepLoading || step == kWizardStepLogin ? NO : YES];
     [btnNext setEnabled:step == kWizardStepLoading ? NO : YES];
     
+    if (step == kWizardStepLogin || step == kWizardStepSchedule) {
+        btnNext.keyEquivalent = @"\r";
+    } else {
+        btnNext.keyEquivalent = @"";
+    }
+    
+    if (step == kWizardStepSchedule) {
+        btnNext.title = @"Push transfer";
+    } else {
+        btnNext.title = @"Next →";
+    }
+    
     if (step != kWizardStepLoading && titles[step].length) {
         txtStepTitle.stringValue = titles[step];
     }

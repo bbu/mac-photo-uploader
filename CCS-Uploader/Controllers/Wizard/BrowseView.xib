@@ -21,12 +21,14 @@
                 <outlet property="chkAutoNumberRolls" destination="gyN-Yg-Rzh" id="Y0W-1a-vsf"/>
                 <outlet property="chkHonourFramesPerRoll" destination="1nF-8n-3tE" id="Ud1-LI-QjM"/>
                 <outlet property="chkPutImagesInCurrentlySelectedRoll" destination="ht2-c3-hbU" id="MAZ-QB-01x"/>
+                <outlet property="errorsImportingImagesSheet" destination="79P-Pr-hux" id="XTZ-rZ-QfQ"/>
                 <outlet property="imageBrowserTitle" destination="bzN-R5-MAb" id="i2f-2O-cLB"/>
                 <outlet property="imageBrowserView" destination="4Ng-qR-G4T" id="Mtc-Jn-cPc"/>
                 <outlet property="includeNewlyAddedImagesSheet" destination="rMF-xz-va9" id="Coe-iE-tWO"/>
                 <outlet property="loadingIndicator" destination="5CT-3c-Mnq" id="9i3-k3-k1C"/>
                 <outlet property="loadingTitle" destination="NS3-3q-xBI" id="elV-Vt-Ptd"/>
                 <outlet property="tblRolls" destination="Eum-26-wUS" id="Cjw-xt-uA5"/>
+                <outlet property="txtImportErrors" destination="ZZk-pA-zf8" id="Zsj-sH-0Lc"/>
                 <outlet property="txtNewFiles" destination="etA-Be-cCt" id="LaC-yF-YDb"/>
                 <outlet property="view" destination="1" id="2"/>
                 <outlet property="viewRollPopover" destination="yFD-oL-e8k" id="gwg-UO-aJ7"/>
@@ -656,6 +658,9 @@ CA
                         <buttonCell key="cell" type="push" title="Import" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="e70-rR-1zV">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system"/>
+                            <string key="keyEquivalent" base64-UTF8="YES">
+DQ
+</string>
                         </buttonCell>
                         <connections>
                             <action selector="importNewFiles:" target="-2" id="R0j-ey-O6a"/>
@@ -710,6 +715,70 @@ CA
                             <autoresizingMask key="autoresizingMask"/>
                         </scroller>
                     </scrollView>
+                </subviews>
+            </view>
+        </window>
+        <window title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" hidesOnDeactivate="YES" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="79P-Pr-hux" customClass="NSPanel">
+            <windowStyleMask key="styleMask" utility="YES"/>
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+            <rect key="contentRect" x="196" y="116" width="700" height="331"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1080"/>
+            <view key="contentView" id="ad7-46-rTV">
+                <rect key="frame" x="0.0" y="0.0" width="700" height="331"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <scrollView horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" id="tfP-ng-GcA">
+                        <rect key="frame" x="20" y="61" width="660" height="225"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <clipView key="contentView" id="HJa-rf-Wu6">
+                            <rect key="frame" x="1" y="1" width="643" height="223"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                                <textView editable="NO" importsGraphics="NO" richText="NO" findStyle="panel" usesRuler="YES" usesFontPanel="YES" verticallyResizable="YES" allowsNonContiguousLayout="YES" id="ZZk-pA-zf8">
+                                    <rect key="frame" x="0.0" y="0.0" width="643" height="223"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <size key="minSize" width="643" height="223"/>
+                                    <size key="maxSize" width="655" height="10000000"/>
+                                    <color key="insertionPointColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
+                                    <size key="minSize" width="643" height="223"/>
+                                    <size key="maxSize" width="655" height="10000000"/>
+                                </textView>
+                            </subviews>
+                            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        </clipView>
+                        <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="YES" id="Bib-rO-fTC">
+                            <rect key="frame" x="-100" y="-100" width="87" height="18"/>
+                            <autoresizingMask key="autoresizingMask"/>
+                        </scroller>
+                        <scroller key="verticalScroller" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="oPI-2w-bR8">
+                            <rect key="frame" x="644" y="1" width="15" height="223"/>
+                            <autoresizingMask key="autoresizingMask"/>
+                        </scroller>
+                    </scrollView>
+                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" id="aMq-Cw-a2v">
+                        <rect key="frame" x="18" y="294" width="664" height="17"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="The following errors occurred while importing the images:" id="34A-E8-vLG">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <button verticalHuggingPriority="750" id="uDI-33-1tJ">
+                        <rect key="frame" x="542" y="13" width="144" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="push" title="OK" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="gvN-WN-gq6">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                            <string key="keyEquivalent" base64-UTF8="YES">
+DQ
+</string>
+                        </buttonCell>
+                        <connections>
+                            <action selector="closeErrors:" target="-2" id="sxP-SJ-UdW"/>
+                        </connections>
+                    </button>
                 </subviews>
             </view>
         </window>

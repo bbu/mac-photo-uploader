@@ -78,8 +78,8 @@
         *chkHonourFramesPerRoll;
 
     IBOutlet NSPopover *advancedOptionsPopover, *viewRollPopover;
-    IBOutlet NSPanel *includeNewlyAddedImagesSheet;
-    IBOutlet NSTextView *txtNewFiles;
+    IBOutlet NSPanel *includeNewlyAddedImagesSheet, *errorsImportingImagesSheet;
+    IBOutlet NSTextView *txtNewFiles, *txtImportErrors;
     
     IBOutlet IKImageBrowserView *imageBrowserView;
     IBOutlet NSTextField *imageBrowserTitle;
@@ -132,28 +132,41 @@
 
 - (void)copyImagesInBackground:(NSDictionary *)params
 {
+    NSMutableString *errors = [NSMutableString new];
+    
     [orderModel addNewImages:params[@"URLs"]
         inRoll:((NSNumber *)params[@"inRoll"]).integerValue
         framesPerRoll:((NSNumber *)params[@"framesPerRoll"]).integerValue
         autoNumberRolls:((NSNumber *)params[@"autoNumberRolls"]).boolValue
         autoNumberFrames:((NSNumber *)params[@"autoNumberFrames"]).boolValue
-        statusField:loadingTitle];
+        statusField:loadingTitle
+        errors:errors];
 
     [orderModel save];
 
     [tblRolls performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:YES];
     [self performSelectorOnMainThread:@selector(enableControls) withObject:nil waitUntilDone:YES];
+    
+    if (errors.length != 0) {
+        [self performSelectorOnMainThread:@selector(showImportErrors:) withObject:errors waitUntilDone:YES];
+    }
+}
+
+- (void)showImportErrors:(NSString *)errors
+{
+    txtImportErrors.string = errors;
+    
+    [NSApp beginSheet:errorsImportingImagesSheet modalForWindow:wizardWindowController.window
+        modalDelegate:nil didEndSelector:nil contextInfo:nil];
 }
 
 - (BOOL)tableView:(NSTableView*)tv acceptDrop:(id<NSDraggingInfo>)info row:(NSInteger)row dropOperation:(NSTableViewDropOperation)op
 {
     NSPasteboard *pasteboard = info.draggingPasteboard;
-    NSArray *acceptedTypes = [NSArray arrayWithObjects:(NSString *)kUTTypeImage, (NSString *)kUTTypeFolder, nil];
-    
+
     NSArray *URLs = [pasteboard readObjectsForClasses:[NSArray arrayWithObject:[NSURL class]]
         options:@{
             NSPasteboardURLReadingFileURLsOnlyKey: [NSNumber numberWithBool:YES],
-            NSPasteboardURLReadingContentsConformToTypesKey: acceptedTypes
         }
     ];
     
@@ -185,7 +198,9 @@
     openPanel.canChooseDirectories = YES;
     openPanel.canChooseFiles = YES;
     openPanel.allowsMultipleSelection = YES;
-    openPanel.message = @"Select image files or folders to upload. Any selected folders will be scanned recursively for image files.";
+    openPanel.message =
+        @"Select image files or folders to upload. Any selected folders will be scanned recursively for image files.\r"
+        @"Only RGB-colorspace images are accepted; Progressive JPEGs are not accepted";
 
     [openPanel setFrame:NSMakeRect(0, 0, wizardWindowController.window.frame.size.width,
         wizardWindowController.window.frame.size.height) display:YES];
@@ -492,6 +507,12 @@
     [tblRolls reloadData];
     [orderModel save];
     [NSApp endSheet:includeNewlyAddedImagesSheet];
+}
+
+- (IBAction)closeErrors:(id)sender
+{
+    [errorsImportingImagesSheet close];
+    [NSApp endSheet:errorsImportingImagesSheet];
 }
 
 - (void)controlTextDidEndEditing:(NSNotification *)notification
