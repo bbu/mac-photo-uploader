@@ -1,6 +1,8 @@
 #import "WizardWindowController.h"
 #import "MainWindowController.h"
 
+#import "../Services/ListEventsService.h"
+
 @interface WizardWindowController () {
     MainWindowController *mainWindowController;
     
@@ -15,7 +17,7 @@
     ReviewViewController *reviewViewController;
     ScheduleViewController *scheduleViewController;
 
-    NSAlert *alert;
+    ListEventsService *listEventService;
     
     WizardStep wizardStep;
     
@@ -55,7 +57,7 @@
         browseViewController = [[BrowseViewController alloc] initWithWizardController:self];
         reviewViewController = [[ReviewViewController alloc] initWithWizardController:self];
         scheduleViewController = [[ScheduleViewController alloc] initWithWizardController:self];
-        alert = [NSAlert new];
+        listEventService = [ListEventsService new];
     }
     
     return self;
@@ -68,10 +70,78 @@
     [self showStep:kWizardStepLogin];
 }
 
+- (void)showEvent:(NSString *)orderNumber user:(NSString *)user pass:(NSString *)pass
+    source:(NSString *)source filename:(NSString *)filename
+{
+    [super showWindow:nil];
+    
+    [loadingViewController view];
+    loadingViewController.txtMessage.stringValue = @"Checking the event...";
+    txtStepTitle.stringValue = filename.lastPathComponent;
+    txtStepDescription.stringValue = @"";
+    
+    [self showStep:kWizardStepLoading];
+    
+    if ([source.lowercaseString isEqualToString:@"core"]) {
+        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        
+        effectiveService = kServiceRootCore;
+        effectiveCoreDomain = [defaults objectForKey:kCoreDomain];
+        
+        if (!effectiveCoreDomain) {
+            effectiveCoreDomain = kDefaultCoreDomain;
+        }
+    } else if ([source.lowercaseString isEqualToString:@"quicpost"]) {
+        effectiveService = kServiceRootQuicPost;
+        effectiveCoreDomain = nil;
+    } else {
+        NSAlert *alert = [NSAlert alertWithMessageText:@"Not a CORE or a QuicPost event."
+            defaultButton:@"OK" alternateButton:@"" otherButton:@"" informativeTextWithFormat:@""];
+        
+        [alert beginSheetModalForWindow:self.window
+            completionHandler:^(NSModalResponse response) {
+                [self.window close];
+            }
+        ];
+        
+        return;
+    }
+    
+    effectiveUser = user;
+    effectivePass = pass;
+    
+    [listEventService setEffectiveServiceRoot:effectiveService coreDomain:effectiveCoreDomain];
+    [listEventService startListEvent:user password:pass orderNumber:orderNumber
+        complete:^(ListEventsResult *result) {
+            if (!result.error && result.events.count == 1 &&
+                ((EventRow *)result.events[0]).orderNumber != nil && ((EventRow *)result.events[0]).orderNumber.length != 0) {
+                
+                [browseViewController startLoadEvent:result.events[0] fromWizard:NO];
+                [btnNext setEnabled:NO];
+            } else {
+                NSAlert *alert = [NSAlert new];
+                
+                alert.messageText = [NSString stringWithFormat:
+                    @"Could not find a %@ event with the number \"%@\".",
+                        effectiveService == kServiceRootCore ? @"CORE" : @"QuicPost", orderNumber];
+                
+                [alert beginSheetModalForWindow:self.window
+                    completionHandler:^(NSModalResponse response) {
+                        [self.window close];
+                    }
+                ];
+            }
+        }
+    ];
+}
+
 - (IBAction)btnCancelClicked:(id)sender
 {
-    [self.window close];
+    if (self.eventRow != nil && self.eventRow.orderNumber != nil) {
+        [mainWindowController.openedEvents removeObject:self.eventRow.orderNumber];
+    }
     
+    [self.window close];
 }
 
 - (IBAction)btnBackClicked:(id)sender
@@ -86,6 +156,7 @@
         } break;
 
         case kWizardStepBrowse: {
+            [mainWindowController.openedEvents removeObject:eventRow.orderNumber];
             [self showStep:kWizardStepEvents];
         } break;
             

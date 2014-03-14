@@ -1,8 +1,10 @@
 #import "AppDelegate.h"
+#import "Utils/TransferFileParser.h"
 
 @interface AppDelegate () {
     IBOutlet NSMenu *statusBarMenu;
     NSStatusItem *statusItem;
+    TransferFileParser *transferFileParser;
 }
 
 @end
@@ -29,6 +31,30 @@
     [NSApp activateIgnoringOtherApps:YES];
     [mainWindowController showWindow:nil];
     [mainWindowController.window makeKeyAndOrderFront:nil];
+}
+
+- (BOOL)application:(NSApplication *)sender openFile:(NSString *)filename
+{
+    if (transferFileParser == nil) {
+        transferFileParser = [TransferFileParser new];
+    }
+    
+    NSDictionary *parsedFile = [transferFileParser parse:filename];
+    
+    if (parsedFile == nil) {
+        NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:@"Could not parse \"%@\".", filename]
+            defaultButton:@"OK" alternateButton:@"" otherButton:@"" informativeTextWithFormat:@""];
+        
+        [alert beginSheetModalForWindow:mainWindowController.window completionHandler:nil];
+        return YES;
+    }
+    
+    if (mainWindowController == nil) {
+        mainWindowController = [MainWindowController new];
+    }
+    
+    [mainWindowController openEvent:parsedFile filename:filename];
+    return YES;
 }
 
 - (BOOL)applicationShouldHandleReopen:(NSApplication *)theApplication hasVisibleWindows:(BOOL)flag

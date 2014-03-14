@@ -293,7 +293,7 @@
                                                             </button>
                                                         </prototypeCellViews>
                                                     </tableColumn>
-                                                    <tableColumn width="66.984375" minWidth="10" maxWidth="3.4028234663852886e+38" id="CbE-Fq-r7a">
+                                                    <tableColumn width="68.80078125" minWidth="10" maxWidth="3.4028234663852886e+38" id="CbE-Fq-r7a">
                                                         <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
                                                             <font key="font" metaFont="smallSystem"/>
                                                             <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -307,7 +307,7 @@
                                                         <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                         <prototypeCellViews>
                                                             <button verticalHuggingPriority="750" id="2wD-VK-0ub">
-                                                                <rect key="frame" x="943" y="1" width="67" height="15"/>
+                                                                <rect key="frame" x="943" y="1" width="69" height="15"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                 <buttonCell key="cell" type="inline" title="Errors" bezelStyle="inline" image="NSStatusUnavailable" imagePosition="right" alignment="center" borderStyle="border" inset="2" id="bjS-9m-Y7W">
                                                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>

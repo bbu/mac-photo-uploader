@@ -22,6 +22,8 @@ typedef NS_ENUM(NSUInteger, WizardStep) {
 
 - (id)initWithMainWindowController:(MainWindowController *)parent;
 - (void)showStep:(WizardStep)step;
+- (void)showEvent:(NSString *)orderNumber user:(NSString *)user pass:(NSString *)pass
+    source:(NSString *)source filename:(NSString *)filename;
 
 @property (readonly) NSTextField *txtStepTitle, *txtStepDescription;
 @property (readonly) NSButton *btnCancel, *btnBack, *btnNext;

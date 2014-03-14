@@ -30,6 +30,7 @@
 		2B4766121887E328008DF1FD /* AdvancedView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2B4766101887E328008DF1FD /* AdvancedView.xib */; };
 		2B4766161887FEBC008DF1FD /* MarketSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B4766141887FEBC008DF1FD /* MarketSettingsViewController.m */; };
 		2B4766171887FEBC008DF1FD /* MarketSettingsView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2B4766151887FEBC008DF1FD /* MarketSettingsView.xib */; };
+		2B48F33318D313E600E2271F /* TransferFileParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B48F33218D313E600E2271F /* TransferFileParser.m */; };
 		2B50FF7F18B1FDD400DBFCA0 /* ReviewViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B50FF7D18B1FDD400DBFCA0 /* ReviewViewController.m */; };
 		2B50FF8018B1FDD400DBFCA0 /* ReviewView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2B50FF7E18B1FDD400DBFCA0 /* ReviewView.xib */; };
 		2B50FF8418B1FE7F00DBFCA0 /* ScheduleViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B50FF8218B1FE7F00DBFCA0 /* ScheduleViewController.m */; };
@@ -115,6 +116,8 @@
 		2B4766131887FEBC008DF1FD /* MarketSettingsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MarketSettingsViewController.h; sourceTree = "<group>"; };
 		2B4766141887FEBC008DF1FD /* MarketSettingsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MarketSettingsViewController.m; sourceTree = "<group>"; };
 		2B4766151887FEBC008DF1FD /* MarketSettingsView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MarketSettingsView.xib; sourceTree = "<group>"; };
+		2B48F33118D313E600E2271F /* TransferFileParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TransferFileParser.h; sourceTree = "<group>"; };
+		2B48F33218D313E600E2271F /* TransferFileParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TransferFileParser.m; sourceTree = "<group>"; };
 		2B50FF7C18B1FDD400DBFCA0 /* ReviewViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ReviewViewController.h; sourceTree = "<group>"; };
 		2B50FF7D18B1FDD400DBFCA0 /* ReviewViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ReviewViewController.m; sourceTree = "<group>"; };
 		2B50FF7E18B1FDD400DBFCA0 /* ReviewView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ReviewView.xib; sourceTree = "<group>"; };
@@ -333,6 +336,8 @@
 				2B3499BC189E852600A45D6C /* FileUtil.m */,
 				2B1BDC6C18AA208900671C54 /* CCSPassword.h */,
 				2B1BDC6D18AA208900671C54 /* CCSPassword.m */,
+				2B48F33118D313E600E2271F /* TransferFileParser.h */,
+				2B48F33218D313E600E2271F /* TransferFileParser.m */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -488,6 +493,7 @@
 				2B2905AF18991548003C4345 /* CheckOrderNumberService.m in Sources */,
 				2B50FF8418B1FE7F00DBFCA0 /* ScheduleViewController.m in Sources */,
 				2B51D15B1897FCBA0021AD20 /* ListDivisionsService.m in Sources */,
+				2B48F33318D313E600E2271F /* TransferFileParser.m in Sources */,
 				2B74BF141883D50B00D0B78B /* AppDelegate.m in Sources */,
 				2B7ACBE7188680D700C68B0B /* FoldersViewController.m in Sources */,
 				2B51D1551897E6830021AD20 /* ListPhotographersService.m in Sources */,

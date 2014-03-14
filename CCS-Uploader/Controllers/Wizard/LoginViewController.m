@@ -3,11 +3,13 @@
 #import "../Prefs/AdvancedViewController.h"
 
 #import "../../Services/AuthService.h"
+#import "../../Services/ListEventsService.h"
 
 @interface LoginViewController () {
     IBOutlet NSPopUpButton *btnService;
     IBOutlet NSTextField *txtUsername, *txtPassword, *lblCoreURL, *txtCoreURL, *txtEventNumber;
     AuthService *authService;
+    ListEventsService *listEventService;
     WizardWindowController *wizardWindowController;
 
     NSString *quicPostUser, *quicPostPass;
@@ -25,6 +27,7 @@
     if (self) {
         wizardWindowController = parent;
         authService = [AuthService new];
+        listEventService = [ListEventsService new];
     }
     
     return self;
@@ -142,8 +145,35 @@
                     wizardWindowController.effectiveCoreDomain =
                         btnService.selectedTag == 1 ? [txtCoreURL.stringValue copy] : nil;
                     
-                    wizardWindowController.loadingViewController.txtMessage.stringValue = @"Retrieving events...";
-                    [wizardWindowController.eventsViewController refreshEvents:YES];
+                    if (txtEventNumber.stringValue.length != 0) {
+                        [listEventService setEffectiveServiceRoot:wizardWindowController.effectiveService
+                            coreDomain:wizardWindowController.effectiveCoreDomain];
+                        
+                        BOOL started = [listEventService
+                            startListEvent:wizardWindowController.effectiveUser
+                            password:wizardWindowController.effectivePass
+                            orderNumber:txtEventNumber.stringValue
+                            complete:^(ListEventsResult *result) {
+                                if (!result.error && result.events.count == 1 &&
+                                    ((EventRow *)result.events[0]).orderNumber != nil && ((EventRow *)result.events[0]).orderNumber.length != 0) {
+                                    
+                                    [wizardWindowController.browseViewController startLoadEvent:result.events[0] fromWizard:YES];
+                                } else {
+                                    NSAlert *alert = [NSAlert new];
+                                    alert.messageText = @"Could not find an event with the specified number.";
+                                    [wizardWindowController showStep:kWizardStepLogin];
+                                    [alert beginSheetModalForWindow:wizardWindowController.window completionHandler:nil];
+                                }
+                            }
+                        ];
+                        
+                        if (started) {
+                            wizardWindowController.loadingViewController.txtMessage.stringValue = @"Checking the specified event...";
+                        }
+                    } else {
+                        wizardWindowController.loadingViewController.txtMessage.stringValue = @"Retrieving events...";
+                        [wizardWindowController.eventsViewController refreshEvents:YES];
+                    }
                 } else {
                     NSAlert *alert = [NSAlert new];
                     alert.messageText = @"Wrong username or password.";
@@ -155,6 +185,7 @@
     ];
     
     if (started) {
+        [wizardWindowController.loadingViewController view];
         wizardWindowController.loadingViewController.txtMessage.stringValue = @"Signing in...";
         [wizardWindowController showStep:kWizardStepLoading];
     }

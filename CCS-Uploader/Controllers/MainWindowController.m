@@ -14,6 +14,7 @@
         *imgUploading5, *imgUploading6, *imgUploading7, *imgUploading8;
     
     TransferManager *transferManager;
+    NSMutableSet *openedEvents;
     NSMutableArray *filteredTransfers;
     NSDateFormatter *dateFormatter, *timeFormatter;
 }
@@ -22,6 +23,7 @@
 
 @implementation MainWindowController
 @synthesize transferManager;
+@synthesize openedEvents;
 
 - (id)init
 {
@@ -29,6 +31,8 @@
     
     if (self) {
         transferManager = [TransferManager new];
+        openedEvents = [NSMutableSet new];
+        
         dateFormatter = [NSDateFormatter new];
         dateFormatter.dateFormat = @"MM/dd/Y";
         
@@ -73,6 +77,14 @@
         [tblTransfers removeRowsAtIndexes:[NSIndexSet indexSetWithIndex:clickedRow] withAnimation:NSTableViewAnimationEffectFade];
         [transferManager.transfers removeObjectAtIndex:clickedRow];
     }
+}
+
+- (void)openEvent:(NSDictionary *)params filename:(NSString *)filename
+{
+    WizardWindowController *wizardWindowController = [[WizardWindowController alloc] initWithMainWindowController:self];
+
+    [wizardWindowController showEvent:params[@"OrderNumber"]
+        user:params[@"Email"] pass:params[@"Password"] source:params[@"Source"] filename:filename];
 }
 
 /*
@@ -169,7 +181,10 @@
 
 - (IBAction)previewsAndThumbnailsHelp:(id)sender
 {
-    NSString *label = @"Previews and thumbnails are used for displaying online and in CORE/Quicpost. Full-size images are used to produce prints and products. Orders cannot be processed without full-size images.";
+    NSString *label =
+        @"Previews and thumbnails are used for displaying online and in CORE/Quicpost. "
+        @"Full-size images are used to produce prints and products. "
+        @"Orders cannot be processed without full-size images.";
     
     NSPopover *popover = [AdvancedViewController popoverWithLabel:label size:NSMakeSize(260, 81)];
     [popover showRelativeToRect:[sender superview].bounds ofView:sender preferredEdge:NSMaxXEdge];

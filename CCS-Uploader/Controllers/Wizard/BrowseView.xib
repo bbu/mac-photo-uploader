@@ -739,10 +739,10 @@ DQ
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                     <size key="minSize" width="643" height="223"/>
-                                    <size key="maxSize" width="655" height="10000000"/>
+                                    <size key="maxSize" width="660" height="10000000"/>
                                     <color key="insertionPointColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
                                     <size key="minSize" width="643" height="223"/>
-                                    <size key="maxSize" width="655" height="10000000"/>
+                                    <size key="maxSize" width="660" height="10000000"/>
                                 </textView>
                             </subviews>
                             <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -759,7 +759,7 @@ DQ
                     <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" id="aMq-Cw-a2v">
                         <rect key="frame" x="18" y="294" width="664" height="17"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="The following errors occurred while importing the images:" id="34A-E8-vLG">
+                        <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="The following errors occurred while importing some of the images:" id="34A-E8-vLG">
                             <font key="font" metaFont="system"/>
                             <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>

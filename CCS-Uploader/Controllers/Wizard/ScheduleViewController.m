@@ -128,6 +128,7 @@
         
     }
     
+    [wizardWindowController.mainWindowController.openedEvents removeObject:wizardWindowController.eventRow.orderNumber];
     [wizardWindowController.mainWindowController.transferManager reload];
     [wizardWindowController.mainWindowController showWindow:nil];
 }

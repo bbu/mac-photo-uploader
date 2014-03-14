@@ -2,6 +2,7 @@
 
 #import "BrowseViewController.h"
 #import "../WizardWindowController.h"
+#import "../MainWindowController.h"
 #import "../../Models/OrderModel.h"
 
 #import "../../Services/CheckOrderNumberService.h"
@@ -322,16 +323,27 @@
         }
         
         [alert beginSheetModalForWindow:wizardWindowController.window
-            completionHandler:fromWizard ? nil : ^(NSModalResponse response) {
-                [wizardWindowController.window close];
+            completionHandler:^(NSModalResponse response) {
+                if (!fromWizard) {
+                    [wizardWindowController.window close];
+                }
             }
         ];
     };
     
-    NSString *effectiveUser, *effectivePass;
-    NSInteger effectiveService;
-    NSString *effectiveCoreDomain;
+    if ([wizardWindowController.mainWindowController.openedEvents containsObject:event.orderNumber]) {
+        terminate([NSString stringWithFormat:@"The event \"%@\" (%@) is already open in another window.", event.eventName, event.orderNumber]);
+        return;
+    }
     
+    [wizardWindowController.mainWindowController.openedEvents addObject:event.orderNumber];
+    
+    /*
+    NSString *effectiveUser = wizardWindowController.effectiveUser;
+    NSString *effectivePass = wizardWindowController.effectivePass;
+    NSInteger effectiveService = wizardWindowController.effectiveService;
+    NSString *effectiveCoreDomain = wizardWindowController.effectiveCoreDomain;
+     
     if (fromWizard) {
         effectiveUser = wizardWindowController.effectiveUser;
         effectivePass = wizardWindowController.effectivePass;
@@ -358,12 +370,19 @@
         wizardWindowController.effectiveService = effectiveService;
         wizardWindowController.effectiveCoreDomain = effectiveCoreDomain;
     }
+    */
     
-    [checkOrderNumberService setEffectiveServiceRoot:effectiveService coreDomain:effectiveCoreDomain];
+    [checkOrderNumberService
+        setEffectiveServiceRoot:wizardWindowController.effectiveService
+        coreDomain:wizardWindowController.effectiveCoreDomain];
     
-    BOOL started = [checkOrderNumberService startCheckOrderNumber:effectiveUser password:effectivePass orderNumber:event.orderNumber
+    BOOL started = [checkOrderNumberService
+        startCheckOrderNumber:wizardWindowController.effectiveUser
+        password:wizardWindowController.effectivePass
+        orderNumber:event.orderNumber
         complete:^(CheckOrderNumberResult *result) {
             if (result.error) {
+                [wizardWindowController.mainWindowController.openedEvents removeObject:event.orderNumber];
                 terminate([NSString stringWithFormat:@"Could not check the selected event. An error occurred: %@", result.error.localizedDescription]);
             } else {
                 if (result.loginSuccess && result.processSuccess) {
@@ -372,6 +391,7 @@
                     [eventSettingsService startGetEventSettings:event.ccsAccount password:ccsPassword orderNumber:event.orderNumber
                         complete:^(EventSettingsResult *result) {
                             if (result.error) {
+                                [wizardWindowController.mainWindowController.openedEvents removeObject:event.orderNumber];
                                 terminate([NSString stringWithFormat:@"Could not not obtain the event's settings. An error occurred: %@", result.error.localizedDescription]);
                             } else {
                                 if ([result.status isEqualToString:@"AuthenticationSuccessful"]) {
@@ -380,6 +400,7 @@
                                     [uploadExtensionsService startGetUploadExtensions:event.ccsAccount password:ccsPassword
                                         complete:^(UploadExtensionsResult *result) {
                                             if (result.error) {
+                                                [wizardWindowController.mainWindowController.openedEvents removeObject:event.orderNumber];
                                                 terminate([NSString stringWithFormat:
                                                     @"Could not obtain allowed upload file extensions. An error occurred: %@",
                                                     result.error.localizedDescription]);
@@ -394,11 +415,14 @@
                                                     orderModel = [[OrderModel alloc] initWithEventRow:event error:&error];
                                                     
                                                     if (orderModel == nil) {
+                                                        [wizardWindowController.mainWindowController.openedEvents removeObject:event.orderNumber];
                                                         terminate([NSString stringWithFormat:@"An error occurred while loading up the event. %@", error.localizedDescription]);
                                                     } else {
                                                         [self loadEvent];
                                                     }
                                                 } else {
+                                                    [wizardWindowController.mainWindowController.openedEvents removeObject:event.orderNumber];
+
                                                     terminate([NSString stringWithFormat:
                                                         @"Could not obtain allowed upload file extensions. The server returned \"%@\".", result.status]);
                                                 }
@@ -406,12 +430,14 @@
                                         }
                                     ];
                                 } else {
+                                    [wizardWindowController.mainWindowController.openedEvents removeObject:event.orderNumber];
                                     terminate([NSString stringWithFormat:@"Could not obtain the event's settings. The server returned \"%@\".", result.status]);
                                 }
                             }
                         }
                     ];
                 } else {
+                    [wizardWindowController.mainWindowController.openedEvents removeObject:event.orderNumber];
                     terminate([NSString stringWithFormat:@"The server rejected the selected event \"%@\".", event.orderNumber]);
                 }
             }

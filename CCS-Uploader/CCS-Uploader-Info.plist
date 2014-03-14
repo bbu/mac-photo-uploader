@@ -30,5 +30,46 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>ccstransfer</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string></string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>CFBundleTypeName</key>
+			<string>CCS Uploader Transfer</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+		</dict>
+	</array>
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>com.ccsuploader.ccstransfer</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+				<string>public.content</string>
+				<string>com.apple.property-list</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>CCS Uploader Transfer</string>
+			<key>UTTypeIconFile</key>
+			<string></string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>ccstransfer</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
 </dict>
 </plist>
