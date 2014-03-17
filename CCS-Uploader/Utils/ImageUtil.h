@@ -19,6 +19,8 @@ typedef NS_ENUM(NSInteger, IURotation) {
 + (void)generateThumbnailForImage:(NSImage *)image atPath:(NSString *)newFilePath forWidth:(int)width;
 
 + (BOOL)resizeAndRotateImage:(NSString *)inputImageFilename outputImageFilename:(NSString *)outputImageFilename
-    resizeToMaxSide:(CGFloat)maxSide rotate:(IURotation)rotate compressionQuality:(float)compressionQuality;
+    resizeToMaxSide:(CGFloat)maxSide rotate:(IURotation)rotate
+    horizontalWatermark:(NSData *)hWatermark verticalWatermark:(NSData *)vWatermark
+    compressionQuality:(float)compressionQuality;
 
 @end

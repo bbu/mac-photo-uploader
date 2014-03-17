@@ -1,5 +1,6 @@
 #import "AppDelegate.h"
 #import "Utils/TransferFileParser.h"
+#import "Utils/ImageUtil.h"
 
 @interface AppDelegate () {
     IBOutlet NSMenu *statusBarMenu;
@@ -31,6 +32,14 @@
     [NSApp activateIgnoringOtherApps:YES];
     [mainWindowController showWindow:nil];
     [mainWindowController.window makeKeyAndOrderFront:nil];
+    
+    /*
+    [ImageUtil resizeAndRotateImage:@"/Users/blagovest/Downloads/lotus.jpg" outputImageFilename:@"/Users/blagovest/Downloads/watermark.jpg"
+        resizeToMaxSide:640 rotate:kDontRotate
+        horizontalWatermark:nil
+        verticalWatermark:[NSData dataWithContentsOfFile:@"/Users/blagovest/Downloads/testv.tif"]
+        compressionQuality:0.8];
+    */
 }
 
 - (BOOL)application:(NSApplication *)sender openFile:(NSString *)filename

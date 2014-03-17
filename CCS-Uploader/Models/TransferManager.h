@@ -9,6 +9,7 @@ typedef NS_ENUM(NSInteger, TransferStatus) {
     kTransferStatusAborted,
     kTransferStatusStopped,
     kTransferStatusComplete,
+    kTransferStatusErrors,
 };
 
 @interface Transfer : NSObject <NSCoding>
@@ -19,6 +20,7 @@ typedef NS_ENUM(NSInteger, TransferStatus) {
 @property NSDate *datePushed, *dateScheduled;
 @property BOOL isQuicPost;
 @property RunningTransferContext *context;
+@property NSMutableString *errors;
 @end
 
 @interface TransferManager : NSObject

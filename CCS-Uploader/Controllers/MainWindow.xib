@@ -7,6 +7,7 @@
         <customObject id="-2" userLabel="File's Owner" customClass="MainWindowController">
             <connections>
                 <outlet property="currentTransfer" destination="nxh-xn-o2P" id="KYl-lj-xip"/>
+                <outlet property="errorsPopover" destination="o6n-c4-zrF" id="h5q-O5-S9E"/>
                 <outlet property="imgUploading1" destination="F6j-5e-CRm" id="hWG-xs-hr3"/>
                 <outlet property="imgUploading2" destination="qKP-2t-Ivs" id="vSW-Cf-h0Y"/>
                 <outlet property="imgUploading3" destination="qOC-lp-TkT" id="vYH-9a-84S"/>
@@ -20,6 +21,7 @@
                 <outlet property="transferProgress" destination="2lg-fm-kCc" id="WrN-R9-1nP"/>
                 <outlet property="transferProgressTitle" destination="58I-Fv-iTl" id="tP3-YN-V5G"/>
                 <outlet property="transferTitle" destination="58I-Fv-iTl" id="X4i-aX-GYb"/>
+                <outlet property="txtErrors" destination="uUO-Nz-UVj" id="A4x-BI-uw5"/>
                 <outlet property="window" destination="MDX-NV-dqb" id="ZjA-35-8e1"/>
             </connections>
         </customObject>
@@ -293,7 +295,7 @@
                                                             </button>
                                                         </prototypeCellViews>
                                                     </tableColumn>
-                                                    <tableColumn width="68.80078125" minWidth="10" maxWidth="3.4028234663852886e+38" id="CbE-Fq-r7a">
+                                                    <tableColumn identifier="Errors" width="68.80078125" minWidth="10" maxWidth="3.4028234663852886e+38" id="CbE-Fq-r7a">
                                                         <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
                                                             <font key="font" metaFont="smallSystem"/>
                                                             <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -313,6 +315,9 @@
                                                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                     <font key="font" metaFont="smallSystemBold"/>
                                                                 </buttonCell>
+                                                                <connections>
+                                                                    <action selector="viewTransferErrors:" target="-2" id="f4J-6g-S9V"/>
+                                                                </connections>
                                                             </button>
                                                         </prototypeCellViews>
                                                     </tableColumn>
@@ -556,6 +561,70 @@
                 <outlet property="delegate" destination="-2" id="gb3-qR-Hb0"/>
             </connections>
         </menu>
+        <viewController id="0C1-Rl-pwl" userLabel="Popover View Controller">
+            <connections>
+                <outlet property="view" destination="KfB-VF-N47" id="VnX-Rm-vGa"/>
+            </connections>
+        </viewController>
+        <popover behavior="t" id="o6n-c4-zrF">
+            <connections>
+                <outlet property="contentViewController" destination="0C1-Rl-pwl" id="yqy-g8-gQW"/>
+            </connections>
+        </popover>
+        <customView id="KfB-VF-N47">
+            <rect key="frame" x="0.0" y="0.0" width="656" height="293"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+            <subviews>
+                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="kvb-JI-UcP">
+                    <rect key="frame" x="18" y="256" width="620" height="17"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="The following errors occurred while transferring the images:" id="37B-fK-2Do">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <scrollView horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OYN-h8-iuN">
+                    <rect key="frame" x="20" y="20" width="616" height="228"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <clipView key="contentView" id="1ft-2P-PnM">
+                        <rect key="frame" x="1" y="1" width="599" height="226"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <textView editable="NO" importsGraphics="NO" richText="NO" findStyle="panel" verticallyResizable="YES" allowsNonContiguousLayout="YES" id="uUO-Nz-UVj">
+                                <rect key="frame" x="0.0" y="0.0" width="599" height="226"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <size key="minSize" width="599" height="226"/>
+                                <size key="maxSize" width="616" height="10000000"/>
+                                <color key="insertionPointColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
+                                <size key="minSize" width="599" height="226"/>
+                                <size key="maxSize" width="616" height="10000000"/>
+                            </textView>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    </clipView>
+                    <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="YES" id="Der-W8-fty">
+                        <rect key="frame" x="-100" y="-100" width="87" height="18"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </scroller>
+                    <scroller key="verticalScroller" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="fvs-NK-BbW">
+                        <rect key="frame" x="600" y="1" width="15" height="226"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </scroller>
+                </scrollView>
+            </subviews>
+            <constraints>
+                <constraint firstAttribute="trailing" secondItem="OYN-h8-iuN" secondAttribute="trailing" constant="20" id="0Qq-ok-PM7"/>
+                <constraint firstAttribute="trailing" secondItem="kvb-JI-UcP" secondAttribute="trailing" constant="20" id="9s2-hP-MvS"/>
+                <constraint firstAttribute="bottom" secondItem="OYN-h8-iuN" secondAttribute="bottom" constant="20" id="JO7-zc-pTw"/>
+                <constraint firstItem="kvb-JI-UcP" firstAttribute="top" secondItem="KfB-VF-N47" secondAttribute="top" constant="20" id="ORF-WO-HYZ"/>
+                <constraint firstItem="OYN-h8-iuN" firstAttribute="leading" secondItem="KfB-VF-N47" secondAttribute="leading" constant="20" id="XxY-7g-gHv"/>
+                <constraint firstItem="OYN-h8-iuN" firstAttribute="top" secondItem="kvb-JI-UcP" secondAttribute="bottom" constant="8" id="Y0E-X7-BB4"/>
+                <constraint firstItem="OYN-h8-iuN" firstAttribute="top" secondItem="kvb-JI-UcP" secondAttribute="bottom" constant="8" id="hZt-2H-D4f"/>
+                <constraint firstItem="kvb-JI-UcP" firstAttribute="leading" secondItem="KfB-VF-N47" secondAttribute="leading" constant="20" id="ooc-QJ-sms"/>
+            </constraints>
+        </customView>
     </objects>
     <resources>
         <image name="NSStatusUnavailable" width="16" height="16"/>

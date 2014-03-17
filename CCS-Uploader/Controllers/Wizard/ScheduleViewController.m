@@ -34,9 +34,11 @@
     
     [scheduleThumbsRadios selectCellWithTag:1];
     [dpScheduleThumbs setEnabled:NO];
+    [[scheduleThumbsRadios cellAtRow:2 column:0] setEnabled:YES];
 
     [scheduleFullsizeRadios selectCellWithTag:1];
     [dpScheduleFullsize setEnabled:NO];
+    [[scheduleFullsizeRadios cellAtRow:2 column:0] setEnabled:YES];
     
     [whichImagesRadios selectCellWithTag:1];
 }
@@ -50,6 +52,12 @@
     } else {
         [dpScheduleThumbs setEnabled:NO];
     }
+    
+    if (selectedCell.tag == 3) {
+        [[scheduleFullsizeRadios cellAtRow:2 column:0] setEnabled:NO];
+    } else {
+        [[scheduleFullsizeRadios cellAtRow:2 column:0] setEnabled:YES];
+    }
 }
 
 - (IBAction)scheduleFullsizeChanged:(id)sender
@@ -60,6 +68,12 @@
         [dpScheduleFullsize setEnabled:YES];
     } else {
         [dpScheduleFullsize setEnabled:NO];
+    }
+
+    if (selectedCell.tag == 3) {
+        [[scheduleThumbsRadios cellAtRow:2 column:0] setEnabled:NO];
+    } else {
+        [[scheduleThumbsRadios cellAtRow:2 column:0] setEnabled:YES];
     }
 }
 

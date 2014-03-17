@@ -13,6 +13,9 @@
         *imgUploading1, *imgUploading2, *imgUploading3, *imgUploading4,
         *imgUploading5, *imgUploading6, *imgUploading7, *imgUploading8;
     
+    IBOutlet NSPopover *errorsPopover;
+    IBOutlet NSTextView *txtErrors;
+    
     TransferManager *transferManager;
     NSMutableSet *openedEvents;
     NSMutableArray *filteredTransfers;
@@ -65,6 +68,9 @@
             transferManager.reloadTransfers();
         } else if (transfer.status == kTransferStatusRunning) {
             [transferManager stopCurrentTransfer];
+        } else if (transfer.status == kTransferStatusAborted) {
+            transfer.status = kTransferStatusQueued;
+            transferManager.reloadTransfers();
         }
     }
 }
@@ -76,6 +82,17 @@
     if (clickedRow != -1) {
         [tblTransfers removeRowsAtIndexes:[NSIndexSet indexSetWithIndex:clickedRow] withAnimation:NSTableViewAnimationEffectFade];
         [transferManager.transfers removeObjectAtIndex:clickedRow];
+    }
+}
+
+- (IBAction)viewTransferErrors:(id)sender
+{
+    NSInteger clickedRow = [tblTransfers rowForView:sender];
+    
+    if (clickedRow != -1) {
+        Transfer *transfer = transferManager.transfers[clickedRow];
+        txtErrors.string = transfer.errors;
+        [errorsPopover showRelativeToRect:[sender superview].bounds ofView:sender preferredEdge:NSMaxYEdge];
     }
 }
 
@@ -160,6 +177,9 @@
         } else if (transfer.status == kTransferStatusStopped) {
             btn.title = @"Resume";
             [result setHidden:NO];
+        } else if (transfer.status == kTransferStatusAborted) {
+            btn.title = @"Retry";
+            [result setHidden:NO];
         } else {
             [result setHidden:YES];
         }
@@ -168,6 +188,12 @@
             [result setHidden:YES];
         } else {
             [result setHidden:NO];
+        }
+    } else if ([tableColumn.identifier isEqualToString:@"Errors"]) {
+        if (transfer.errors && transfer.errors.length != 0) {
+            [result setHidden:NO];
+        } else {
+            [result setHidden:YES];
         }
     }
     

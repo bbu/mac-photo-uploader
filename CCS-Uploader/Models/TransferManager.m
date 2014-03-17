@@ -95,6 +95,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
         _datePushed = [decoder decodeObjectForKey:@"datePushed"];
         _dateScheduled = [decoder decodeObjectForKey:@"dateScheduled"];
         _isQuicPost = [decoder decodeBoolForKey:@"isQuicPost"];
+        _errors = [decoder decodeObjectForKey:@"errors"];
     }
     
     return self;
@@ -112,6 +113,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
     [encoder encodeObject:_datePushed forKey:@"datePushed"];
     [encoder encodeObject:_dateScheduled forKey:@"dateScheduled"];
     [encoder encodeBool:_isQuicPost forKey:@"isQuicPost"];
+    [encoder encodeObject:_errors forKey:@"errors"];
 }
 
 @end
@@ -172,9 +174,10 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
     return self;
 }
 
-- (void)abortTransfer:(NSString *)message
+- (void)abortTransferWithError:(NSString *)message
 {
     [currentlyRunningTransfer.context.orderModel save];
+    [currentlyRunningTransfer.errors appendString:message];
     currentlyRunningTransfer.status = kTransferStatusAborted;
     currentlyRunningTransfer.context = nil;
     reloadTransfers();
@@ -217,7 +220,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
     
     if (imageContext.frame.orientation > 1) {
         [ImageUtil resizeAndRotateImage:pathToFullSizeImage outputImageFilename:pathToFullSizeImage
-            resizeToMaxSide:0 rotate:kDontRotate compressionQuality:0.8];
+            resizeToMaxSide:0 rotate:kDontRotate horizontalWatermark:nil verticalWatermark:nil compressionQuality:0.82];
         
         CGSize newSize = CGSizeZero;
         NSUInteger orientation;
@@ -254,9 +257,16 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
         
         if (eventSettings.transferSettings.createThumbnail && eventSettings.thumbnailSettings) {
             NSString *thumbnailFilename = [pathToFullSizeImage stringByAppendingFormat:@"_ccsthumb_%ld", imageContext.slot];
-
+            NSData *hWatermark = nil, *vWatermark = nil;
+            
+            if (eventSettings.watermarkSettings && eventSettings.transferSettings.thumbnailWatermarkID == eventSettings.watermarkSettings.watermarkID) {
+                hWatermark = eventSettings.watermarkSettings.hFileData;
+                vWatermark = eventSettings.watermarkSettings.vFileData;
+            }
+            
             processed = [ImageUtil resizeAndRotateImage:pathToFullSizeImage outputImageFilename:thumbnailFilename
                 resizeToMaxSide:eventSettings.thumbnailSettings.maxSide rotate:kDontRotate
+                horizontalWatermark:hWatermark verticalWatermark:vWatermark
                 compressionQuality:eventSettings.thumbnailSettings.quality / 100.];
             
             if (processed) {
@@ -271,6 +281,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
 
             processed = [ImageUtil resizeAndRotateImage:pathToFullSizeImage outputImageFilename:mediumResFilename
                 resizeToMaxSide:eventSettings.mediumResSettings.maxSide rotate:kDontRotate
+                horizontalWatermark:nil verticalWatermark:nil
                 compressionQuality:eventSettings.mediumResSettings.quality / 100.];
             
             if (processed) {
@@ -282,9 +293,16 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
         
         if (eventSettings.transferSettings.createPreview && eventSettings.previewSettings) {
             NSString *previewFilename = [pathToFullSizeImage stringByAppendingFormat:@"_ccspreview_%ld", imageContext.slot];
+            NSData *hWatermark = nil, *vWatermark = nil;
 
+            if (eventSettings.watermarkSettings && eventSettings.transferSettings.previewWatermarkID == eventSettings.watermarkSettings.watermarkID) {
+                hWatermark = eventSettings.watermarkSettings.hFileData;
+                vWatermark = eventSettings.watermarkSettings.vFileData;
+            }
+            
             processed = [ImageUtil resizeAndRotateImage:pathToFullSizeImage outputImageFilename:previewFilename
                 resizeToMaxSide:eventSettings.previewSettings.maxSide rotate:kDontRotate
+                horizontalWatermark:hWatermark verticalWatermark:vWatermark
                 compressionQuality:eventSettings.previewSettings.quality / 100.];
             
             if (processed) {
@@ -299,6 +317,28 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
             }
             
             [[NSFileManager defaultManager] removeItemAtPath:previewFilename error:nil];
+        }
+        
+        if (eventSettings.pngSettings) {
+            NSString *pngFilename = [pathToFullSizeImage stringByAppendingFormat:@"_ccspng_%ld.png", imageContext.slot];
+            
+            processed = [ImageUtil resizeAndRotateImage:pathToFullSizeImage outputImageFilename:pngFilename
+                resizeToMaxSide:eventSettings.pngSettings.maxSide rotate:kDontRotate
+                horizontalWatermark:nil verticalWatermark:nil
+                compressionQuality:eventSettings.pngSettings.quality / 100.];
+            
+            if (processed) {
+                imageContext.pngImage = [NSData dataWithContentsOfFile:pngFilename];
+                CGSize size = CGSizeZero;
+                NSUInteger orientation;
+                
+                if ([ImageUtil getImageProperties:pngFilename size:&size type:nil orientation:&orientation]) {
+                    imageContext.pngWidth = size.width;
+                    imageContext.pngHeight = size.height;
+                }
+            }
+            
+            [[NSFileManager defaultManager] removeItemAtPath:pngFilename error:nil];
         }
     } else if (imageContext.state == kImageTransferStateFixingOrientation) {
     }
@@ -454,7 +494,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                                 roll:imageContext.roll.number
                                 frame:imageContext.frame.name
                                 extension:imageContext.frame.extension
-                                version:@"CCSTransfer"
+                                version:@"CCSUploaderMac 1.0"
                                 bypassPassword:NO
                                 fullsizeImage:imageContext.fullsizeImage
                                 previewImage:imageContext.previewImage
@@ -473,17 +513,26 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                                 createPreviewAndThumb:NO
                                 complete:^(PostImageDataResult *result) {
                                     if (!result.error && [result.status isEqualToString:@"Successful"]) {
-                                    } else {
+                                        imageContext.frame.thumbsSent = YES;
+                                        context.imagesSent++;
                                         
+                                        progressTitle.stringValue = [NSString stringWithFormat:@"%ld of %ld thumbs sent",
+                                            context.imagesSent, context.totalCount];
+                                        
+                                        progressIndicator.doubleValue++;
+                                    } else {
+                                        if (result.error) {
+                                            [currentlyRunningTransfer.errors appendFormat:
+                                                @"%@/%@.%@: could not send thumbnails, an error occurred: %@\r",
+                                                imageContext.roll.number, imageContext.frame.name, imageContext.frame.extension,
+                                                result.error.localizedDescription];
+                                        } else {
+                                            [currentlyRunningTransfer.errors appendFormat:
+                                                @"%@/%@.%@: could not send thumbnails, the server returned \"%@\" with a status of \"%@\"\r",
+                                                imageContext.roll.number, imageContext.frame.name, imageContext.frame.extension,
+                                                result.message, result.status];
+                                        }
                                     }
-                                    
-                                    imageContext.frame.thumbsSent = YES;
-                                    context.imagesSent++;
-                                    
-                                    progressTitle.stringValue = [NSString stringWithFormat:@"%ld of %ld thumbs sent",
-                                        context.imagesSent, context.totalCount];
-                                    
-                                    progressIndicator.doubleValue++;
                                     
                                     endedUploadingImage(imageContext.slot);
                                     imageContext.state = kImageTransferStateIdle;
@@ -516,18 +565,27 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                     complete:^(ActivatePreviewsAndThumbsResult *result) {
                         if (!result.error && [result.status isEqualToString:@"AuthenticationSuccessful"]) {
                             currentlyRunningTransfer.thumbsUploaded = YES;
-                            reloadTransfers();
-
-                            if (currentlyRunningTransfer.uploadFullsize) {
-                                transferStateChanged(@"Sending full-size images");
-                                context.state = kRunningTransferStateSendingFullSize;
-                            } else {
-                                transferStateChanged(@"Finished");
-                                context.state = kRunningTransferStateFinished;
-                            }
                         } else {
-                            [self abortTransfer:@"Unable to activate thumbs."];
+                            if (result.error) {
+                                [currentlyRunningTransfer.errors appendFormat:
+                                    @"Could not activate thumbs and previews, an error occurred: %@\r",
+                                    result.error.localizedDescription];
+                            } else {
+                                [currentlyRunningTransfer.errors appendFormat:
+                                    @"Could not activate thumbs and previews, the server returned \"%@\" with a status of \"%@\"\r",
+                                    result.message, result.status];
+                            }
                         }
+                        
+                        if (currentlyRunningTransfer.uploadFullsize) {
+                            transferStateChanged(@"Sending full-size images");
+                            context.state = kRunningTransferStateSendingFullSize;
+                        } else {
+                            transferStateChanged(@"Finished");
+                            context.state = kRunningTransferStateFinished;
+                        }
+
+                        reloadTransfers();
                     }
                 ];
             }
@@ -588,9 +646,17 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
 
                     case kImageTransferStateSendingFullSize: {
                         if (!imageContext.ftpUploadTask.isRunning) {
-                            if (!imageContext.ftpUploadTask.terminationStatus) {
+                            NSInteger status = imageContext.ftpUploadTask.terminationStatus;
+                            
+                            if (!status) {
                                 imageContext.state = kImageTransferStatePostingFullSize;
                             } else {
+                                [currentlyRunningTransfer.errors appendFormat:
+                                    @"%@/%@.%@: could not upload full-size image, cURL returned %ld.\r",
+                                    //@"Error codes are available at http://curl.haxx.se/libcurl/c/libcurl-errors.html",
+                                    imageContext.roll.number, imageContext.frame.name, imageContext.frame.extension, status];
+                                
+                                endedUploadingImage(imageContext.slot);
                                 imageContext.state = kImageTransferStateIdle;
                             }
                         }
@@ -605,27 +671,36 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                                 roll:imageContext.roll.number
                                 frame:imageContext.frame.name
                                 filename:imageContext.fileNameOnFtpServer
-                                version:@"CCSTransfer 3.0.1.7"
+                                version:@"CCSUploaderMac 1.0"
                                 bypassPassword:NO
                                 createPreviewAndThumb:NO
                                 complete:^(FullSizePostedResult *result) {
                                     if (!result.error && [result.status isEqualToString:@"Successful"]) {
                                         imageContext.frame.fullsizeSent = YES;
-                                    } else {
+                                        context.imagesSent++;
+                                        context.sizeSent += imageContext.frame.filesize;
                                         
+                                        progressIndicator.doubleValue += imageContext.frame.filesize;
+                                        progressTitle.stringValue = [NSString stringWithFormat:@"%ld of %ld full-size images sent (%@ of %@)",
+                                            context.imagesSent,
+                                            context.totalCount,
+                                            [FileUtil humanFriendlyFilesize:context.sizeSent],
+                                            [FileUtil humanFriendlyFilesize:context.totalSize]
+                                        ];
+                                    } else {
+                                        if (result.error) {
+                                            [currentlyRunningTransfer.errors appendFormat:
+                                                @"%@/%@.%@: could not post full-size image, an error occurred: %@\r",
+                                                imageContext.roll.number, imageContext.frame.name, imageContext.frame.extension,
+                                                result.error.localizedDescription];
+                                        } else {
+                                            [currentlyRunningTransfer.errors appendFormat:
+                                                @"%@/%@.%@: could not post full-size image, the server returned \"%@\" with a status of \"%@\"\r",
+                                                imageContext.roll.number, imageContext.frame.name, imageContext.frame.extension,
+                                                result.message, result.status];
+                                        }
                                     }
                                     
-                                    context.imagesSent++;
-                                    context.sizeSent += imageContext.frame.filesize;
-                                    
-                                    progressIndicator.doubleValue += imageContext.frame.filesize;
-                                    progressTitle.stringValue = [NSString stringWithFormat:@"%ld of %ld full-size images sent (%@ of %@)",
-                                        context.imagesSent,
-                                        context.totalCount,
-                                        [FileUtil humanFriendlyFilesize:context.sizeSent],
-                                        [FileUtil humanFriendlyFilesize:context.totalSize]
-                                    ];
-
                                     endedUploadingImage(imageContext.slot);
                                     imageContext.state = kImageTransferStateIdle;
                                 }
@@ -655,12 +730,21 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                     orderNumber:currentlyRunningTransfer.orderNumber
                     complete:^(ActivateFullSizeResult *result) {
                         if (!result.error && [result.status isEqualToString:@"AuthenticationSuccessful"]) {
-                            transferStateChanged(@"Finished");
                             currentlyRunningTransfer.fullsizeUploaded = YES;
-                            context.state = kRunningTransferStateFinished;
                         } else {
-                            [self abortTransfer:@"Unable to activate full-size images."];
+                            if (result.error) {
+                                [currentlyRunningTransfer.errors appendFormat:
+                                    @"Could not activate full-size images, an error occurred: %@\r",
+                                    result.error.localizedDescription];
+                            } else {
+                                [currentlyRunningTransfer.errors appendFormat:
+                                    @"Could not activate full-size images, the server returned \"%@\" with a status of \"%@\"\r",
+                                    result.message, result.status];
+                            }
                         }
+                        
+                        context.state = kRunningTransferStateFinished;
+                        transferStateChanged(@"Finished");
                     }
                 ];
             }
@@ -707,8 +791,10 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                 complete:^(ListEventsResult *result) {
                     if (!result.error && result.loginSuccess && result.processSuccess && result.events.count == 1) {
                         context.eventRow = result.events[0];
+                    } else if (result.error) {
+                        [self abortTransferWithError:[NSString stringWithFormat:@"Unable to list event: %@", result.error.localizedDescription]];
                     } else {
-                        [self abortTransfer:@"Unable to list event."];
+                        [self abortTransferWithError:@"Unable to list event"];
                     }
                 }
             ];
@@ -726,8 +812,10 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                 complete:^(CheckOrderNumberResult *result) {
                     if (!result.error && result.loginSuccess && result.processSuccess) {
                         context.ccsPassword = result.ccsPassword;
+                    } else if (result.error) {
+                        [self abortTransferWithError:[NSString stringWithFormat:@"Unable to fetch CCS password: %@", result.error.localizedDescription]];
                     } else {
-                        [self abortTransfer:@"Unable to fetch CCS password."];
+                        [self abortTransferWithError:@"Unable to fetch CCS password."];
                     }
                 }
             ];
@@ -745,8 +833,14 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                 complete:^(EventSettingsResult *result) {
                     if (!result.error && [result.status isEqualToString:@"AuthenticationSuccessful"]) {
                         context.eventSettings = result;
+                    } else if (result.error) {
+                        [self abortTransferWithError:[NSString stringWithFormat:
+                            @"Unable to fetch event settings: %@",
+                            result.error.localizedDescription]];
                     } else {
-                        [self abortTransfer:@"Unable to fetch event settings."];
+                        [self abortTransferWithError:[NSString stringWithFormat:
+                            @"Unable to fetch event settings, the server returned \"%@\" with a status of \"%@\"",
+                            result.message, result.status]];
                     }
                 }
             ];
@@ -761,13 +855,19 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                 startVerifyOrder:context.eventRow.ccsAccount
                 password:context.ccsPassword
                 orderNumber:currentlyRunningTransfer.orderNumber
-                version:@"CCSTransfer 3.0.1.7"
+                version:@"CCSUploaderMac 1.0"
                 bypassPassword:NO
                 complete:^(VerifyOrderResult *result) {
                     if (!result.error && [result.status isEqualToString:@"Successful"]) {
                         context.verifyOrderResult = result;
+                    } else if (result.error) {
+                        [self abortTransferWithError:[NSString stringWithFormat:
+                            @"Unable to verify order: %@",
+                            result.error.localizedDescription]];
                     } else {
-                        [self abortTransfer:@"Unable to verify order."];
+                        [self abortTransferWithError:[NSString stringWithFormat:
+                            @"Unable to verify order, the server returned \"%@\" with a status of \"%@\"",
+                            result.message, result.status]];
                     }
                 }
             ];
@@ -781,7 +881,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
         context.orderModel = [[OrderModel alloc] initWithEventRow:context.eventRow error:&error];
         
         if (!context.orderModel) {
-            [self abortTransfer:@"Unable to create order model."];
+            [self abortTransferWithError:[NSString stringWithFormat:@"Unable to create order model: %@", error.localizedDescription]];
             return NO;
         }
         
@@ -795,6 +895,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
 {
     Transfer *(^initRunningTransfer)(Transfer *transfer) = ^(Transfer *transfer) {
         transfer.status = kTransferStatusRunning;
+        transfer.errors = [NSMutableString new];
         transfer.context = [RunningTransferContext new];
         transfer.context.imageContexts = [NSMutableArray new];
         
@@ -847,10 +948,19 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
         transferStateChanged(@"Stopped");
         
         for (ImageTransferContext *imageContext in currentlyRunningTransfer.context.imageContexts) {
+            [imageContext.ftpUploadTask terminate];
             [imageContext.postImageDataService cancel];
             [imageContext.fullSizePostedService cancel];
             endedUploadingImage(imageContext.slot);
         }
+        
+        [listEventService cancel];
+        [checkOrderNumberService cancel];
+        [eventSettingsService cancel];
+        [verifyOrderService cancel];
+        
+        [activateFullSizeService cancel];
+        [activatePreviewsAndThumbsService cancel];
         
         progressIndicator.doubleValue = 0;
         progressTitle.stringValue = @"";

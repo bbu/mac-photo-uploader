@@ -287,9 +287,12 @@ releaseSource:
 }
 
 + (BOOL)resizeAndRotateImage:(NSString *)inputImageFilename outputImageFilename:(NSString *)outputImageFilename
-    resizeToMaxSide:(CGFloat)maxSide rotate:(IURotation)rotation compressionQuality:(float)compressionQuality
+    resizeToMaxSide:(CGFloat)maxSide rotate:(IURotation)rotation
+    horizontalWatermark:(NSData *)hWatermark verticalWatermark:(NSData *)vWatermark
+    compressionQuality:(float)compressionQuality
 {
     BOOL result = NO;
+    CFDataRef watermarkData;
     
     CFURLRef imageFileURL = (__bridge CFURLRef)[NSURL fileURLWithPath:inputImageFilename];
     CGImageSourceRef inputImageSource = CGImageSourceCreateWithURL(imageFileURL, NULL);
@@ -351,13 +354,41 @@ releaseSource:
         goto releaseColorSpace;
     }
 
+    CGContextSaveGState(drawingContext);
     CGContextScaleCTM(drawingContext, scaleRatio, scaleRatio);
     CGContextTranslateCTM(drawingContext, 0, 0);
     CGContextConcatCTM(drawingContext, exifTransform);
     CGContextConcatCTM(drawingContext, rotationTransform);
     CGContextDrawImage(drawingContext, CGRectMake(0, 0, inputImageSize.width, inputImageSize.height), inputImage);
-    //CGContextSetBlendMode(drawingContext, kCGBlendModePlusLighter);
-    //CGContextDrawImage(drawingContext, CGRectMake(0, 0, watermarkImageSize.width, watermarkImageSize.height), watermarkImage);
+    
+    watermarkData = outputImageSize.width > outputImageSize.height ?
+        (__bridge CFDataRef) hWatermark :
+        (__bridge CFDataRef) vWatermark;
+
+    if (watermarkData) {
+        CGImageSourceRef watermarkImageSource = CGImageSourceCreateWithData(watermarkData, NULL);
+        
+        if (watermarkImageSource != NULL) {
+            CGImageRef watermarkImage = CGImageSourceCreateImageAtIndex(watermarkImageSource, 0, NULL);
+            
+            if (watermarkImage != NULL) {
+                CGSize watermarkImageSize = CGSizeMake(CGImageGetWidth(watermarkImage), CGImageGetHeight(watermarkImage));
+                
+                CGRect watermarkRect = CGRectMake(
+                    (outputImageSize.width - watermarkImageSize.width) / 2.,
+                    (outputImageSize.height - watermarkImageSize.height) / 2.,
+                    watermarkImageSize.width, watermarkImageSize.height);
+                
+                CGContextRestoreGState(drawingContext);
+                CGContextSetBlendMode(drawingContext, kCGBlendModePlusLighter);
+                CGContextDrawImage(drawingContext, watermarkRect, watermarkImage);
+                
+                CGImageRelease(watermarkImage);
+            }
+            
+            CFRelease(watermarkImageSource);
+        }
+    }
     
     CGImageRef outputImage = CGBitmapContextCreateImage(drawingContext);
     
@@ -370,7 +401,8 @@ releaseSource:
         imageFileURL = (__bridge CFURLRef)[NSURL fileURLWithPath:outputImageFilename];
     }
     
-    CGImageDestinationRef outputImageDestination = CGImageDestinationCreateWithURL(imageFileURL, inputImageType, 1, NULL);
+    CGImageDestinationRef outputImageDestination = CGImageDestinationCreateWithURL(imageFileURL,
+        [outputImageFilename.pathExtension.lowercaseString isEqualToString:@"png"] ? kUTTypePNG : inputImageType, 1, NULL);
     
     if (outputImageDestination == NULL) {
         NSLog(@"Could not create output image destination for %@",

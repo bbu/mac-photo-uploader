@@ -642,31 +642,6 @@
 
 - (IBAction)rotateSelectedFrames:(id)sender
 {
-    /*
-    static NSInteger exifTransTable[2][8][3] = {
-        {
-            {8, 3, 6},
-            {7, 4, 5},
-            {6, 1, 8},
-            {5, 2, 7},
-            {2, 7, 4},
-            {1, 8, 3},
-            {4, 5, 2},
-            {3, 6, 1},
-        },
-        {
-            {6, 3, 8},
-            {5, 4, 7},
-            {8, 1, 6},
-            {7, 2, 5},
-            {4, 7, 2},
-            {3, 8, 1},
-            {2, 5, 4},
-            {1, 6, 3},
-        },
-    };
-    */
-    
     NSString *rollPath = [orderModel.rootDir stringByAppendingPathComponent:rollModelShown.number];
     
     [imageBrowserView.selectionIndexes
@@ -678,7 +653,7 @@
             
             if (frame.orientation > 1) {
                 [ImageUtil resizeAndRotateImage:filepath outputImageFilename:filepath
-                    resizeToMaxSide:0 rotate:kDontRotate compressionQuality:1];
+                    resizeToMaxSide:0 rotate:kDontRotate horizontalWatermark:nil verticalWatermark:nil compressionQuality:1];
             }
             
             IURotation rotation = kDontRotate;
@@ -692,7 +667,7 @@
             }
 
             [ImageUtil resizeAndRotateImage:filepath outputImageFilename:filepath
-                resizeToMaxSide:0 rotate:rotation compressionQuality:0.8];
+                resizeToMaxSide:0 rotate:rotation horizontalWatermark:nil verticalWatermark:nil compressionQuality:0.8];
             
             CGSize newSize = CGSizeZero;
             NSUInteger orientation;
