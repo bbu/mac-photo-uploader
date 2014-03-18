@@ -54,7 +54,11 @@
 
 - (id)imageSubtitle
 {
-    return [NSString stringWithFormat:@"%@%ld × %ld", frameModel.fullsizeSent ? @"[Sent] " : @"", frameModel.width, frameModel.height];
+    if (!frameModel.imageErrors.length) {
+        return [NSString stringWithFormat:@"%@%ld × %ld", frameModel.fullsizeSent ? @"[Sent] " : @"", frameModel.width, frameModel.height];
+    } else {
+        return @"[ERRORS]";
+    }
 }
 
 - (NSUInteger)imageVersion
@@ -121,7 +125,7 @@
         listDivisionsService = [ListDivisionsService new];
         imagesInBrowser = [NSMutableArray new];
     }
-    
+
     return self;
 }
 
@@ -159,6 +163,41 @@
     
     [NSApp beginSheet:errorsImportingImagesSheet modalForWindow:wizardWindowController.window
         modalDelegate:nil didEndSelector:nil contextInfo:nil];
+}
+
+- (IBAction)viewRollErrors:(id)sender
+{
+    NSInteger clickedRoll = tblRolls.clickedRow;
+
+    if (clickedRoll == -1) {
+        return;
+    }
+    
+    RollModel *roll = orderModel.rolls[clickedRoll];
+    
+    if (!roll) {
+        return;
+    }
+    
+    NSMutableString *errors = [NSMutableString new];
+
+    for (FrameModel *frame in roll.frames) {
+        if (frame.imageErrors.length != 0) {
+            [errors appendString:frame.imageErrors];
+        }
+    }
+
+    if (errors.length != 0) {
+        txtImportErrors.string = errors;
+    
+        [NSApp beginSheet:errorsImportingImagesSheet modalForWindow:wizardWindowController.window
+            modalDelegate:nil didEndSelector:nil contextInfo:nil];
+    } else {
+        NSAlert *alert = [NSAlert alertWithMessageText:@"There are no errors in this roll." defaultButton:@"OK"
+            alternateButton:@"" otherButton:@"" informativeTextWithFormat:@""];
+        
+        [alert beginSheetModalForWindow:wizardWindowController.window completionHandler:nil];
+    }
 }
 
 - (BOOL)tableView:(NSTableView*)tv acceptDrop:(id<NSDraggingInfo>)info row:(NSInteger)row dropOperation:(NSTableViewDropOperation)op
@@ -282,7 +321,10 @@
     
     if ([columnID isEqualToString:@"Folder"]) {
         NSTableCellView *cell = view;
-        cell.imageView.image = [NSImage imageNamed:@"NSFolder"];
+        
+        cell.imageView.image = ((RollModel *)orderModel.rolls[row]).framesHaveErrors ?
+            [NSImage imageNamed:@"NSCaution"] : [NSImage imageNamed:@"NSFolder"];
+        
         cell.textField.stringValue = ((RollModel *)orderModel.rolls[row]).number;
     } else if ([columnID isEqualToString:@"Photographer"]) {
         NSPopUpButton *btn = view;
@@ -670,8 +712,12 @@
                 resizeToMaxSide:0 rotate:rotation horizontalWatermark:nil verticalWatermark:nil compressionQuality:0.8];
             
             CGSize newSize = CGSizeZero;
-            NSUInteger orientation;
-            [ImageUtil getImageProperties:filepath size:&newSize type:frame.imageType orientation:&orientation];
+            NSUInteger orientation = 0;
+            frame.imageErrors = [NSMutableString new];
+            frame.imageType = [NSMutableString new];
+            
+            [ImageUtil getImageProperties:filepath size:&newSize type:frame.imageType
+                orientation:&orientation errors:frame.imageErrors];
             
             frame.width = newSize.width;
             frame.height = newSize.height;
@@ -693,6 +739,16 @@
     ];
     
     [imageBrowserView reloadData];
+    
+    rollModelShown.framesHaveErrors = NO;
+    
+    for (FrameModel *frame in rollModelShown.frames) {
+        if (frame.imageErrors.length != 0) {
+            rollModelShown.framesHaveErrors = YES;
+            break;
+        }
+    }
+    
     rollsNeedReload = YES;
 }
 
@@ -724,6 +780,15 @@
     [imagesInBrowser removeObjectsAtIndexes:frameIndexesToRemove];
     [imageBrowserView reloadData];
     
+    rollModelShown.framesHaveErrors = NO;
+    
+    for (FrameModel *frame in rollModelShown.frames) {
+        if (frame.imageErrors.length != 0) {
+            rollModelShown.framesHaveErrors = YES;
+            break;
+        }
+    }
+    
     rollsNeedReload = YES;
 }
 
@@ -735,7 +800,6 @@
 
 - (void)imageBrowserSelectionDidChange:(IKImageBrowserView *)view
 {
-    //NSLog(@"selection changed: %lu", imageBrowserView.selectionIndexes.count);
     NSUInteger numSelected = imageBrowserView.selectionIndexes.count;
     
     if (numSelected == 1) {

@@ -6,5 +6,5 @@
 @property NSInteger totalFrameSize;
 @property NSObject *greenScreen;
 @property NSMutableArray *frames;
-@property BOOL needsDelete, newlyAdded;
+@property BOOL framesHaveErrors, needsDelete, newlyAdded;
 @end

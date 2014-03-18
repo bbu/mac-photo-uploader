@@ -15,6 +15,7 @@
         _height = [decoder decodeIntegerForKey:@"height"];
         _orientation = [decoder decodeIntegerForKey:@"orientation"];
         _imageType = [decoder decodeObjectForKey:@"imageType"];
+        _imageErrors = [decoder decodeObjectForKey:@"imageErrors"];
         _fullsizeSent = [decoder decodeBoolForKey:@"fullsizeSent"];
         _thumbsSent = [decoder decodeBoolForKey:@"thumbsSent"];
     }
@@ -32,6 +33,7 @@
     [encoder encodeInteger:_height forKey:@"height"];
     [encoder encodeInteger:_orientation forKey:@"orientation"];
     [encoder encodeObject:_imageType forKey:@"imageType"];
+    [encoder encodeObject:_imageErrors forKey:@"imageErrors"];
     [encoder encodeBool:_fullsizeSent forKey:@"fullsizeSent"];
     [encoder encodeBool:_thumbsSent forKey:@"thumbsSent"];
 }

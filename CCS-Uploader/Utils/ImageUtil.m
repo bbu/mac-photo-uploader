@@ -4,26 +4,14 @@
 
 @implementation ImageUtil
 
-static NSMutableString *lastError = nil;
-
-+ (NSString *)lastError
++ (BOOL)getImageProperties:(NSString *)filename size:(CGSize *)size type:(NSMutableString *)imageType
+    orientation:(NSUInteger *)orientation errors:(NSMutableString *)errors
 {
-    return lastError;
-}
-
-+ (BOOL)getImageProperties:(NSString *)filename size:(CGSize *)size type:(NSMutableString *)imageType orientation:(NSUInteger *)orientation
-{
-    if (lastError == nil) {
-        lastError = [NSMutableString new];
-    } else {
-        lastError.string = @"";
-    }
-    
     NSURL *imageFileURL = [NSURL fileURLWithPath:filename];
     CGImageSourceRef imageSource = CGImageSourceCreateWithURL((__bridge CFURLRef)imageFileURL, NULL);
     
     if (imageSource == NULL) {
-        [lastError appendFormat:@"%@: could not load image\r", filename];
+        [errors appendFormat:@"%@: could not load image\r", filename];
         return NO;
     }
     
@@ -34,7 +22,13 @@ static NSMutableString *lastError = nil;
     NSString *type = (__bridge NSString *)CGImageSourceGetType(imageSource);
     
     if (type == nil || ([type compare:@"public.jpeg"] && [type compare:@"public.png"])) {
-        [lastError appendFormat:@"%@: not a JPEG or a PNG image\r", filename];
+        [errors appendFormat:@"%@: not a JPEG or a PNG image\r", filename];
+        CFRelease(imageSource);
+        return NO;
+    }
+    
+    if (![type compare:@"public.jpeg"] && [ImageUtil jpegIsCorrupt:filename]) {
+        [errors appendFormat:@"%@: JPEG is corrupt\r", filename];
         CFRelease(imageSource);
         return NO;
     }
@@ -72,25 +66,25 @@ static NSMutableString *lastError = nil;
             }
             
             if (!isRGB) {
-                [lastError appendFormat:@"%@: image is not in the RGB colorspace\r", filename];
+                [errors appendFormat:@"%@: image is not in the RGB colorspace\r", filename];
             }
             
             if (tooLarge) {
-                [lastError appendFormat:@"%@: image is too large\r", filename];
+                [errors appendFormat:@"%@: image is too large\r", filename];
             }
             
             if (isProgressive) {
-                [lastError appendFormat:@"%@: image is a progressive JPEG\r", filename];
+                [errors appendFormat:@"%@: image is a progressive JPEG\r", filename];
             }
 
             result = isRGB && !tooLarge && !isProgressive;
         } else {
-            [lastError appendFormat:@"%@: image is corrupt\r", filename];
+            [errors appendFormat:@"%@: image is corrupt\r", filename];
         }
 
         CFRelease(imageProperties);
     } else {
-        [lastError appendFormat:@"%@: could not get image properties\r", filename];
+        [errors appendFormat:@"%@: could not get image properties\r", filename];
     }
     
     CFRelease(imageSource);
@@ -292,7 +286,6 @@ releaseSource:
     compressionQuality:(float)compressionQuality
 {
     BOOL result = NO;
-    CFDataRef watermarkData;
     
     CFURLRef imageFileURL = (__bridge CFURLRef)[NSURL fileURLWithPath:inputImageFilename];
     CGImageSourceRef inputImageSource = CGImageSourceCreateWithURL(imageFileURL, NULL);
@@ -361,11 +354,11 @@ releaseSource:
     CGContextConcatCTM(drawingContext, rotationTransform);
     CGContextDrawImage(drawingContext, CGRectMake(0, 0, inputImageSize.width, inputImageSize.height), inputImage);
     
-    watermarkData = outputImageSize.width > outputImageSize.height ?
+    CFDataRef watermarkData = outputImageSize.width > outputImageSize.height ?
         (__bridge CFDataRef) hWatermark :
         (__bridge CFDataRef) vWatermark;
 
-    if (watermarkData) {
+    if (watermarkData != NULL) {
         CGImageSourceRef watermarkImageSource = CGImageSourceCreateWithData(watermarkData, NULL);
         
         if (watermarkImageSource != NULL) {

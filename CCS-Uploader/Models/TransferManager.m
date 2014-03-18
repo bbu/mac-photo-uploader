@@ -224,7 +224,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
         
         CGSize newSize = CGSizeZero;
         NSUInteger orientation;
-        [ImageUtil getImageProperties:pathToFullSizeImage size:&newSize type:imageContext.frame.imageType orientation:&orientation];
+        [ImageUtil getImageProperties:pathToFullSizeImage size:&newSize type:imageContext.frame.imageType orientation:&orientation errors:nil];
         
         imageContext.frame.width = newSize.width;
         imageContext.frame.height = newSize.height;
@@ -310,7 +310,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                 CGSize size = CGSizeZero;
                 NSUInteger orientation;
                 
-                if ([ImageUtil getImageProperties:previewFilename size:&size type:nil orientation:&orientation]) {
+                if ([ImageUtil getImageProperties:previewFilename size:&size type:nil orientation:&orientation errors:nil]) {
                     imageContext.previewWidth = size.width;
                     imageContext.previewHeight = size.height;
                 }
@@ -332,7 +332,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                 CGSize size = CGSizeZero;
                 NSUInteger orientation;
                 
-                if ([ImageUtil getImageProperties:pngFilename size:&size type:nil orientation:&orientation]) {
+                if ([ImageUtil getImageProperties:pngFilename size:&size type:nil orientation:&orientation errors:nil]) {
                     imageContext.pngWidth = size.width;
                     imageContext.pngHeight = size.height;
                 }

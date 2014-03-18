@@ -457,6 +457,13 @@
         </popover>
         <menu id="c5L-hv-IcJ">
             <items>
+                <menuItem title="View Errors" id="ArW-6K-pfJ">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="viewRollErrors:" target="-2" id="JOV-mF-MyP"/>
+                    </connections>
+                </menuItem>
+                <menuItem isSeparatorItem="YES" id="bB1-Hr-DFs"/>
                 <menuItem title="Auto rename images numerically in selected folder" id="81M-SC-sUi">
                     <modifierMask key="keyEquivalentModifierMask"/>
                 </menuItem>
