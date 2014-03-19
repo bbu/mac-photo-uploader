@@ -6,5 +6,6 @@
 
 - (id)initWithWizardController:(WizardWindowController *)parent;
 - (void)startLoadEvent:(EventRow *)event fromWizard:(BOOL)fromWizard;
+- (void)saveOrderModel;
 
 @end

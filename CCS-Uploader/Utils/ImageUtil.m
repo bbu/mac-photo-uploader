@@ -133,16 +133,18 @@ releaseSource:
 
 + (BOOL)jpegIsCorrupt:(NSString *)filename
 {
-    NSData *data = [NSData dataWithContentsOfFile:filename];
+    FILE *fp;
     
-    if (!data || data.length < 4) {
+    if ((fp = fopen(filename.UTF8String, "r")) == NULL) {
         return YES;
     }
     
-    NSUInteger totalBytes = data.length;
-    const uint8_t *bytes = (const uint8_t *) data.bytes;
+    fseek(fp, -2, SEEK_END);
+    uint8_t endBytes[2] = {0};
+    fread(endBytes, 2, 1, fp);
+    fclose(fp);
     
-    return !(bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[totalBytes - 2] == 0xFF && bytes[totalBytes - 1] == 0xD9);
+    return !(endBytes[0] == 0xFF && endBytes[1] == 0xD9);
 }
 
 + (void)generateThumbnailForImage:(NSImage *)image atPath:(NSString *)newFilePath forWidth:(int)width
@@ -365,12 +367,7 @@ releaseSource:
             CGImageRef watermarkImage = CGImageSourceCreateImageAtIndex(watermarkImageSource, 0, NULL);
             
             if (watermarkImage != NULL) {
-                CGSize watermarkImageSize = CGSizeMake(CGImageGetWidth(watermarkImage), CGImageGetHeight(watermarkImage));
-                
-                CGRect watermarkRect = CGRectMake(
-                    (outputImageSize.width - watermarkImageSize.width) / 2.,
-                    (outputImageSize.height - watermarkImageSize.height) / 2.,
-                    watermarkImageSize.width, watermarkImageSize.height);
+                CGRect watermarkRect = CGRectMake(0, 0, outputImageSize.width, outputImageSize.height);
                 
                 CGContextRestoreGState(drawingContext);
                 CGContextSetBlendMode(drawingContext, kCGBlendModePlusLighter);

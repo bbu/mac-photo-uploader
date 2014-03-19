@@ -68,7 +68,7 @@
             transferManager.reloadTransfers();
         } else if (transfer.status == kTransferStatusRunning) {
             [transferManager stopCurrentTransfer];
-        } else if (transfer.status == kTransferStatusAborted) {
+        } else if (transfer.status == kTransferStatusAborted || transfer.status == kTransferStatusComplete || transfer.status == kTransferStatusErrors) {
             transfer.status = kTransferStatusQueued;
             transferManager.reloadTransfers();
         }
@@ -177,7 +177,7 @@
         } else if (transfer.status == kTransferStatusStopped) {
             btn.title = @"Resume";
             [result setHidden:NO];
-        } else if (transfer.status == kTransferStatusAborted) {
+        } else if (transfer.status == kTransferStatusAborted || transfer.status == kTransferStatusComplete || transfer.status == kTransferStatusErrors) {
             btn.title = @"Retry";
             [result setHidden:NO];
         } else {

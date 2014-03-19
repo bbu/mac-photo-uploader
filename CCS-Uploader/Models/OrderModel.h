@@ -21,7 +21,7 @@
 - (void)ignoreNewlyAdded;
 - (void)includeNewlyAdded;
 - (void)addNewImages:(NSArray *)urls inRoll:(NSInteger)rollIndex framesPerRoll:(NSInteger)framesPerRoll
-    autoNumberRolls:(BOOL)autoNumberRolls autoNumberFrames:(BOOL)autoNumberFrames
+    autoNumberRolls:(BOOL)autoNumberRolls autoNumberFrames:(BOOL)autoNumberFrames photographer:(NSString *)photographer
     statusField:(NSTextField *)statusField errors:(NSMutableString *)errors;
 
 - (void)deleteRollAtIndex:(NSInteger)rollIndex;

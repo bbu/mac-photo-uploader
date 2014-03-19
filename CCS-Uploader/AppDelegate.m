@@ -35,8 +35,8 @@
     
     /*
     [ImageUtil resizeAndRotateImage:@"/Users/blagovest/Downloads/lotus.jpg" outputImageFilename:@"/Users/blagovest/Downloads/watermark.jpg"
-        resizeToMaxSide:640 rotate:kDontRotate
-        horizontalWatermark:nil
+        resizeToMaxSide:120 rotate:kDontRotate
+        horizontalWatermark:[NSData dataWithContentsOfFile:@"/Users/blagovest/Downloads/testh.tif"]
         verticalWatermark:[NSData dataWithContentsOfFile:@"/Users/blagovest/Downloads/testv.tif"]
         compressionQuality:0.8];
     */

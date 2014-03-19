@@ -193,9 +193,15 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
         
         for (NSInteger j = context.pendingFrameIndex; j < roll.frames.count; ++j) {
             FrameModel *frame = roll.frames[j];
+            BOOL conditionToSend;
             
-            if (context.state == kRunningTransferStateSendingThumbs ? !frame.thumbsSent : !frame.fullsizeSent) {
-            //if (1) {
+            if (context.state == kRunningTransferStateSendingThumbs) {
+                conditionToSend = !frame.thumbsSent && !frame.imageErrors.length;
+            } else {
+                conditionToSend = !frame.fullsizeSent && !frame.imageErrors.length;
+            }
+            
+            if (conditionToSend) {
                 context.pendingRollIndex = i;
                 context.pendingFrameIndex = j;
                 return YES;
@@ -390,8 +396,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
     if (context.state == kRunningTransferStateSendingThumbs) {
         for (RollModel *roll in context.orderModel.rolls) {
             for (FrameModel *frame in roll.frames) {
-                //if (1) {
-                if (!frame.thumbsSent) {
+                if (!frame.thumbsSent && !frame.imageErrors.length) {
                     context.totalCount++;
                 }
             }
@@ -401,8 +406,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
     } else if (context.state == kRunningTransferStateSendingFullSize) {
         for (RollModel *roll in context.orderModel.rolls) {
             for (FrameModel *frame in roll.frames) {
-                //if (1) {
-                if (!frame.fullsizeSent) {
+                if (!frame.fullsizeSent && !frame.imageErrors.length) {
                     context.totalCount++;
                     context.totalSize += frame.filesize;
                 }
@@ -508,7 +512,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                                 previewHeight:imageContext.previewHeight
                                 pngWidth:imageContext.pngWidth
                                 pngHeight:imageContext.pngHeight
-                                photographer:@"Blagovest"
+                                photographer:imageContext.roll.photographer
                                 photoDateTime:imageContext.frame.lastModified
                                 createPreviewAndThumb:NO
                                 complete:^(PostImageDataResult *result) {
@@ -528,7 +532,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                                                 result.error.localizedDescription];
                                         } else {
                                             [currentlyRunningTransfer.errors appendFormat:
-                                                @"%@/%@.%@: could not send thumbnails, the server returned \"%@\" with a status of \"%@\"\r",
+                                                @"%@/%@.%@: could not send thumbnails, the server returned \"%@\" with a status of \"%@\"\r\r",
                                                 imageContext.roll.number, imageContext.frame.name, imageContext.frame.extension,
                                                 result.message, result.status];
                                         }
@@ -550,6 +554,8 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                 context.pendingFrameIndex = 0;
                 context.estimated = NO;
                 progressIndicator.doubleValue = 0;
+                progressIndicator.minValue = 0;
+                progressIndicator.maxValue = 1;
                 progressTitle.stringValue = @"";
                 transferStateChanged(@"Activating previews and thumbnails");
                 context.state = kRunningTransferStateActivatingThumbs;
@@ -715,7 +721,10 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
             if (numIdleSlots == context.imageContexts.count) {
                 context.pendingRollIndex = 0;
                 context.pendingFrameIndex = 0;
+                context.estimated = NO;
                 progressIndicator.doubleValue = 0;
+                progressIndicator.minValue = 0;
+                progressIndicator.maxValue = 1;
                 progressTitle.stringValue = @"";
                 transferStateChanged(@"Activating full-size images");
                 context.state = kRunningTransferStateActivatingFullSize;
@@ -794,7 +803,8 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                     } else if (result.error) {
                         [self abortTransferWithError:[NSString stringWithFormat:@"Unable to list event: %@", result.error.localizedDescription]];
                     } else {
-                        [self abortTransferWithError:@"Unable to list event"];
+                        [self abortTransferWithError:[NSString stringWithFormat:
+                            @"Unable to list event%@", result.loginSuccess ? @"" : @": the server denied the credentials"]];
                     }
                 }
             ];

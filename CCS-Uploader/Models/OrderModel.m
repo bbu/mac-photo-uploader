@@ -329,7 +329,7 @@
 }
 
 - (void)addNewImages:(NSArray *)URLs inRoll:(NSInteger)rollIndex framesPerRoll:(NSInteger)framesPerRoll
-    autoNumberRolls:(BOOL)autoNumberRolls autoNumberFrames:(BOOL)autoNumberFrames
+    autoNumberRolls:(BOOL)autoNumberRolls autoNumberFrames:(BOOL)autoNumberFrames photographer:(NSString *)photographer
     statusField:(NSTextField *)statusField errors:(NSMutableString *)errors
 {
     NSError *error = nil;
@@ -381,10 +381,9 @@
                         newFrame.name = [destFilepath.lastPathComponent stringByDeletingPathExtension];
                         newFrame.extension = destFilepath.pathExtension;
                         [tempRoll.frames addObject:newFrame];
-                        copiedFiles++;
                         
                         [statusField performSelectorOnMainThread:@selector(setStringValue:)
-                            withObject:[NSString stringWithFormat:@"%ld files copied", copiedFiles] waitUntilDone:YES];
+                            withObject:[NSString stringWithFormat:@"%ld files copied", ++copiedFiles] waitUntilDone:YES];
                     } else {
                         [errors appendFormat:@"%@: %@\r", fileToCopy, error.localizedDescription];
                     }
@@ -408,10 +407,9 @@
                         newFrame.name = [destFilepath.lastPathComponent stringByDeletingPathExtension];
                         newFrame.extension = destFilepath.pathExtension;
                         [tempRoll.frames addObject:newFrame];
-                        copiedFiles++;
                         
                         [statusField performSelectorOnMainThread:@selector(setStringValue:)
-                            withObject:[NSString stringWithFormat:@"%ld files copied", copiedFiles] waitUntilDone:YES];
+                            withObject:[NSString stringWithFormat:@"%ld files copied", ++copiedFiles] waitUntilDone:YES];
                     } else {
                         [errors appendFormat:@"%@: %@\r", fileToCopy, error.localizedDescription];
                     }
@@ -422,6 +420,7 @@
         }
     }
     
+    copiedFiles = 0;
     RollModel *targetRoll = (rollIndex == -1) ? nil : [rolls objectAtIndex:rollIndex];
     
     if (!targetRoll) {
@@ -476,11 +475,15 @@
                         frame.lastModified = fileAttrs.fileModificationDate;
                         [self checkFrameImage:frame filename:destFilepath];
                         newRoll.totalFrameSize += fileAttrs.fileSize;
+                        newRoll.photographer = photographer;
                         [newRoll.frames addObject:frame];
                         
                         if (frame.imageErrors.length != 0) {
                             newRoll.framesHaveErrors = YES;
                         }
+                        
+                        [statusField performSelectorOnMainThread:@selector(setStringValue:)
+                            withObject:[NSString stringWithFormat:@"%ld images added", ++copiedFiles] waitUntilDone:YES];
                     }
                 }
             }
@@ -534,6 +537,9 @@
                         if (frame.imageErrors.length != 0) {
                             targetRoll.framesHaveErrors = YES;
                         }
+                        
+                        [statusField performSelectorOnMainThread:@selector(setStringValue:)
+                            withObject:[NSString stringWithFormat:@"%ld images added", ++copiedFiles] waitUntilDone:YES];
                     }
                 }
             }
@@ -590,11 +596,15 @@
                         frame.lastModified = fileAttrs.fileModificationDate;
                         [self checkFrameImage:frame filename:destFilepath];
                         newRoll.totalFrameSize += fileAttrs.fileSize;
+                        newRoll.photographer = photographer;
                         [newRoll.frames addObject:frame];
                         
                         if (frame.imageErrors.length != 0) {
                             newRoll.framesHaveErrors = YES;
                         }
+                        
+                        [statusField performSelectorOnMainThread:@selector(setStringValue:)
+                            withObject:[NSString stringWithFormat:@"%ld images added", ++copiedFiles] waitUntilDone:YES];
                     }
                 }
             }

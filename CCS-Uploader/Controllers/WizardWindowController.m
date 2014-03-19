@@ -156,6 +156,7 @@
         } break;
 
         case kWizardStepBrowse: {
+            [browseViewController saveOrderModel];
             [mainWindowController.openedEvents removeObject:eventRow.orderNumber];
             [self showStep:kWizardStepEvents];
         } break;
@@ -186,6 +187,7 @@
         } break;
 
         case kWizardStepBrowse: {
+            [browseViewController saveOrderModel];
             [self showStep:kWizardStepReview];
         } break;
             

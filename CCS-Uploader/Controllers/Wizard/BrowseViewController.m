@@ -9,6 +9,9 @@
 #import "../../Services/EventSettingsService.h"
 #import "../../Services/UploadExtensionsService.h"
 #import "../../Services/ListDivisionsService.h"
+#import "../../Services/ListPhotographersService.h"
+#import "../../Services/AddPhotographerService.h"
+#import "../../Services/UpdateVisibleService.h"
 
 #import <Quartz/Quartz.h>
 
@@ -71,7 +74,7 @@
 @interface BrowseViewController () <NSTableViewDelegate, NSTableViewDataSource> {
     WizardWindowController *wizardWindowController;
 
-    IBOutlet NSTableView *tblRolls;
+    IBOutlet NSTableView *tblRolls, *tblPhotographers;
     IBOutlet NSTextField *loadingTitle;
     IBOutlet NSProgressIndicator *loadingIndicator;
     IBOutlet NSButton *btnBrowse, *btnGreenScreen, *btnPhotographers, *btnAdvancedOptions;
@@ -82,9 +85,11 @@
         *chkAutoNumberFrames,
         *chkHonourFramesPerRoll;
 
-    IBOutlet NSPopover *advancedOptionsPopover, *viewRollPopover;
+    IBOutlet NSPopover *advancedOptionsPopover, *viewRollPopover, *photographersPopover;
     IBOutlet NSPanel *includeNewlyAddedImagesSheet, *errorsImportingImagesSheet;
     IBOutlet NSTextView *txtNewFiles, *txtImportErrors;
+    IBOutlet NSButton *btnAddPhotographer;
+    IBOutlet NSTextField *txtPhotographerName;
     
     IBOutlet IKImageBrowserView *imageBrowserView;
     IBOutlet NSTextField *imageBrowserTitle;
@@ -97,8 +102,12 @@
     EventSettingsService *eventSettingsService;
     UploadExtensionsService *uploadExtensionsService;
     ListDivisionsService *listDivisionsService;
+    ListPhotographersService *listPhotographersService;
+    AddPhotographerService *addPhotographerService;
+    UpdateVisibleService *updateVisibleService;
     
     OrderModel *orderModel;
+    NSMutableArray *photographers;
     
     NSInteger framesPerRoll;
     BOOL usingPreloader;
@@ -123,6 +132,10 @@
         eventSettingsService = [EventSettingsService new];
         uploadExtensionsService = [UploadExtensionsService new];
         listDivisionsService = [ListDivisionsService new];
+        listPhotographersService = [ListPhotographersService new];
+        addPhotographerService = [AddPhotographerService new];
+        updateVisibleService = [UpdateVisibleService new];
+        
         imagesInBrowser = [NSMutableArray new];
     }
 
@@ -144,6 +157,7 @@
         framesPerRoll:((NSNumber *)params[@"framesPerRoll"]).integerValue
         autoNumberRolls:((NSNumber *)params[@"autoNumberRolls"]).boolValue
         autoNumberFrames:((NSNumber *)params[@"autoNumberFrames"]).boolValue
+        photographer:params[@"photographer"]
         statusField:loadingTitle
         errors:errors];
 
@@ -200,7 +214,7 @@
     }
 }
 
-- (BOOL)tableView:(NSTableView*)tv acceptDrop:(id<NSDraggingInfo>)info row:(NSInteger)row dropOperation:(NSTableViewDropOperation)op
+- (BOOL)tableView:(NSTableView *)tv acceptDrop:(id<NSDraggingInfo>)info row:(NSInteger)row dropOperation:(NSTableViewDropOperation)op
 {
     NSPasteboard *pasteboard = info.draggingPasteboard;
 
@@ -210,12 +224,16 @@
         }
     ];
     
+    NSString *photographer = tblPhotographers.selectedRow != -1 ?
+        ((PhotographerRow *)photographers[tblPhotographers.selectedRow]).name : @"None";
+    
     NSDictionary *params = @{
         @"URLs": URLs,
         @"inRoll": [NSNumber numberWithInteger:chkPutImagesInCurrentlySelectedRoll.state == NSOnState ? tblRolls.selectedRow : (op == NSTableViewDropOn ? row : -1)],
         @"framesPerRoll": [NSNumber numberWithInteger:chkHonourFramesPerRoll.state == NSOnState ? framesPerRoll : 9999],
         @"autoNumberRolls": [NSNumber numberWithBool:chkAutoNumberRolls.state == NSOnState ? YES : NO],
-        @"autoNumberFrames": [NSNumber numberWithBool:chkAutoNumberFrames.state == NSOnState ? YES : NO]
+        @"autoNumberFrames": [NSNumber numberWithBool:chkAutoNumberFrames.state == NSOnState ? YES : NO],
+        @"photographer": photographer
     };
     
     [self disableControls:@"Preparing to copy files"];
@@ -227,7 +245,7 @@
 - (NSDragOperation)tableView:(NSTableView *)aTableView validateDrop:(id<NSDraggingInfo>)info
     proposedRow:(NSInteger)row proposedDropOperation:(NSTableViewDropOperation)operation
 {
-    return NSDragOperationCopy;
+    return tblRolls.isEnabled ? NSDragOperationCopy : NSDragOperationNone;
 }
 
 - (IBAction)browseForImagesClicked:(id)sender
@@ -300,6 +318,56 @@
     [loadingTitle setHidden:YES];
 }
 
+- (IBAction)photographersClicked:(id)sender
+{
+    if (photographersPopover.isShown) {
+        [photographersPopover close];
+    } else {
+        [photographersPopover showRelativeToRect:[sender superview].bounds ofView:sender preferredEdge:NSMaxYEdge];
+    }
+}
+
+- (IBAction)addPhotographer:(id)sender
+{
+    if (!txtPhotographerName.stringValue.length) {
+        return;
+    }
+    
+    [btnAddPhotographer setEnabled:NO];
+    [txtPhotographerName setEnabled:NO];
+    [tblPhotographers setEnabled:NO];
+    
+    [addPhotographerService
+        startAddPhotographer:wizardWindowController.effectiveUser
+        password:wizardWindowController.effectivePass
+        account:orderModel.eventRow.ccsAccount
+        photographerEmail:@""
+        photographerName:txtPhotographerName.stringValue
+        complete:^(AddPhotographerResult *result) {
+            [listPhotographersService
+                startListPhotographers:orderModel.eventRow.ccsAccount
+                email:wizardWindowController.effectiveUser
+                password:wizardWindowController.effectivePass
+                complete:^(ListPhotographersResult *result) {
+                    if (result.loginSuccess && result.processSuccess) {
+                        photographers = result.photographers;
+                        PhotographerRow *photographerNone = [PhotographerRow new];
+                        photographerNone.name = @"None";
+                        [photographers insertObject:photographerNone atIndex:0];
+                        [tblRolls reloadData];
+                        [tblPhotographers reloadData];
+                    }
+                    
+                    [btnAddPhotographer setEnabled:YES];
+                    [txtPhotographerName setEnabled:YES];
+                    [tblPhotographers setEnabled:YES];
+                    txtPhotographerName.stringValue = @"";
+                }
+            ];
+        }
+    ];
+}
+
 - (IBAction)advancedOptionsClicked:(id)sender
 {
     if (advancedOptionsPopover.isShown) {
@@ -311,7 +379,11 @@
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
 {
-    return orderModel.rolls.count;
+    if (tableView == tblRolls) {
+        return orderModel.rolls.count;
+    } else {
+        return photographers.count;
+    }
 }
 
 - (NSView *)tableView:(NSTableView *)tableView viewForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
@@ -319,36 +391,53 @@
     NSString *columnID = tableColumn.identifier;
     id view = [tableView makeViewWithIdentifier:tableColumn.identifier owner:self];
     
-    if ([columnID isEqualToString:@"Folder"]) {
-        NSTableCellView *cell = view;
+    if (tableView == tblRolls) {
+        RollModel *roll = orderModel.rolls[row];
         
-        cell.imageView.image = ((RollModel *)orderModel.rolls[row]).framesHaveErrors ?
-            [NSImage imageNamed:@"NSCaution"] : [NSImage imageNamed:@"NSFolder"];
+        if ([columnID isEqualToString:@"Folder"]) {
+            NSTableCellView *cell = view;
+            
+            cell.imageView.image = roll.framesHaveErrors ? [NSImage imageNamed:@"NSCaution"] : [NSImage imageNamed:@"NSFolder"];
+            cell.textField.stringValue = roll.number;
+        } else if ([columnID isEqualToString:@"Photographer"]) {
+            NSPopUpButton *btn = view;
+            [btn removeAllItems];
+            [btn addItemWithTitle:@"None"];
+            
+            if (photographers) {
+                for (PhotographerRow *photographer in photographers) {
+                    [btn addItemWithTitle:photographer.name];
+                }
+            }
+
+            if (roll.photographer.length) {
+                [btn selectItemWithTitle:roll.photographer];
+            } else {
+                [btn selectItemAtIndex:0];
+            }
+        } else if ([columnID isEqualToString:@"Size"]) {
+            NSTableCellView *cell = view;
+            cell.textField.stringValue = [FileUtil humanFriendlyFilesize:roll.totalFrameSize];
+        } else if ([columnID isEqualToString:@"Count"]) {
+            NSTableCellView *cell = view;
+            cell.textField.stringValue = [NSString stringWithFormat:@"%lu", roll.frames.count];
+        } else if ([columnID isEqualToString:@"GreenScreen"]) {
+            NSTableCellView *cell = view;
+            cell.imageView.image = row % 2 ? [NSImage imageNamed:@"NSStatusNone"] : [NSImage imageNamed:@"NSStatusNone"];
+        } else if ([columnID isEqualToString:@"CurrentTask"]) {
+            NSTableCellView *cell = view;
+            //cell.textField.stringValue = @"Uploading thumbnails...";
+            [((NSProgressIndicator *)cell.subviews[1]) setHidden:YES];
+            [((NSTextField *)cell.subviews[0]) setHidden:YES];
+            //[((NSProgressIndicator *)cell.subviews[1]) startAnimation:nil];
+        }
+    } else if (tableView == tblPhotographers) {
+        NSTableCellView *cell = view;
+        PhotographerRow *photographer = photographers[row];
         
-        cell.textField.stringValue = ((RollModel *)orderModel.rolls[row]).number;
-    } else if ([columnID isEqualToString:@"Photographer"]) {
-        NSPopUpButton *btn = view;
-        [btn addItemWithTitle:@"None"];
-        [btn addItemWithTitle:@"photographer 1"];
-        [btn addItemWithTitle:@"photographer 2"];
-        [btn addItemWithTitle:@"photographer 3"];
-    } else if ([columnID isEqualToString:@"Size"]) {
-        NSTableCellView *cell = view;
-        cell.textField.stringValue = [FileUtil humanFriendlyFilesize:((RollModel *)orderModel.rolls[row]).totalFrameSize];
-    } else if ([columnID isEqualToString:@"Count"]) {
-        NSTableCellView *cell = view;
-        cell.textField.stringValue = [NSString stringWithFormat:@"%lu", ((RollModel *)orderModel.rolls[row]).frames.count];
-    } else if ([columnID isEqualToString:@"GreenScreen"]) {
-        NSTableCellView *cell = view;
-        //[NSImage imageNamed:@"NSStatusNone"] : [NSImage imageNamed:@"NSMenuOnStateTemplate"]
-        //
-        cell.imageView.image = row % 2 ? [NSImage imageNamed:@"NSStatusNone"] : [NSImage imageNamed:@"NSStatusNone"];
-    } else if ([columnID isEqualToString:@"CurrentTask"]) {
-        NSTableCellView *cell = view;
-        //cell.textField.stringValue = @"Uploading thumbnails...";
-        [((NSProgressIndicator *)cell.subviews[1]) setHidden:YES];
-        [((NSTextField *)cell.subviews[0]) setHidden:YES];
-        //[((NSProgressIndicator *)cell.subviews[1]) startAnimation:nil];
+        if ([columnID isEqualToString:@"Name"]) {
+            cell.textField.stringValue = photographer.name;
+        }
     }
     
     return view;
@@ -417,6 +506,14 @@
     [checkOrderNumberService
         setEffectiveServiceRoot:wizardWindowController.effectiveService
         coreDomain:wizardWindowController.effectiveCoreDomain];
+
+    [listPhotographersService
+        setEffectiveServiceRoot:wizardWindowController.effectiveService
+        coreDomain:wizardWindowController.effectiveCoreDomain];
+    
+    [addPhotographerService
+        setEffectiveServiceRoot:wizardWindowController.effectiveService
+        coreDomain:wizardWindowController.effectiveCoreDomain];
     
     BOOL started = [checkOrderNumberService
         startCheckOrderNumber:wizardWindowController.effectiveUser
@@ -426,29 +523,44 @@
             if (result.error) {
                 [wizardWindowController.mainWindowController.openedEvents removeObject:event.orderNumber];
                 terminate([NSString stringWithFormat:@"Could not check the selected event. An error occurred: %@", result.error.localizedDescription]);
-            } else {
-                if (result.loginSuccess && result.processSuccess) {
-                    ccsPassword = result.ccsPassword;
+            } else if (result.loginSuccess && result.processSuccess) {
+                ccsPassword = result.ccsPassword;
 
-                    [eventSettingsService startGetEventSettings:event.ccsAccount password:ccsPassword orderNumber:event.orderNumber
-                        complete:^(EventSettingsResult *result) {
-                            if (result.error) {
-                                [wizardWindowController.mainWindowController.openedEvents removeObject:event.orderNumber];
-                                terminate([NSString stringWithFormat:@"Could not not obtain the event's settings. An error occurred: %@", result.error.localizedDescription]);
-                            } else {
-                                if ([result.status isEqualToString:@"AuthenticationSuccessful"]) {
-                                    eventSettings = result;
-                                    
-                                    [uploadExtensionsService startGetUploadExtensions:event.ccsAccount password:ccsPassword
-                                        complete:^(UploadExtensionsResult *result) {
-                                            if (result.error) {
-                                                [wizardWindowController.mainWindowController.openedEvents removeObject:event.orderNumber];
-                                                terminate([NSString stringWithFormat:
-                                                    @"Could not obtain allowed upload file extensions. An error occurred: %@",
-                                                    result.error.localizedDescription]);
-                                            } else {
-                                                if ([result.status isEqualToString:@"Successful"]) {
-                                                    uploadExtensions = result.extensions;
+                [eventSettingsService startGetEventSettings:event.ccsAccount password:ccsPassword orderNumber:event.orderNumber
+                    complete:^(EventSettingsResult *result) {
+                        if (result.error) {
+                            [wizardWindowController.mainWindowController.openedEvents removeObject:event.orderNumber];
+                            terminate([NSString stringWithFormat:@"Could not not obtain the event's settings. An error occurred: %@", result.error.localizedDescription]);
+                        } else if ([result.status isEqualToString:@"AuthenticationSuccessful"]) {
+                            eventSettings = result;
+                            
+                            [uploadExtensionsService startGetUploadExtensions:event.ccsAccount password:ccsPassword
+                                complete:^(UploadExtensionsResult *result) {
+                                    if (result.error) {
+                                        [wizardWindowController.mainWindowController.openedEvents removeObject:event.orderNumber];
+                                        terminate([NSString stringWithFormat:
+                                            @"Could not obtain allowed upload file extensions. An error occurred: %@",
+                                            result.error.localizedDescription]);
+                                        
+                                    } else if ([result.status isEqualToString:@"Successful"]) {
+                                        uploadExtensions = result.extensions;
+                                        
+                                        [listPhotographersService startListPhotographers:event.ccsAccount
+                                            email:wizardWindowController.effectiveUser
+                                            password:wizardWindowController.effectivePass
+                                            complete:^(ListPhotographersResult *result) {
+                                                if (result.error) {
+                                                    [wizardWindowController.mainWindowController.openedEvents removeObject:event.orderNumber];
+                                                    terminate([NSString stringWithFormat:
+                                                        @"Could not obtain the list of photographers. An error occurred: %@",
+                                                        result.error.localizedDescription]);
+                                                    
+                                                } else if (result.loginSuccess && result.processSuccess) {
+                                                    photographers = result.photographers;
+                                                    PhotographerRow *photographerNone = [PhotographerRow new];
+                                                    photographerNone.name = @"None";
+                                                    [photographers insertObject:photographerNone atIndex:0];
+
                                                     NSError *error = nil;
                                                     [self view];
                                                     orderModel = nil;
@@ -464,24 +576,27 @@
                                                     }
                                                 } else {
                                                     [wizardWindowController.mainWindowController.openedEvents removeObject:event.orderNumber];
-
-                                                    terminate([NSString stringWithFormat:
-                                                        @"Could not obtain allowed upload file extensions. The server returned \"%@\".", result.status]);
+                                                    terminate(@"Could not obtain the list of photographers.");
                                                 }
                                             }
-                                        }
-                                    ];
-                                } else {
-                                    [wizardWindowController.mainWindowController.openedEvents removeObject:event.orderNumber];
-                                    terminate([NSString stringWithFormat:@"Could not obtain the event's settings. The server returned \"%@\".", result.status]);
+                                        ];
+                                    } else {
+                                        [wizardWindowController.mainWindowController.openedEvents removeObject:event.orderNumber];
+
+                                        terminate([NSString stringWithFormat:
+                                            @"Could not obtain allowed upload file extensions. The server returned \"%@\".", result.status]);
+                                    }
                                 }
-                            }
+                            ];
+                        } else {
+                            [wizardWindowController.mainWindowController.openedEvents removeObject:event.orderNumber];
+                            terminate([NSString stringWithFormat:@"Could not obtain the event's settings. The server returned \"%@\".", result.status]);
                         }
-                    ];
-                } else {
-                    [wizardWindowController.mainWindowController.openedEvents removeObject:event.orderNumber];
-                    terminate([NSString stringWithFormat:@"The server rejected the selected event \"%@\".", event.orderNumber]);
-                }
+                    }
+                ];
+            } else {
+                [wizardWindowController.mainWindowController.openedEvents removeObject:event.orderNumber];
+                terminate([NSString stringWithFormat:@"The server rejected the selected event \"%@\".", event.orderNumber]);
             }
         }
     ];
@@ -527,6 +642,7 @@
     }
     
     chkHonourFramesPerRoll.title = [NSString stringWithFormat:@"Create new folder after %ld images", framesPerRoll];
+    [tblPhotographers reloadData];
     
     if (orderModel.newlyAdded) {
         NSMutableString *newFiles = [NSMutableString new];
@@ -606,8 +722,19 @@
 
 - (IBAction)changedPhotographer:(id)sender
 {
-    //NSLog(@"%lu", [tblRolls rowForView:sender]);
-    //[tblRolls reloadData];
+    NSPopUpButton *btn = sender;
+    NSInteger rollIndex = [tblRolls rowForView:sender];
+    
+    if (rollIndex >= 0) {
+        RollModel *roll = orderModel.rolls[rollIndex];
+        roll.photographer = [btn.selectedItem.title copy];
+        [tblRolls reloadData];
+    }
+}
+
+- (void)saveOrderModel
+{
+    [orderModel save];
 }
 
 - (BOOL)tableView:(NSTableView *)tableView shouldEditTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
@@ -790,6 +917,11 @@
     }
     
     rollsNeedReload = YES;
+}
+
+- (IBAction)refreshImages:(id)sender
+{
+    [imageBrowserView reloadData];
 }
 
 - (IBAction)sliderDidMove:(id)sender

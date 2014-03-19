@@ -9,6 +9,7 @@
         <customObject id="-2" userLabel="File's Owner" customClass="BrowseViewController">
             <connections>
                 <outlet property="advancedOptionsPopover" destination="Ev0-cL-VcC" id="aUQ-CH-x6i"/>
+                <outlet property="btnAddPhotographer" destination="xsO-9x-jVv" id="8Lz-kV-GsN"/>
                 <outlet property="btnAdvancedOptions" destination="3qT-86-83T" id="PEa-z6-76Z"/>
                 <outlet property="btnBrowse" destination="AXN-uX-0NY" id="Y25-DJ-1rO"/>
                 <outlet property="btnDeleteSelectedFrames" destination="GRS-Ng-0qk" id="c4i-qZ-TYP"/>
@@ -27,9 +28,12 @@
                 <outlet property="includeNewlyAddedImagesSheet" destination="rMF-xz-va9" id="Coe-iE-tWO"/>
                 <outlet property="loadingIndicator" destination="5CT-3c-Mnq" id="9i3-k3-k1C"/>
                 <outlet property="loadingTitle" destination="NS3-3q-xBI" id="elV-Vt-Ptd"/>
+                <outlet property="photographersPopover" destination="H7P-Bz-PqB" id="q8p-J2-4Vr"/>
+                <outlet property="tblPhotographers" destination="TZN-G2-QJB" id="JQp-Wl-V2G"/>
                 <outlet property="tblRolls" destination="Eum-26-wUS" id="Cjw-xt-uA5"/>
                 <outlet property="txtImportErrors" destination="ZZk-pA-zf8" id="Zsj-sH-0Lc"/>
                 <outlet property="txtNewFiles" destination="etA-Be-cCt" id="LaC-yF-YDb"/>
+                <outlet property="txtPhotographerName" destination="XzP-et-Czv" id="JU4-MA-Gwh"/>
                 <outlet property="view" destination="1" id="2"/>
                 <outlet property="viewRollPopover" destination="yFD-oL-e8k" id="gwg-UO-aJ7"/>
             </connections>
@@ -375,6 +379,9 @@
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                     </buttonCell>
+                    <connections>
+                        <action selector="photographersClicked:" target="-2" id="xtV-8M-txr"/>
+                    </connections>
                 </button>
                 <button verticalHuggingPriority="750" id="3tM-Sx-CYf">
                     <rect key="frame" x="453" y="432" width="134" height="32"/>
@@ -648,6 +655,19 @@ CA
                         <action selector="invertSelectedFrames:" target="-2" id="Z0a-HN-j0N"/>
                     </connections>
                 </button>
+                <button verticalHuggingPriority="750" id="5Vz-69-pVk">
+                    <rect key="frame" x="630" y="13" width="195" height="32"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <buttonCell key="cell" type="push" title="Refresh Images" bezelStyle="rounded" image="NSRefreshTemplate" imagePosition="left" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="HS8-YG-HDh">
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="system"/>
+                        <string key="keyEquivalent">r</string>
+                        <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="refreshImages:" target="-2" id="owp-lo-0K9"/>
+                    </connections>
+                </button>
             </subviews>
         </customView>
         <window title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" hidesOnDeactivate="YES" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="rMF-xz-va9" customClass="NSPanel">
@@ -789,14 +809,136 @@ DQ
                 </subviews>
             </view>
         </window>
+        <viewController id="3hb-zS-qi6" userLabel="Popover View Controller">
+            <connections>
+                <outlet property="view" destination="ad2-9Z-k4m" id="b8e-xW-RYE"/>
+            </connections>
+        </viewController>
+        <popover behavior="semitransient" id="H7P-Bz-PqB">
+            <connections>
+                <outlet property="contentViewController" destination="3hb-zS-qi6" id="eNc-fU-laG"/>
+            </connections>
+        </popover>
+        <customView id="ad2-9Z-k4m">
+            <rect key="frame" x="0.0" y="0.0" width="382" height="340"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+            <subviews>
+                <box autoresizesSubviews="NO" title="Add New Photographer" borderType="line" titlePosition="noTitle" id="UnE-Lh-2EF">
+                    <rect key="frame" x="17" y="16" width="348" height="49"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <view key="contentView">
+                        <rect key="frame" x="1" y="1" width="346" height="47"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <textField verticalHuggingPriority="750" id="XzP-et-Czv">
+                                <rect key="frame" x="18" y="14" width="238" height="21"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Photographer Name" drawsBackground="YES" id="3Rg-ad-ykb">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
+                            <button verticalHuggingPriority="750" id="xsO-9x-jVv">
+                                <rect key="frame" x="258" y="7" width="76" height="32"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <buttonCell key="cell" type="push" title="Add" bezelStyle="rounded" image="NSAddTemplate" imagePosition="left" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="PCS-GD-OXc">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                    <string key="keyEquivalent" base64-UTF8="YES">
+DQ
+</string>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="addPhotographer:" target="-2" id="EnV-4i-uwU"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                    </view>
+                    <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
+                    <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                </box>
+                <scrollView autoresizesSubviews="NO" focusRingType="none" autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" id="9fQ-KO-Kab">
+                    <rect key="frame" x="20" y="74" width="342" height="246"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="g9u-oy-ZcN">
+                        <rect key="frame" x="1" y="17" width="340" height="228"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <tableView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnReordering="NO" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" rowSizeStyle="automatic" headerView="ffa-Kt-VzU" viewBased="YES" id="TZN-G2-QJB">
+                                <rect key="frame" x="0.0" y="0.0" width="340" height="228"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <size key="intercellSpacing" width="3" height="2"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                                <tableColumns>
+                                    <tableColumn identifier="Name" width="337" minWidth="40" maxWidth="1000" id="n0a-Kc-EIi">
+                                        <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Photographer Name">
+                                            <font key="font" metaFont="smallSystem"/>
+                                            <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" white="0.33333298560000002" alpha="1" colorSpace="calibratedWhite"/>
+                                        </tableHeaderCell>
+                                        <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" alignment="left" title="Text Cell" id="C3P-Hn-sUV">
+                                            <font key="font" metaFont="system"/>
+                                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                        </textFieldCell>
+                                        <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
+                                        <prototypeCellViews>
+                                            <tableCellView id="2KP-XP-Li5">
+                                                <rect key="frame" x="1" y="1" width="337" height="17"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                <subviews>
+                                                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" id="uxV-EE-vDw">
+                                                        <rect key="frame" x="0.0" y="0.0" width="337" height="17"/>
+                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                                        <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="FN9-gD-zpK">
+                                                            <font key="font" metaFont="system"/>
+                                                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                        </textFieldCell>
+                                                    </textField>
+                                                </subviews>
+                                                <connections>
+                                                    <outlet property="textField" destination="uxV-EE-vDw" id="WUq-IE-2RS"/>
+                                                </connections>
+                                            </tableCellView>
+                                        </prototypeCellViews>
+                                    </tableColumn>
+                                </tableColumns>
+                                <connections>
+                                    <outlet property="dataSource" destination="-2" id="oOb-UW-xLu"/>
+                                    <outlet property="delegate" destination="-2" id="oH4-Y4-ccR"/>
+                                </connections>
+                            </tableView>
+                        </subviews>
+                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                    </clipView>
+                    <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="3nZ-lE-WoA">
+                        <rect key="frame" x="-100" y="-100" width="223" height="15"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </scroller>
+                    <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="P14-QH-XYH">
+                        <rect key="frame" x="392" y="17" width="15" height="131"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </scroller>
+                    <tableHeaderView key="headerView" id="ffa-Kt-VzU">
+                        <rect key="frame" x="0.0" y="0.0" width="340" height="17"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </tableHeaderView>
+                </scrollView>
+            </subviews>
+        </customView>
     </objects>
     <resources>
         <image name="NSActionTemplate" width="14" height="14"/>
+        <image name="NSAddTemplate" width="8" height="8"/>
         <image name="NSAdvanced" width="32" height="32"/>
         <image name="NSFolder" width="32" height="32"/>
         <image name="NSIconViewTemplate" width="11" height="10"/>
         <image name="NSMenuMixedStateTemplate" width="10" height="3"/>
         <image name="NSRefreshFreestandingTemplate" width="14" height="14"/>
+        <image name="NSRefreshTemplate" width="10" height="12"/>
         <image name="NSStatusAvailable" width="16" height="16"/>
         <image name="NSStopProgressFreestandingTemplate" width="83" height="83"/>
         <image name="NSUserGroup" width="32" height="32"/>
