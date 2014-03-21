@@ -1,7 +1,9 @@
 #import "FoldersViewController.h"
 #import "../PrefsWindowController.h"
 
-@interface FoldersViewController ()
+@interface FoldersViewController () {
+    IBOutlet NSTextField *txtApplicationFolder, *txtDefaultImageBrowseLocation;
+}
 @end
 
 @implementation FoldersViewController

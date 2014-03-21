@@ -4,6 +4,7 @@
 @interface MarketSettingsViewController () <NSTableViewDataSource, NSTableViewDelegate> {
     IBOutlet NSTableView *tblMarketSettings;
     NSMutableArray *marketSettingsRows;
+    IBOutlet NSPopUpButton *btnSimultaneousPreloaderUploads;
 }
 @end
 
@@ -13,11 +14,13 @@
 {
     [super loadView];
 
-    tblMarketSettings.focusRingType = NSFocusRingTypeNone;
-    tblMarketSettings.allowsColumnReordering = NO;
-    tblMarketSettings.allowsColumnResizing = NO;
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    NSNumber *simultaneousPreloaderUploads = [defaults objectForKey:kSimultaneousPreloaderUploads];
     
-    NSData *storedRows = [[NSUserDefaults standardUserDefaults] objectForKey:@"marketSettingsRows"];
+    [btnSimultaneousPreloaderUploads
+        selectItemAtIndex:simultaneousPreloaderUploads ? simultaneousPreloaderUploads.integerValue - 1 : 0];
+    
+    NSData *storedRows = [defaults objectForKey:kMarketSettings];
 
     if (storedRows != nil) {
         marketSettingsRows = [[NSKeyedUnarchiver unarchiveObjectWithData:storedRows] mutableCopy];
@@ -27,59 +30,29 @@
         }
     }
     
-    marketSettingsRows = [NSMutableArray arrayWithObjects:
-        [NSMutableDictionary dictionaryWithObjectsAndKeys:
-            @"GRAD",                        @"Market",
-            [NSNumber numberWithInt:9999],  @"Images",
-            [NSNumber numberWithBool:NO],   @"UsePreloader", nil],
+    marketSettingsRows = [@[
+        [@{@"Market": @"GRAD", @"Images": [NSNumber numberWithInt:9999], @"UsePreloader": [NSNumber numberWithBool: NO]} mutableCopy],
+        [@{@"Market": @"GRUP", @"Images": [NSNumber numberWithInt:9999], @"UsePreloader": [NSNumber numberWithBool: NO]} mutableCopy],
+        [@{@"Market": @"PROM", @"Images": [NSNumber numberWithInt:9999], @"UsePreloader": [NSNumber numberWithBool: NO]} mutableCopy],
+        [@{@"Market": @"QPIC", @"Images": [NSNumber numberWithInt:9999], @"UsePreloader": [NSNumber numberWithBool: NO]} mutableCopy],
+        [@{@"Market": @"RACE", @"Images": [NSNumber numberWithInt: 100], @"UsePreloader": [NSNumber numberWithBool:YES]} mutableCopy],
+        [@{@"Market": @"SCHL", @"Images": [NSNumber numberWithInt:9999], @"UsePreloader": [NSNumber numberWithBool: NO]} mutableCopy],
+        [@{@"Market": @"SPRT", @"Images": [NSNumber numberWithInt:9999], @"UsePreloader": [NSNumber numberWithBool: NO]} mutableCopy],
+        [@{@"Market": @"WEDD", @"Images": [NSNumber numberWithInt:9999], @"UsePreloader": [NSNumber numberWithBool: NO]} mutableCopy],
+    ] mutableCopy];
 
-        [NSMutableDictionary dictionaryWithObjectsAndKeys:
-            @"GRUP",                        @"Market",
-            [NSNumber numberWithInt:9999],  @"Images",
-            [NSNumber numberWithBool:NO],   @"UsePreloader", nil],
-
-        [NSMutableDictionary dictionaryWithObjectsAndKeys:
-            @"PROM",                        @"Market",
-            [NSNumber numberWithInt:9999],  @"Images",
-            [NSNumber numberWithBool:NO],   @"UsePreloader", nil],
-
-        [NSMutableDictionary dictionaryWithObjectsAndKeys:
-            @"QPIC",                        @"Market",
-            [NSNumber numberWithInt:9999],  @"Images",
-            [NSNumber numberWithBool:NO],   @"UsePreloader", nil],
-
-        [NSMutableDictionary dictionaryWithObjectsAndKeys:
-            @"RACE",                        @"Market",
-            [NSNumber numberWithInt:100],   @"Images",
-            [NSNumber numberWithBool:YES],   @"UsePreloader", nil],
-
-        [NSMutableDictionary dictionaryWithObjectsAndKeys:
-            @"SCHL",                        @"Market",
-            [NSNumber numberWithInt:9999],  @"Images",
-            [NSNumber numberWithBool:NO],   @"UsePreloader", nil
-        ],
-
-        [NSMutableDictionary dictionaryWithObjectsAndKeys:
-            @"SPRT",                        @"Market",
-            [NSNumber numberWithInt:9999],  @"Images",
-            [NSNumber numberWithBool:NO],   @"UsePreloader", nil],
-
-        [NSMutableDictionary dictionaryWithObjectsAndKeys:
-            @"WEDD",                        @"Market",
-            [NSNumber numberWithInt:9999],  @"Images",
-            [NSNumber numberWithBool:NO],   @"UsePreloader", nil],
-
-        nil
-    ];
-    
     [self saveState];
 }
 
 - (void)saveState
 {
-    [[NSUserDefaults standardUserDefaults] setObject:
-        [NSKeyedArchiver archivedDataWithRootObject:marketSettingsRows]
-        forKey:@"marketSettingsRows"];
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
+    [defaults setObject:[NSKeyedArchiver archivedDataWithRootObject:marketSettingsRows]
+        forKey:kMarketSettings];
+    
+    [defaults setObject:[NSNumber numberWithInteger:btnSimultaneousPreloaderUploads.selectedItem.title.integerValue]
+        forKey:kSimultaneousPreloaderUploads];
 }
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView

@@ -3,13 +3,13 @@
 @class RunningTransferContext;
 
 typedef NS_ENUM(NSInteger, TransferStatus) {
+    kTransferStatusRunning = 1,
     kTransferStatusQueued,
-    kTransferStatusRunning,
-    kTransferStatusScheduled,
-    kTransferStatusAborted,
     kTransferStatusStopped,
-    kTransferStatusComplete,
+    kTransferStatusScheduled,
     kTransferStatusErrors,
+    kTransferStatusComplete,
+    kTransferStatusAborted,
 };
 
 @interface Transfer : NSObject <NSCoding>

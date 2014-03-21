@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="4514" systemVersion="13B42" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="5053" systemVersion="13C64" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="4514"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="5053"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="MainWindowController">
             <connections>
+                <outlet property="btnFilterTransfers" destination="mAt-2o-ZeI" id="ZPc-zi-Ohm"/>
                 <outlet property="currentTransfer" destination="nxh-xn-o2P" id="KYl-lj-xip"/>
                 <outlet property="errorsPopover" destination="o6n-c4-zrF" id="h5q-O5-S9E"/>
                 <outlet property="imgUploading1" destination="F6j-5e-CRm" id="hWG-xs-hr3"/>
@@ -27,7 +28,7 @@
         </customObject>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
         <customObject id="-3" userLabel="Application"/>
-        <window title="CCS Uploader" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" restorable="NO" releasedWhenClosed="NO" animationBehavior="documentWindow" id="MDX-NV-dqb">
+        <window title="CCS Uploader" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" restorable="NO" releasedWhenClosed="NO" animationBehavior="none" id="MDX-NV-dqb">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" unifiedTitleAndToolbar="YES"/>
             <windowCollectionBehavior key="collectionBehavior" fullScreenPrimary="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
@@ -323,6 +324,11 @@
                                                     </tableColumn>
                                                 </tableColumns>
                                                 <connections>
+                                                    <binding destination="-2" name="doubleClickTarget" keyPath="self" id="nY7-zN-lHd">
+                                                        <dictionary key="options">
+                                                            <string key="NSSelectorName">rowDoubleClicked:</string>
+                                                        </dictionary>
+                                                    </binding>
                                                     <outlet property="dataSource" destination="-2" id="bIf-hO-aUE"/>
                                                     <outlet property="delegate" destination="-2" id="U4s-C1-pCO"/>
                                                     <outlet property="menu" destination="I1J-Lg-YJs" id="qqh-QG-gTn"/>
@@ -356,23 +362,29 @@
                                         <menu key="menu" title="OtherViews" id="YGU-46-GbH">
                                             <items>
                                                 <menuItem title="All" id="rbg-BX-96y"/>
-                                                <menuItem title="In Progress" id="nWT-LS-5mI"/>
-                                                <menuItem title="Preparing to Send" id="FV2-mH-9hi"/>
-                                                <menuItem title="Scheduled for Later" id="Ud5-BR-66D">
+                                                <menuItem title="Running" tag="1" id="nWT-LS-5mI"/>
+                                                <menuItem title="Queued" tag="2" id="FV2-mH-9hi"/>
+                                                <menuItem title="Stopped" tag="3" id="Ud5-BR-66D">
                                                     <modifierMask key="keyEquivalentModifierMask"/>
                                                 </menuItem>
-                                                <menuItem title="Complete" id="5oT-cm-x24">
+                                                <menuItem title="Scheduled for Later" tag="4" id="qKM-SA-h6R">
                                                     <modifierMask key="keyEquivalentModifierMask"/>
                                                 </menuItem>
-                                                <menuItem title="Aborted" id="Usz-tq-xyJ">
+                                                <menuItem title="Complete (Errors)" tag="5" id="5oT-cm-x24">
                                                     <modifierMask key="keyEquivalentModifierMask"/>
                                                 </menuItem>
-                                                <menuItem title="Aborted or Complete" id="UoP-cz-FAt">
+                                                <menuItem title="Complete" tag="6" id="saF-YZ-C9l">
+                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                </menuItem>
+                                                <menuItem title="Aborted" tag="7" id="Usz-tq-xyJ">
                                                     <modifierMask key="keyEquivalentModifierMask"/>
                                                 </menuItem>
                                             </items>
                                         </menu>
                                     </popUpButtonCell>
+                                    <connections>
+                                        <action selector="filterTransfersClicked:" target="-2" id="3np-jf-dy2"/>
+                                    </connections>
                                 </popUpButton>
                                 <button horizontalHuggingPriority="750" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="JwV-cv-2Bi">
                                     <rect key="frame" x="1027" y="241" width="25" height="25"/>
@@ -625,6 +637,7 @@
                 <constraint firstItem="kvb-JI-UcP" firstAttribute="leading" secondItem="KfB-VF-N47" secondAttribute="leading" constant="20" id="ooc-QJ-sms"/>
             </constraints>
         </customView>
+        <userDefaultsController representsSharedInstance="YES" id="qxJ-NG-dAD"/>
     </objects>
     <resources>
         <image name="NSStatusUnavailable" width="16" height="16"/>

@@ -141,6 +141,10 @@
         [mainWindowController.openedEvents removeObject:self.eventRow.orderNumber];
     }
     
+    if (wizardStep == kWizardStepBrowse) {
+        [browseViewController saveOrderModel];
+    }
+    
     [self.window close];
 }
 
@@ -159,6 +163,7 @@
             [browseViewController saveOrderModel];
             [mainWindowController.openedEvents removeObject:eventRow.orderNumber];
             [self showStep:kWizardStepEvents];
+            [eventsViewController refreshIfEmpty];
         } break;
             
         case kWizardStepReview: {

@@ -1,7 +1,11 @@
 #import "AdvancedViewController.h"
 
-@interface AdvancedViewController ()
-
+@interface AdvancedViewController () {
+    IBOutlet NSPopUpButton *btnDetectRotations;
+    IBOutlet NSButton *chkDetectNewFiles;
+    IBOutlet NSTextField *txtRemoveStringFromFilenames, *txtReplaceWithStringInFilenames;
+    IBOutlet NSButton *chkHideImages;
+}
 @end
 
 @implementation AdvancedViewController
@@ -9,11 +13,31 @@
 - (void)loadView
 {
     [super loadView];
+
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
+    NSNumber *detectRotations = [defaults objectForKey:kDetectRotations];
+    NSNumber *detectNewFiles = [defaults objectForKey:kDetectNewFiles];
+    NSString *removeStringFromFilenames = [defaults objectForKey:kRemoveStringFromFilenames];
+    NSString *replaceWithStringInFilenames = [defaults objectForKey:kReplaceWithStringInFilenames];
+    NSNumber *hideImages = [defaults objectForKey:kHideImages];
+    
+    [btnDetectRotations selectItemWithTag:detectRotations ? detectRotations.integerValue : 0];
+    chkDetectNewFiles.state = detectNewFiles ? (detectNewFiles.boolValue ? NSOnState : NSOffState) : NSOnState;
+    txtRemoveStringFromFilenames.stringValue = removeStringFromFilenames ? [removeStringFromFilenames copy] : @"";
+    txtReplaceWithStringInFilenames.stringValue = replaceWithStringInFilenames ? [replaceWithStringInFilenames copy] : @"";
+    chkHideImages.state = hideImages ? (hideImages.boolValue ? NSOnState : NSOffState) : NSOnState;
 }
 
 - (void)saveState
 {
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     
+    [defaults setObject:[NSNumber numberWithInteger:btnDetectRotations.selectedTag] forKey:kDetectRotations];
+    [defaults setObject:[NSNumber numberWithBool:chkDetectNewFiles.state == NSOnState ? YES : NO] forKey:kDetectNewFiles];
+    [defaults setObject:txtRemoveStringFromFilenames.stringValue forKey:kRemoveStringFromFilenames];
+    [defaults setObject:txtReplaceWithStringInFilenames.stringValue forKey:kReplaceWithStringInFilenames];
+    [defaults setObject:[NSNumber numberWithBool:chkHideImages.state == NSOnState ? YES : NO] forKey:kHideImages];
 }
 
 + (NSPopover *)popoverWithLabel:(NSString *)text size:(NSSize)size

@@ -107,7 +107,7 @@
     UpdateVisibleService *updateVisibleService;
     
     OrderModel *orderModel;
-    NSMutableArray *photographers;
+    NSMutableArray *photographers, *divisions;
     
     NSInteger framesPerRoll;
     BOOL usingPreloader;
@@ -333,6 +333,9 @@
         return;
     }
     
+    [wizardWindowController.btnCancel setEnabled:NO];
+    [wizardWindowController.btnBack setEnabled:NO];
+    [wizardWindowController.btnNext setEnabled:NO];
     [btnAddPhotographer setEnabled:NO];
     [txtPhotographerName setEnabled:NO];
     [tblPhotographers setEnabled:NO];
@@ -349,7 +352,7 @@
                 email:wizardWindowController.effectiveUser
                 password:wizardWindowController.effectivePass
                 complete:^(ListPhotographersResult *result) {
-                    if (result.loginSuccess && result.processSuccess) {
+                    if (!result.error && result.loginSuccess && result.processSuccess) {
                         photographers = result.photographers;
                         PhotographerRow *photographerNone = [PhotographerRow new];
                         photographerNone.name = @"None";
@@ -358,6 +361,9 @@
                         [tblPhotographers reloadData];
                     }
                     
+                    [wizardWindowController.btnCancel setEnabled:YES];
+                    [wizardWindowController.btnBack setEnabled:YES];
+                    [wizardWindowController.btnNext setEnabled:YES];
                     [btnAddPhotographer setEnabled:YES];
                     [txtPhotographerName setEnabled:YES];
                     [tblPhotographers setEnabled:YES];
@@ -503,17 +509,10 @@
     }
     */
     
-    [checkOrderNumberService
-        setEffectiveServiceRoot:wizardWindowController.effectiveService
-        coreDomain:wizardWindowController.effectiveCoreDomain];
-
-    [listPhotographersService
-        setEffectiveServiceRoot:wizardWindowController.effectiveService
-        coreDomain:wizardWindowController.effectiveCoreDomain];
-    
-    [addPhotographerService
-        setEffectiveServiceRoot:wizardWindowController.effectiveService
-        coreDomain:wizardWindowController.effectiveCoreDomain];
+    for (Service *service in @[checkOrderNumberService, listPhotographersService, addPhotographerService, listDivisionsService]) {
+        [service setEffectiveServiceRoot:wizardWindowController.effectiveService
+            coreDomain:wizardWindowController.effectiveCoreDomain];
+    }
     
     BOOL started = [checkOrderNumberService
         startCheckOrderNumber:wizardWindowController.effectiveUser
@@ -561,19 +560,36 @@
                                                     photographerNone.name = @"None";
                                                     [photographers insertObject:photographerNone atIndex:0];
 
-                                                    NSError *error = nil;
-                                                    [self view];
-                                                    orderModel = nil;
-                                                    [tblRolls reloadData];
-                                                    
-                                                    orderModel = [[OrderModel alloc] initWithEventRow:event error:&error];
-                                                    
-                                                    if (orderModel == nil) {
-                                                        [wizardWindowController.mainWindowController.openedEvents removeObject:event.orderNumber];
-                                                        terminate([NSString stringWithFormat:@"An error occurred while loading up the event. %@", error.localizedDescription]);
-                                                    } else {
-                                                        [self loadEvent];
-                                                    }
+                                                    [listDivisionsService startListDivisions:wizardWindowController.effectiveUser
+                                                        password:wizardWindowController.effectivePass
+                                                        eventID:event.eventID
+                                                        complete:^(ListDivisionsResult *result) {
+                                                            if (result.error) {
+                                                                [wizardWindowController.mainWindowController.openedEvents removeObject:event.orderNumber];
+                                                                terminate([NSString stringWithFormat:
+                                                                    @"Could not obtain the list of divisions. An error occurred: %@", result.error.localizedDescription]);
+
+                                                            } else if (result.loginSuccess && result.processSuccess) {
+                                                                divisions = result.divisions;
+                                                                NSError *error = nil;
+                                                                [self view];
+                                                                orderModel = nil;
+                                                                [tblRolls reloadData];
+                                                                
+                                                                orderModel = [[OrderModel alloc] initWithEventRow:event error:&error];
+                                                                
+                                                                if (orderModel == nil) {
+                                                                    [wizardWindowController.mainWindowController.openedEvents removeObject:event.orderNumber];
+                                                                    terminate([NSString stringWithFormat:@"An error occurred while loading up the event. %@", error.localizedDescription]);
+                                                                } else {
+                                                                    [self loadEvent];
+                                                                }
+                                                            } else {
+                                                                [wizardWindowController.mainWindowController.openedEvents removeObject:event.orderNumber];
+                                                                terminate(@"Could not obtain the list of divisions.");
+                                                            }
+                                                        }
+                                                    ];
                                                 } else {
                                                     [wizardWindowController.mainWindowController.openedEvents removeObject:event.orderNumber];
                                                     terminate(@"Could not obtain the list of photographers.");
@@ -641,33 +657,64 @@
         framesPerRoll = 9999;
     }
     
+    chkAutoCategorizeImages.state = orderModel.autoCategorizeImages ? NSOnState : NSOffState;
     chkHonourFramesPerRoll.title = [NSString stringWithFormat:@"Create new folder after %ld images", framesPerRoll];
     [tblPhotographers reloadData];
     
-    if (orderModel.newlyAdded) {
-        NSMutableString *newFiles = [NSMutableString new];
+    for (DivisionRow *division in divisions) {
+        BOOL found = NO;
         
         for (RollModel *roll in orderModel.rolls) {
-            if (roll.newlyAdded) {
-                [newFiles appendFormat:@"%@/\r", roll.number];
-            }
-            
-            for (FrameModel *frame in roll.frames) {
-                if (frame.newlyAdded) {
-                    [newFiles appendFormat:@"%@/%@.%@\r", roll.number, frame.name, frame.extension];
-                }
+            if ([roll.number isEqualToString:division.name]) {
+                found = YES;
+                break;
             }
         }
         
-        txtNewFiles.string = newFiles;
-        
-        [NSApp beginSheet:includeNewlyAddedImagesSheet modalForWindow:wizardWindowController.window
-            modalDelegate:nil didEndSelector:nil contextInfo:nil];
-    } else {
-        [tblRolls reloadData];
-        [orderModel save];
+        if (!found) {
+            BOOL dirCreated = [[NSFileManager defaultManager]
+                createDirectoryAtPath:[orderModel.rootDir stringByAppendingPathComponent:division.name]
+                withIntermediateDirectories:NO attributes:nil error:nil];
+            
+            if (dirCreated) {
+                RollModel *roll = [RollModel new];
+                roll.number = division.name;
+                roll.photographer = @"None";
+                roll.frames = [NSMutableArray new];
+                [orderModel.rolls insertObject:roll atIndex:0];
+            }
+        }
     }
     
+    if (orderModel.newlyAdded) {
+        NSNumber *detectNewFiles = [[NSUserDefaults standardUserDefaults] objectForKey:kDetectNewFiles];
+
+        if (!detectNewFiles || detectNewFiles.boolValue) {
+            NSMutableString *newFiles = [NSMutableString new];
+            
+            for (RollModel *roll in orderModel.rolls) {
+                if (roll.newlyAdded) {
+                    [newFiles appendFormat:@"%@/\r", roll.number];
+                }
+                
+                for (FrameModel *frame in roll.frames) {
+                    if (frame.newlyAdded) {
+                        [newFiles appendFormat:@"%@/%@.%@\r", roll.number, frame.name, frame.extension];
+                    }
+                }
+            }
+            
+            txtNewFiles.string = newFiles;
+            
+            [NSApp beginSheet:includeNewlyAddedImagesSheet modalForWindow:wizardWindowController.window
+                modalDelegate:nil didEndSelector:nil contextInfo:nil];
+        } else {
+            [orderModel ignoreNewlyAdded];
+        }
+    }
+    
+    [tblRolls reloadData];
+
     wizardWindowController.txtStepTitle.stringValue = orderModel.eventRow.eventName;
     wizardWindowController.txtStepDescription.stringValue =
         [NSString stringWithFormat:@"Event Number: %@; Market: %@", orderModel.eventRow.orderNumber, orderModel.eventRow.market];
@@ -675,12 +722,17 @@
     [wizardWindowController showStep:kWizardStepBrowse];
 }
 
+- (IBAction)autoCategorizeClicked:(id)sender
+{
+    orderModel.autoCategorizeImages = (chkAutoCategorizeImages.state == NSOnState ? YES : NO);
+}
+
 - (IBAction)ignoreNewFiles:(id)sender
 {
     [orderModel ignoreNewlyAdded];
     [includeNewlyAddedImagesSheet close];
     [tblRolls reloadData];
-    [orderModel save];
+    //[orderModel save];
     [NSApp endSheet:includeNewlyAddedImagesSheet];
 }
 
@@ -689,7 +741,7 @@
     [orderModel includeNewlyAdded];
     [includeNewlyAddedImagesSheet close];
     [tblRolls reloadData];
-    [orderModel save];
+    //[orderModel save];
     [NSApp endSheet:includeNewlyAddedImagesSheet];
 }
 

@@ -4,6 +4,7 @@
 #import "../Models/TransferManager.h"
 
 @interface MainWindowController () {
+    IBOutlet NSPopUpButton *btnFilterTransfers;
     IBOutlet NSTableView *tblTransfers;
     IBOutlet NSMenu *menuThumbnails;
     IBOutlet NSBox *currentTransfer;
@@ -34,6 +35,8 @@
     
     if (self) {
         transferManager = [TransferManager new];
+        filteredTransfers = [transferManager.transfers copy];
+        
         openedEvents = [NSMutableSet new];
         
         dateFormatter = [NSDateFormatter new];
@@ -48,7 +51,8 @@
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
 {
-    return transferManager.transfers.count;
+    //return transferManager.transfers.count;
+    return filteredTransfers.count;
 }
 
 - (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(NSInteger)row
@@ -61,7 +65,7 @@
     NSInteger clickedRow = [tblTransfers rowForView:sender];
 
     if (clickedRow != -1) {
-        Transfer *transfer = transferManager.transfers[clickedRow];
+        Transfer *transfer = filteredTransfers[clickedRow];
         
         if (transfer.status == kTransferStatusStopped) {
             transfer.status = kTransferStatusQueued;
@@ -80,8 +84,11 @@
     NSInteger clickedRow = [tblTransfers rowForView:sender];
 
     if (clickedRow != -1) {
+        Transfer *transfer = filteredTransfers[clickedRow];
+        
         [tblTransfers removeRowsAtIndexes:[NSIndexSet indexSetWithIndex:clickedRow] withAnimation:NSTableViewAnimationEffectFade];
-        [transferManager.transfers removeObjectAtIndex:clickedRow];
+        [filteredTransfers removeObjectAtIndex:clickedRow];
+        [transferManager.transfers removeObject:transfer];
     }
 }
 
@@ -90,7 +97,8 @@
     NSInteger clickedRow = [tblTransfers rowForView:sender];
     
     if (clickedRow != -1) {
-        Transfer *transfer = transferManager.transfers[clickedRow];
+        Transfer *transfer = filteredTransfers[clickedRow];
+        
         txtErrors.string = transfer.errors;
         [errorsPopover showRelativeToRect:[sender superview].bounds ofView:sender preferredEdge:NSMaxYEdge];
     }
@@ -137,9 +145,18 @@
         result.identifier = tableColumn.identifier;
     }
     
-    Transfer *transfer = transferManager.transfers[row];
+    Transfer *transfer = filteredTransfers[row];
     
-    static NSString *transferStatuses[] = {@"Queued to run", @"Running", @"Scheduled", @"Aborted", @"Stopped", @"Complete"};
+    static NSString *transferStatuses[] = {
+        @"",
+        @"Running",
+        @"Queued",
+        @"Stopped",
+        @"Scheduled",
+        @"Failed with errors",
+        @"Complete",
+        @"Aborted",
+    };
     
     if ([tableColumn.identifier isEqualToString:@"Event"]) {
         result.textField.stringValue = [NSString stringWithFormat:@"%@ (%@)", transfer.eventName, transfer.orderNumber];
@@ -200,9 +217,14 @@
     return result;
 }
 
--(BOOL)tableView:(NSTableView *)tableView isGroupRow:(NSInteger)row
+- (BOOL)tableView:(NSTableView *)tableView isGroupRow:(NSInteger)row
 {
     return NO;
+}
+
+- (IBAction)rowDoubleClicked:(id)sender
+{
+    NSLog(@"double click");
 }
 
 - (IBAction)previewsAndThumbnailsHelp:(id)sender
@@ -222,12 +244,37 @@
     [wizardWindowController showWindow:self];
 }
 
+- (IBAction)filterTransfersClicked:(id)sender
+{
+    transferManager.reloadTransfers();
+}
+
 - (void)windowDidLoad
 {
     [super windowDidLoad];
     
     transferManager.reloadTransfers = ^(void) {
         NSInteger selectedRow = tblTransfers.selectedRow;
+        
+        filteredTransfers = [[transferManager.transfers
+            sortedArrayUsingComparator:^NSComparisonResult(Transfer *transfer1, Transfer *transfer2) {
+                if (transfer1.status < transfer2.status) {
+                    return NSOrderedAscending;
+                } else if (transfer1.status == transfer2.status) {
+                    return NSOrderedSame;
+                } else {
+                    return NSOrderedDescending;
+                }
+            }
+        ] mutableCopy];
+        
+        NSIndexSet *transferIndexesToFilterOut = [filteredTransfers
+            indexesOfObjectsPassingTest:^BOOL(Transfer *transfer, NSUInteger idx, BOOL *stop) {
+                return btnFilterTransfers.selectedTag ? btnFilterTransfers.selectedTag != transfer.status : NO;
+            }
+        ];
+        
+        [filteredTransfers removeObjectsAtIndexes:transferIndexesToFilterOut];
         [tblTransfers reloadData];
         [tblTransfers selectRowIndexes:[NSIndexSet indexSetWithIndex:selectedRow] byExtendingSelection:NO];
     };

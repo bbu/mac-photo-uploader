@@ -14,6 +14,7 @@
 @property (readonly) NSString *rootDir;
 @property (readonly) NSMutableArray *rolls;
 @property (readonly) NSMutableArray *rollsToHide, *framesToHide;
+@property BOOL autoCategorizeImages;
 @property (readonly) BOOL newlyAdded;
 
 - (id)initWithEventRow:(EventRow *)event error:(NSError **)error;

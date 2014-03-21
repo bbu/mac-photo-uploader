@@ -7,7 +7,6 @@
 #import "Prefs/MarketSettingsViewController.h"
 
 @interface PrefsWindowController : NSWindowController <NSWindowDelegate> {
-@private
     IBOutlet NSToolbar *toolbar;
     IBOutlet NSView *contentView;
     IBOutlet FoldersViewController *foldersViewController;
@@ -82,11 +81,21 @@
 
 -(void)windowWillClose:(NSNotification *)notification
 {
+    [foldersViewController view];
     [foldersViewController saveState];
+
+    [accountViewController view];
     [accountViewController saveState];
+    
+    [imageUploadViewController view];
     [imageUploadViewController saveState];
+    
+    [advancedViewController view];
     [advancedViewController saveState];
+    
+    [marketSettingsViewController view];
     [marketSettingsViewController saveState];
+
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 

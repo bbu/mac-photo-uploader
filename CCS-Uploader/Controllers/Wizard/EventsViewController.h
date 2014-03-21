@@ -7,6 +7,7 @@
 
 - (id)initWithWizardController:(WizardWindowController *)parent;
 - (void)refreshEvents:(BOOL)fromWizard;
+- (void)refreshIfEmpty;
 - (EventRow *)selectedEventRow;
 
 @end

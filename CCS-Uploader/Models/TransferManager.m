@@ -15,7 +15,6 @@
 #import "../Services/ActivateFullSizeService.h"
 
 #define kTransfersDataFile @"transfers.ccstransfers"
-#define kMaxThreads 8
 
 #pragma mark - ImageTransferContext
 
@@ -70,6 +69,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
 @property VerifyOrderResult *verifyOrderResult;
 @property NSMutableArray *imageContexts;
 @property BOOL estimated;
+@property NSDate *dateStarted;
 @property NSInteger imagesSent, sizeSent, totalCount, totalSize;
 @end
 
@@ -139,6 +139,99 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
 @synthesize endedUploadingImage;
 @synthesize progressIndicator;
 @synthesize progressTitle;
+
+static NSString *curlStatuses[] = {
+    @"CURLE_OK",
+    @"CURLE_UNSUPPORTED_PROTOCOL",
+    @"CURLE_FAILED_INIT",
+    @"CURLE_URL_MALFORMAT",
+    @"CURLE_NOT_BUILT_IN",
+    @"CURLE_COULDNT_RESOLVE_PROXY",
+    @"CURLE_COULDNT_RESOLVE_HOST",
+    @"CURLE_COULDNT_CONNECT",
+    @"CURLE_FTP_WEIRD_SERVER_REPLY",
+    @"CURLE_REMOTE_ACCESS_DENIED",
+    @"CURLE_FTP_ACCEPT_FAILED",
+    @"CURLE_FTP_WEIRD_PASS_REPLY",
+    @"CURLE_FTP_ACCEPT_TIMEOUT",
+    @"CURLE_FTP_WEIRD_PASV_REPLY",
+    @"CURLE_FTP_WEIRD_227_FORMAT",
+    @"CURLE_FTP_CANT_GET_HOST",
+    @"",
+    @"CURLE_FTP_COULDNT_SET_TYPE",
+    @"CURLE_PARTIAL_FILE",
+    @"CURLE_FTP_COULDNT_RETR_FILE",
+    @"",
+    @"CURLE_QUOTE_ERROR",
+    @"CURLE_HTTP_RETURNED_ERROR",
+    @"CURLE_WRITE_ERROR",
+    @"",
+    @"CURLE_UPLOAD_FAILED",
+    @"CURLE_READ_ERROR",
+    @"CURLE_OUT_OF_MEMORY",
+    @"CURLE_OPERATION_TIMEDOUT",
+    @"",
+    @"CURLE_FTP_PORT_FAILED",
+    @"CURLE_FTP_COULDNT_USE_REST",
+    @"",
+    @"CURLE_RANGE_ERROR",
+    @"CURLE_HTTP_POST_ERROR",
+    @"CURLE_SSL_CONNECT_ERROR",
+    @"CURLE_BAD_DOWNLOAD_RESUME",
+    @"CURLE_FILE_COULDNT_READ_FILE",
+    @"CURLE_LDAP_CANNOT_BIND",
+    @"CURLE_LDAP_SEARCH_FAILED",
+    @"",
+    @"CURLE_FUNCTION_NOT_FOUND",
+    @"CURLE_ABORTED_BY_CALLBACK",
+    @"CURLE_BAD_FUNCTION_ARGUMENT",
+    @"",
+    @"CURLE_INTERFACE_FAILED",
+    @"",
+    @"CURLE_TOO_MANY_REDIRECTS",
+    @"CURLE_UNKNOWN_OPTION",
+    @"CURLE_TELNET_OPTION_SYNTAX",
+    @"",
+    @"CURLE_PEER_FAILED_VERIFICATION",
+    @"CURLE_GOT_NOTHING",
+    @"CURLE_SSL_ENGINE_NOTFOUND",
+    @"CURLE_SSL_ENGINE_SETFAILED",
+    @"CURLE_SEND_ERROR",
+    @"CURLE_RECV_ERROR",
+    @"",
+    @"CURLE_SSL_CERTPROBLEM",
+    @"CURLE_SSL_CIPHER",
+    @"CURLE_SSL_CACERT",
+    @"CURLE_BAD_CONTENT_ENCODING",
+    @"CURLE_LDAP_INVALID_URL",
+    @"CURLE_FILESIZE_EXCEEDED",
+    @"CURLE_USE_SSL_FAILED",
+    @"CURLE_SEND_FAIL_REWIND",
+    @"CURLE_SSL_ENGINE_INITFAILED",
+    @"CURLE_LOGIN_DENIED",
+    @"CURLE_TFTP_NOTFOUND",
+    @"CURLE_TFTP_PERM",
+    @"CURLE_REMOTE_DISK_FULL",
+    @"CURLE_TFTP_ILLEGAL",
+    @"CURLE_TFTP_UNKNOWNID",
+    @"CURLE_REMOTE_FILE_EXISTS",
+    @"CURLE_TFTP_NOSUCHUSER",
+    @"CURLE_CONV_FAILED",
+    @"CURLE_CONV_REQD",
+    @"CURLE_SSL_CACERT_BADFILE",
+    @"CURLE_REMOTE_FILE_NOT_FOUND",
+    @"CURLE_SSH",
+    @"CURLE_SSL_SHUTDOWN_FAILED",
+    @"CURLE_AGAIN",
+    @"CURLE_SSL_CRL_BADFILE",
+    @"CURLE_SSL_ISSUER_ERROR",
+    @"CURLE_FTP_PRET_FAILED",
+    @"CURLE_RTSP_CSEQ_ERROR",
+    @"CURLE_RTSP_SESSION_ERROR",
+    @"CURLE_FTP_BAD_FILE_LIST",
+    @"CURLE_CHUNK_FAILED",
+    @"CURLE_NO_CONNECTION_AVAILABLE",
+};
 
 - (id)init
 {
@@ -226,11 +319,13 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
     
     if (imageContext.frame.orientation > 1) {
         [ImageUtil resizeAndRotateImage:pathToFullSizeImage outputImageFilename:pathToFullSizeImage
-            resizeToMaxSide:0 rotate:kDontRotate horizontalWatermark:nil verticalWatermark:nil compressionQuality:0.82];
+            resizeToMaxSide:0 rotate:kDontRotate horizontalWatermark:nil verticalWatermark:nil compressionQuality:0.85];
         
         CGSize newSize = CGSizeZero;
         NSUInteger orientation;
-        [ImageUtil getImageProperties:pathToFullSizeImage size:&newSize type:imageContext.frame.imageType orientation:&orientation errors:nil];
+        
+        [ImageUtil getImageProperties:pathToFullSizeImage size:&newSize
+            type:imageContext.frame.imageType orientation:&orientation errors:imageContext.frame.imageErrors];
         
         imageContext.frame.width = newSize.width;
         imageContext.frame.height = newSize.height;
@@ -377,13 +472,75 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
         context.verifyOrderResult.password
     ];
     
-    return @[@"-T", pathToFullSizeImage, ftpDestinationPath, @"--user", ftpCredentials, @"--silent"];
+    NSMutableArray *params = [@[@"-T", pathToFullSizeImage, ftpDestinationPath, @"--user", ftpCredentials, @"--silent"] mutableCopy];
+
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    NSNumber *retryDelay = [defaults objectForKey:kRetryDelay];
+    NSNumber *numRetries = [defaults objectForKey:kNumRetries];
+    NSNumber *connectionTimeout = [defaults objectForKey:kConnectionTimeout];
+    
+    [params addObject:@"--retry"];
+    
+    if (numRetries) {
+        [params addObject:numRetries.stringValue];
+    } else {
+        [params addObject:[NSString stringWithFormat:@"%d", kDefaultNumRetries]];
+    }
+    
+    [params addObject:@"--retry-delay"];
+    
+    if (retryDelay) {
+        [params addObject:retryDelay.stringValue];
+    } else {
+        [params addObject:[NSString stringWithFormat:@"%d", kDefaultRetryDelay]];
+    }
+    
+    [params addObject:@"--connect-timeout"];
+    
+    if (connectionTimeout) {
+        [params addObject:connectionTimeout.stringValue];
+    } else {
+        [params addObject:[NSString stringWithFormat:@"%d", kDefaultConnectionTimeout]];
+    }
+    
+    NSNumber *useProxy = [defaults objectForKey:kUseProxy];
+    NSString *proxyHost = [defaults objectForKey:kProxyHost];
+    
+    if (useProxy.boolValue && proxyHost.length) {
+        [params addObject:@"--proxy"];
+        
+        NSString *proxyUser = [defaults objectForKey:kProxyUser];
+        NSString *proxyPass = [defaults objectForKey:kProxyPass];
+        NSNumber *proxyPort = [defaults objectForKey:kProxyPort];
+        NSString *proxyType = [defaults objectForKey:kProxyType];
+        
+        if ([proxyType isEqualToString:@"Auto"]) {
+            proxyType = nil;
+        }
+        
+        NSString *proxyParam = [NSString stringWithFormat:@"%@%@%@%@%@%@%@%@%@",
+            proxyType.length ? proxyType : @"",
+            proxyType.length ? @"://" : @"",
+            proxyUser.length ? proxyUser : @"",
+            proxyUser.length && proxyPass.length ? @":" : @"",
+            proxyUser.length && proxyPass.length ? proxyPass : @"",
+            proxyUser.length ? @"@" : @"",
+            proxyHost,
+            proxyPort.integerValue ? @":" : @"",
+            proxyPort.integerValue ? [NSString stringWithFormat:@"%ld", proxyPort.integerValue] : @""
+        ];
+        
+        [params addObject:proxyParam];
+    }
+    
+    return params;
 }
 
 - (void)estimateTransfer
 {
     RunningTransferContext *context = currentlyRunningTransfer.context;
-
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
     progressTitle.stringValue = @"";
     progressIndicator.minValue = 0;
     progressIndicator.doubleValue = 0;
@@ -392,8 +549,14 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
     context.totalSize = 0;
     context.imagesSent = 0;
     context.sizeSent = 0;
+    context.dateStarted = [NSDate date];
 
+    NSInteger numContexts = 1;
+    
     if (context.state == kRunningTransferStateSendingThumbs) {
+        NSNumber *simultaneousThumbUploads = [defaults objectForKey:kSimultaneousThumbUploads];
+        numContexts = simultaneousThumbUploads.integerValue ? simultaneousThumbUploads.integerValue : 1;
+        
         for (RollModel *roll in context.orderModel.rolls) {
             for (FrameModel *frame in roll.frames) {
                 if (!frame.thumbsSent && !frame.imageErrors.length) {
@@ -404,6 +567,9 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
         
         progressIndicator.maxValue = context.totalCount;
     } else if (context.state == kRunningTransferStateSendingFullSize) {
+        NSNumber *simultaneousFullSizeUploads = [defaults objectForKey:kSimultaneousFullSizeUploads];
+        numContexts = simultaneousFullSizeUploads.integerValue ? simultaneousFullSizeUploads.integerValue : 1;
+        
         for (RollModel *roll in context.orderModel.rolls) {
             for (FrameModel *frame in roll.frames) {
                 if (!frame.fullsizeSent && !frame.imageErrors.length) {
@@ -416,7 +582,40 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
         progressIndicator.maxValue = context.totalSize;
     }
     
+    if (context.imageContexts) {
+        [context.imageContexts removeAllObjects];
+    } else {
+        context.imageContexts = [NSMutableArray new];
+    }
+    
+    for (NSInteger i = 0; i < numContexts; ++i) {
+        ImageTransferContext *imageTransferContext = [ImageTransferContext new];
+        
+        imageTransferContext.slot = i;
+        imageTransferContext.fullSizePostedService = [FullSizePostedService new];
+        imageTransferContext.postImageDataService = [PostImageDataService new];
+        imageTransferContext.updateVisibleService = [UpdateVisibleService new];
+        
+        [context.imageContexts addObject:imageTransferContext];
+    }
+    
     context.estimated = YES;
+}
+
+- (NSString *)secondsToHM:(NSInteger)seconds
+{
+    NSMutableString *result = [NSMutableString new];
+
+    NSInteger hours = seconds / 3600;
+    NSInteger minutes = ceil((seconds % 3600) / 60.);
+    
+    if (hours) {
+        [result appendFormat:@"%ld hour%@ and ", hours, hours == 1 ? @"" : @"s"];
+    }
+    
+    [result appendFormat:@"%ld minute%@", minutes, minutes == 1 ? @"" : @"s"];
+    
+    return result;
 }
 
 - (void)processTransfers
@@ -512,7 +711,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                                 previewHeight:imageContext.previewHeight
                                 pngWidth:imageContext.pngWidth
                                 pngHeight:imageContext.pngHeight
-                                photographer:imageContext.roll.photographer
+                                photographer:imageContext.roll.photographer ? imageContext.roll.photographer : @"None"
                                 photoDateTime:imageContext.frame.lastModified
                                 createPreviewAndThumb:NO
                                 complete:^(PostImageDataResult *result) {
@@ -520,8 +719,22 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                                         imageContext.frame.thumbsSent = YES;
                                         context.imagesSent++;
                                         
-                                        progressTitle.stringValue = [NSString stringWithFormat:@"%ld of %ld thumbs sent",
-                                            context.imagesSent, context.totalCount];
+                                        NSInteger secondsRemaining = 0;
+                                        
+                                        if (context.imagesSent) {
+                                            NSTimeInterval secondsElapsed = [[NSDate date] timeIntervalSinceDate:context.dateStarted];
+                                            secondsRemaining =
+                                                ((NSTimeInterval)secondsElapsed / (NSTimeInterval)context.imagesSent) *
+                                                (NSTimeInterval)(context.totalCount - context.imagesSent);
+                                        }
+                                        
+                                        progressTitle.stringValue = [NSString stringWithFormat:@"%ld of %ld thumbs sent%@%@%@",
+                                            context.imagesSent,
+                                            context.totalCount,
+                                            secondsRemaining ? @", about " : @"",
+                                            secondsRemaining ? [self secondsToHM:secondsRemaining] : @"",
+                                            secondsRemaining ? @" remaining" : @""
+                                        ];
                                         
                                         progressIndicator.doubleValue++;
                                     } else {
@@ -657,10 +870,12 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                             if (!status) {
                                 imageContext.state = kImageTransferStatePostingFullSize;
                             } else {
+                                NSString *curlStatus = (status < sizeof(curlStatuses) / sizeof(*curlStatuses)) ?
+                                    curlStatuses[status] : nil;
+                                
                                 [currentlyRunningTransfer.errors appendFormat:
-                                    @"%@/%@.%@: could not upload full-size image, cURL returned %ld.\r",
-                                    //@"Error codes are available at http://curl.haxx.se/libcurl/c/libcurl-errors.html",
-                                    imageContext.roll.number, imageContext.frame.name, imageContext.frame.extension, status];
+                                    @"%@/%@.%@: could not upload full-size image, cURL returned %@ (%ld).\r",
+                                    imageContext.roll.number, imageContext.frame.name, imageContext.frame.extension, curlStatus, status];
                                 
                                 endedUploadingImage(imageContext.slot);
                                 imageContext.state = kImageTransferStateIdle;
@@ -685,13 +900,25 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
                                         imageContext.frame.fullsizeSent = YES;
                                         context.imagesSent++;
                                         context.sizeSent += imageContext.frame.filesize;
+
+                                        NSInteger secondsRemaining = 0;
+                                        
+                                        if (context.sizeSent) {
+                                            NSTimeInterval secondsElapsed = [[NSDate date] timeIntervalSinceDate:context.dateStarted];
+                                            secondsRemaining =
+                                                ((NSTimeInterval)secondsElapsed / (NSTimeInterval)context.sizeSent) *
+                                                (NSTimeInterval)(context.totalSize - context.sizeSent);
+                                        }
                                         
                                         progressIndicator.doubleValue += imageContext.frame.filesize;
-                                        progressTitle.stringValue = [NSString stringWithFormat:@"%ld of %ld full-size images sent (%@ of %@)",
+                                        progressTitle.stringValue = [NSString stringWithFormat:@"%ld of %ld full-size images sent (%@ of %@)%@%@%@",
                                             context.imagesSent,
                                             context.totalCount,
                                             [FileUtil humanFriendlyFilesize:context.sizeSent],
-                                            [FileUtil humanFriendlyFilesize:context.totalSize]
+                                            [FileUtil humanFriendlyFilesize:context.totalSize],
+                                            secondsRemaining ? @", about " : @"",
+                                            secondsRemaining ? [self secondsToHM:secondsRemaining] : @"",
+                                            secondsRemaining ? @" remaining" : @""
                                         ];
                                     } else {
                                         if (result.error) {
@@ -761,7 +988,10 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
             
         case kRunningTransferStateFinished: {
             [currentlyRunningTransfer.context.orderModel save];
-            currentlyRunningTransfer.status = kTransferStatusComplete;
+            
+            currentlyRunningTransfer.status = currentlyRunningTransfer.errors.length ?
+                kTransferStatusErrors : kTransferStatusComplete;
+            
             currentlyRunningTransfer.context = nil;
             currentlyRunningTransfer = nil;
             reloadTransfers();
@@ -793,21 +1023,27 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
     
     if (!context.eventRow) {
         if (!listEventService.started) {
-            [listEventService
-                startListEvent:context.effectiveUser
-                password:context.effectivePass
-                orderNumber:currentlyRunningTransfer.orderNumber
-                complete:^(ListEventsResult *result) {
-                    if (!result.error && result.loginSuccess && result.processSuccess && result.events.count == 1) {
-                        context.eventRow = result.events[0];
-                    } else if (result.error) {
-                        [self abortTransferWithError:[NSString stringWithFormat:@"Unable to list event: %@", result.error.localizedDescription]];
-                    } else {
-                        [self abortTransferWithError:[NSString stringWithFormat:
-                            @"Unable to list event%@", result.loginSuccess ? @"" : @": the server denied the credentials"]];
+            if (!context.effectiveUser || !context.effectivePass) {
+                [self abortTransferWithError:[NSString stringWithFormat:
+                    @"Please setup your %@ credentials first.", currentlyRunningTransfer.isQuicPost ? @"QuicPost" : @"CORE"]];
+            } else {
+                [listEventService
+                    startListEvent:context.effectiveUser
+                    password:context.effectivePass
+                    orderNumber:currentlyRunningTransfer.orderNumber
+                    complete:^(ListEventsResult *result) {
+                        if (!result.error && result.loginSuccess && result.processSuccess && result.events.count == 1) {
+                            context.eventRow = result.events[0];
+                        } else if (result.error) {
+                            [self abortTransferWithError:[NSString stringWithFormat:@"Unable to list event: %@", result.error.localizedDescription]];
+                        } else {
+                            [self abortTransferWithError:[NSString stringWithFormat:
+                                @"Unable to list event%@", result.loginSuccess ? @"" : @": the server denied the credentials"]];
+                        }
                     }
-                }
-            ];
+                ];
+            }
+            
         }
         
         return NO;
@@ -908,17 +1144,6 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
         transfer.errors = [NSMutableString new];
         transfer.context = [RunningTransferContext new];
         transfer.context.imageContexts = [NSMutableArray new];
-        
-        for (NSInteger i = 0; i < 8; ++i) {
-            ImageTransferContext *imageTransferContext = [ImageTransferContext new];
-            
-            imageTransferContext.slot = i;
-            imageTransferContext.fullSizePostedService = [FullSizePostedService new];
-            imageTransferContext.postImageDataService = [PostImageDataService new];
-            imageTransferContext.updateVisibleService = [UpdateVisibleService new];
-            
-            [transfer.context.imageContexts addObject:imageTransferContext];
-        }
         
         return transfer;
     };

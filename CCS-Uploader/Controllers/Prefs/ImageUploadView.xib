@@ -7,6 +7,17 @@
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="ImageUploadViewController">
             <connections>
+                <outlet property="btnProxyType" destination="MeH-WB-EeF" id="UKc-rJ-MV3"/>
+                <outlet property="btnSimultaneousFullSizeUploads" destination="bFf-Ju-C0T" id="w2B-1x-CM0"/>
+                <outlet property="btnSimultaneousThumbUploads" destination="DUN-bk-dPx" id="Pql-x5-w2l"/>
+                <outlet property="chkUseProxy" destination="cWI-VP-5yq" id="TAW-pL-VmS"/>
+                <outlet property="txtConnectionTimeout" destination="7l9-YP-xZb" id="hSx-BP-tg7"/>
+                <outlet property="txtNumRetries" destination="zLa-LG-fpF" id="J9Q-gC-Zdx"/>
+                <outlet property="txtProxyHost" destination="8Ci-ns-MWB" id="Phb-mw-Rgr"/>
+                <outlet property="txtProxyPass" destination="Mbq-kp-qOi" id="lmL-4I-DxZ"/>
+                <outlet property="txtProxyPort" destination="dfP-6d-Gq8" id="Cj2-cr-scs"/>
+                <outlet property="txtProxyUser" destination="arJ-Fp-BDz" id="Ake-lb-qjJ"/>
+                <outlet property="txtRetryDelay" destination="ihg-bu-QDh" id="InF-9P-e2e"/>
                 <outlet property="view" destination="1" id="2"/>
             </connections>
         </customObject>
@@ -37,7 +48,7 @@
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" id="1xy-kX-GPt">
                                     <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                    <font key="font" metaFont="system"/>
+                                    <font key="font" metaFont="menu"/>
                                     <menu key="menu" title="OtherViews" id="GMR-G0-WpS">
                                         <items>
                                             <menuItem title="1" id="T8e-H0-7DV"/>
@@ -106,6 +117,9 @@
                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
+                                <connections>
+                                    <outlet property="nextKeyView" destination="zLa-LG-fpF" id="9Bg-rV-0Hc"/>
+                                </connections>
                             </textField>
                             <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="7l9-YP-xZb">
                                 <rect key="frame" x="211" y="40" width="54" height="22"/>
@@ -121,6 +135,9 @@
                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
+                                <connections>
+                                    <outlet property="nextKeyView" destination="ihg-bu-QDh" id="1eT-eh-op2"/>
+                                </connections>
                             </textField>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="beq-c6-EZ2">
                                 <rect key="frame" x="268" y="73" width="96" height="17"/>
@@ -163,6 +180,9 @@
                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
+                                <connections>
+                                    <outlet property="nextKeyView" destination="7l9-YP-xZb" id="meE-mf-bWD"/>
+                                </connections>
                             </textField>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="i4R-lo-CyP">
                                 <rect key="frame" x="16" y="13" width="189" height="17"/>
@@ -176,12 +196,12 @@
                             <popUpButton verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="bFf-Ju-C0T">
                                 <rect key="frame" x="209" y="8" width="102" height="26"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <popUpButtonCell key="cell" type="push" title="1" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" id="am1-Z5-du3">
+                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" id="am1-Z5-du3">
                                     <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                    <font key="font" metaFont="system"/>
+                                    <font key="font" metaFont="menu"/>
                                     <menu key="menu" title="OtherViews" id="Mp4-f5-cWk">
                                         <items>
-                                            <menuItem title="1" state="on" id="kli-K7-Wfe"/>
+                                            <menuItem title="1" id="kli-K7-Wfe"/>
                                             <menuItem title="2" id="HpH-yr-yNT"/>
                                             <menuItem title="3" id="9U9-zJ-sSD"/>
                                             <menuItem title="4" id="U9p-7r-LDS">
@@ -222,6 +242,9 @@
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
+                                <connections>
+                                    <action selector="useProxyClicked:" target="-2" id="I71-zV-CvD"/>
+                                </connections>
                             </button>
                             <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="8Ci-ns-MWB">
                                 <rect key="frame" x="211" y="100" width="255" height="22"/>
@@ -231,6 +254,9 @@
                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
+                                <connections>
+                                    <outlet property="nextKeyView" destination="arJ-Fp-BDz" id="zSh-vA-dVs"/>
+                                </connections>
                             </textField>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="be4-fe-zxT">
                                 <rect key="frame" x="16" y="103" width="189" height="17"/>
@@ -258,6 +284,9 @@
                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
+                                <connections>
+                                    <outlet property="nextKeyView" destination="Mbq-kp-qOi" id="VJW-lI-9in"/>
+                                </connections>
                             </textField>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="TKm-s4-4cm">
                                 <rect key="frame" x="16" y="45" width="189" height="17"/>
@@ -276,6 +305,9 @@
                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
+                                <connections>
+                                    <outlet property="nextKeyView" destination="dfP-6d-Gq8" id="m7t-7N-Sne"/>
+                                </connections>
                             </textField>
                             <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="dfP-6d-Gq8">
                                 <rect key="frame" x="211" y="14" width="64" height="22"/>
@@ -291,6 +323,9 @@
                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
+                                <connections>
+                                    <outlet property="nextKeyView" destination="8Ci-ns-MWB" id="XQE-85-gtC"/>
+                                </connections>
                             </textField>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="K0W-S2-Rle">
                                 <rect key="frame" x="16" y="17" width="189" height="17"/>
@@ -315,28 +350,16 @@
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" id="lyk-84-7Wg">
                                     <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                    <font key="font" metaFont="system"/>
+                                    <font key="font" metaFont="menu"/>
                                     <menu key="menu" title="OtherViews" id="wmf-jK-nVl">
                                         <items>
-                                            <menuItem title="None" id="PSc-Lw-BjW"/>
-                                            <menuItem title="HttpTunnel" id="emF-qv-xEu"/>
-                                            <menuItem title="Open" id="hFb-IJ-58t"/>
-                                            <menuItem title="Pipe" id="TPi-4l-qqg">
+                                            <menuItem title="Auto" id="PSc-Lw-BjW"/>
+                                            <menuItem title="Socks4" id="emF-qv-xEu"/>
+                                            <menuItem title="Socks4a" id="hFb-IJ-58t"/>
+                                            <menuItem title="Socks5" id="TPi-4l-qqg">
                                                 <modifierMask key="keyEquivalentModifierMask"/>
                                             </menuItem>
-                                            <menuItem title="Proxy" id="IZz-HB-Jay">
-                                                <modifierMask key="keyEquivalentModifierMask"/>
-                                            </menuItem>
-                                            <menuItem title="Site" id="vSW-Mm-cXc">
-                                                <modifierMask key="keyEquivalentModifierMask"/>
-                                            </menuItem>
-                                            <menuItem title="Socks4" id="oDQ-d6-UK9">
-                                                <modifierMask key="keyEquivalentModifierMask"/>
-                                            </menuItem>
-                                            <menuItem title="Socks5" id="GL4-06-7xP">
-                                                <modifierMask key="keyEquivalentModifierMask"/>
-                                            </menuItem>
-                                            <menuItem title="User" id="Odh-QE-cKz">
+                                            <menuItem title="Socks5h" id="IZz-HB-Jay">
                                                 <modifierMask key="keyEquivalentModifierMask"/>
                                             </menuItem>
                                         </items>
@@ -353,5 +376,6 @@
         <menuItem title="Item" id="lWN-CE-8DK">
             <modifierMask key="keyEquivalentModifierMask"/>
         </menuItem>
+        <userDefaultsController representsSharedInstance="YES" id="jCR-ex-N2k"/>
     </objects>
 </document>

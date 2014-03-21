@@ -12,6 +12,31 @@
 #define kCorePass @"corePass"
 #define kCoreDomain @"coreDomain"
 
+#define kSimultaneousThumbUploads @"simultaneousThumbUploads"
+#define kRetryDelay @"retryDelay"
+#define kNumRetries @"numRetries"
+#define kConnectionTimeout @"connectionTimeout"
+#define kSimultaneousFullSizeUploads @"simultaneousFullSizeUploads"
+#define kUseProxy @"useProxy"
+#define kProxyHost @"proxyHost"
+#define kProxyUser @"proxyUser"
+#define kProxyPass @"proxyPass"
+#define kProxyPort @"proxyPort"
+#define kProxyType @"proxyType"
+
+#define kDefaultRetryDelay 30
+#define kDefaultNumRetries 900
+#define kDefaultConnectionTimeout 60
+
+#define kDetectRotations @"detectRotations"
+#define kDetectNewFiles @"detectNewFiles"
+#define kRemoveStringFromFilenames @"removeStringFromFilename"
+#define kReplaceWithStringInFilenames @"replaceWithStringInFilename"
+#define kHideImages @"hideImages"
+
+#define kMarketSettings @"marketSettings"
+#define kSimultaneousPreloaderUploads @"simultaneousPreloaderUploads"
+
 #define kCandidServiceRoot @"http://webservices.candid.com/CCSTransferWebService/service2.asmx/"
 #define kCandidEventServiceRoot @"http://webservices.candid.com/eventwebservice/Service1.asmx/"
 

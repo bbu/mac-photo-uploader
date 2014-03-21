@@ -22,6 +22,7 @@
     NSString *rootDir;
     NSMutableArray *rolls;
     NSMutableArray *rollsToHide, *framesToHide;
+    BOOL autoCategorizeImages;
     BOOL newlyAdded;
     
     NSFileManager *fileMgr;
@@ -38,6 +39,7 @@
 @synthesize rolls;
 @synthesize rollsToHide, framesToHide;
 @synthesize newlyAdded;
+@synthesize autoCategorizeImages;
 
 - (id)initWithCoder:(NSCoder *)decoder
 {
@@ -47,6 +49,7 @@
         eventRow = [decoder decodeObjectForKey:@"eventRow"];
         rootDir = [decoder decodeObjectForKey:@"rootDir"];
         rolls = [decoder decodeObjectForKey:@"rolls"];
+        autoCategorizeImages = [decoder decodeBoolForKey:@"autoCategorizeImages"];
     }
     
     return self;
@@ -77,6 +80,7 @@
     if (unarchivedOrder) {
         rolls = unarchivedOrder.rolls ? unarchivedOrder.rolls : [NSMutableArray new];
         rootDir = unarchivedOrder.rootDir;
+        autoCategorizeImages = unarchivedOrder.autoCategorizeImages;
         
         if (!rootDir) {
             return FAIL(nil, @"Archived order '%@' does not specify a root directory!", pathToOrderFile);
@@ -121,6 +125,7 @@
     [encoder encodeObject:eventRow forKey:@"eventRow"];
     [encoder encodeObject:rootDir forKey:@"rootDir"];
     [encoder encodeObject:rolls forKey:@"rolls"];
+    [encoder encodeBool:autoCategorizeImages forKey:@"autoCategorizeImages"];
 }
 
 - (void)diffWithExistingFiles

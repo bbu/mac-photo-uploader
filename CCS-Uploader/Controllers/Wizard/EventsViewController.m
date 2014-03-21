@@ -46,6 +46,13 @@
     dpEndDate.dateValue = [NSDate dateWithTimeInterval:60 * 60 sinceDate:[NSDate date]];
 }
 
+- (void)refreshIfEmpty
+{
+    if (!events.count) {
+        [self clickedRefresh:nil];
+    }
+}
+
 - (IBAction)advancedSearchClicked:(id)sender
 {
     [advancedSearchPopover showRelativeToRect:[sender superview].bounds ofView:sender preferredEdge:NSMaxXEdge];
