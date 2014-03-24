@@ -70,6 +70,69 @@
     [self showStep:kWizardStepLogin];
 }
 
+- (void)openEvent:(NSString *)orderNumber isQuicPost:(BOOL)isQuicPost
+{
+    [super showWindow:nil];
+    
+    [loadingViewController view];
+    loadingViewController.txtMessage.stringValue = @"Checking the event...";
+    txtStepTitle.stringValue = [NSString stringWithFormat:@"Opening event number %@ (%@)", orderNumber, isQuicPost ? @"QuicPost" : @"CORE"];
+    txtStepDescription.stringValue = @"";
+    
+    [self showStep:kWizardStepLoading];
+    
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
+    if (!isQuicPost) {
+        effectiveUser = [defaults objectForKey:kCoreUser];
+        effectivePass = [defaults objectForKey:kCorePass];
+        effectiveService = kServiceRootCore;
+        effectiveCoreDomain = [defaults objectForKey:kCoreDomain];
+    } else {
+        effectiveUser = [defaults objectForKey:kQuicPostUser];
+        effectivePass = [defaults objectForKey:kQuicPostPass];
+        effectiveService = kServiceRootQuicPost;
+        effectiveCoreDomain = nil;
+    }
+    
+    if (!effectiveUser || !effectivePass) {
+        NSAlert *alert = [NSAlert alertWithMessageText:@"Please setup your login credentials first."
+            defaultButton:@"OK" alternateButton:@"" otherButton:@"" informativeTextWithFormat:@""];
+        
+        [alert beginSheetModalForWindow:self.window
+            completionHandler:^(NSModalResponse response) {
+                [self.window close];
+            }
+        ];
+        
+        return;
+    }
+    
+    [listEventService setEffectiveServiceRoot:effectiveService coreDomain:effectiveCoreDomain];
+    [listEventService startListEvent:effectiveUser password:effectivePass orderNumber:orderNumber
+        complete:^(ListEventsResult *result) {
+            if (!result.error && result.events.count == 1 &&
+                ((EventRow *)result.events[0]).orderNumber != nil && ((EventRow *)result.events[0]).orderNumber.length != 0) {
+                
+                [browseViewController startLoadEvent:result.events[0] fromWizard:NO];
+                [btnNext setEnabled:NO];
+            } else {
+                NSAlert *alert = [NSAlert new];
+                                    
+                alert.messageText = [NSString stringWithFormat:
+                    @"Could not find a %@ event with the number \"%@\".",
+                    effectiveService == kServiceRootCore ? @"CORE" : @"QuicPost", orderNumber];
+                                    
+                [alert beginSheetModalForWindow:self.window
+                    completionHandler:^(NSModalResponse response) {
+                        [self.window close];
+                    }
+                ];
+            }
+        }
+    ];
+}
+
 - (void)showEvent:(NSString *)orderNumber user:(NSString *)user pass:(NSString *)pass
     source:(NSString *)source filename:(NSString *)filename
 {
@@ -193,6 +256,7 @@
 
         case kWizardStepBrowse: {
             [browseViewController saveOrderModel];
+            [reviewViewController reload];
             [self showStep:kWizardStepReview];
         } break;
             

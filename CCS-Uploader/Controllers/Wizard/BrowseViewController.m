@@ -122,6 +122,8 @@
 
 @implementation BrowseViewController
 
+@synthesize orderModel;
+
 - (id)initWithWizardController:(WizardWindowController *)parent
 {
     self = [super initWithNibName:@"BrowseView" bundle:nil];
@@ -432,7 +434,7 @@
             cell.imageView.image = row % 2 ? [NSImage imageNamed:@"NSStatusNone"] : [NSImage imageNamed:@"NSStatusNone"];
         } else if ([columnID isEqualToString:@"CurrentTask"]) {
             NSTableCellView *cell = view;
-            //cell.textField.stringValue = @"Uploading thumbnails...";
+            //cell.textField.stringValue = @"1234 of 9999 thumbs sent";
             [((NSProgressIndicator *)cell.subviews[1]) setHidden:YES];
             [((NSTextField *)cell.subviews[0]) setHidden:YES];
             //[((NSProgressIndicator *)cell.subviews[1]) startAnimation:nil];
@@ -468,46 +470,24 @@
         ];
     };
     
+    for (Transfer *transfer in wizardWindowController.mainWindowController.transferManager.transfers) {
+        if ([transfer.orderNumber isEqualToString:event.orderNumber] &&
+            (transfer.status == kTransferStatusRunning || transfer.status == kTransferStatusQueued)) {
+            
+            terminate([NSString stringWithFormat:
+                @"The event \"%@\" (%@) is currently being transferred.\r\rYou can either stop it or wait for it to finish in order to open it.",
+                event.eventName, event.orderNumber]);
+            
+            return;
+        }
+    }
+    
     if ([wizardWindowController.mainWindowController.openedEvents containsObject:event.orderNumber]) {
         terminate([NSString stringWithFormat:@"The event \"%@\" (%@) is already open in another window.", event.eventName, event.orderNumber]);
         return;
     }
     
     [wizardWindowController.mainWindowController.openedEvents addObject:event.orderNumber];
-    
-    /*
-    NSString *effectiveUser = wizardWindowController.effectiveUser;
-    NSString *effectivePass = wizardWindowController.effectivePass;
-    NSInteger effectiveService = wizardWindowController.effectiveService;
-    NSString *effectiveCoreDomain = wizardWindowController.effectiveCoreDomain;
-     
-    if (fromWizard) {
-        effectiveUser = wizardWindowController.effectiveUser;
-        effectivePass = wizardWindowController.effectivePass;
-        effectiveService = wizardWindowController.effectiveService;
-        effectiveCoreDomain = wizardWindowController.effectiveCoreDomain;
-    } else {
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-        NSNumber *selectedService = [defaults objectForKey:kQuicPostSelected];
-        
-        if (selectedService == nil || selectedService.boolValue) {
-            effectiveUser = [defaults objectForKey:kQuicPostUser];
-            effectivePass = [defaults objectForKey:kQuicPostPass];
-            effectiveService = kServiceRootQuicPost;
-            effectiveCoreDomain = nil;
-        } else {
-            effectiveUser = [defaults objectForKey:kCoreUser];
-            effectivePass = [defaults objectForKey:kCorePass];
-            effectiveService = kServiceRootCore;
-            effectiveCoreDomain = [defaults objectForKey:kCoreDomain];
-        }
-        
-        wizardWindowController.effectiveUser = effectiveUser;
-        wizardWindowController.effectivePass = effectivePass;
-        wizardWindowController.effectiveService = effectiveService;
-        wizardWindowController.effectiveCoreDomain = effectiveCoreDomain;
-    }
-    */
     
     for (Service *service in @[checkOrderNumberService, listPhotographersService, addPhotographerService, listDivisionsService]) {
         [service setEffectiveServiceRoot:wizardWindowController.effectiveService
@@ -825,6 +805,8 @@
     
     [viewRollPopover close];
     rollModelShown = targetRoll;
+    rollModelShown.imagesViewed = YES;
+    
     [imagesInBrowser removeAllObjects];
     NSString *rollPath = [orderModel.rootDir stringByAppendingPathComponent:targetRoll.number];
     

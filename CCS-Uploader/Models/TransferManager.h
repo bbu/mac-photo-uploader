@@ -12,10 +12,18 @@ typedef NS_ENUM(NSInteger, TransferStatus) {
     kTransferStatusAborted,
 };
 
+typedef NS_ENUM(NSInteger, TransferMode) {
+    kTransferModeUnsent,
+    kTransferModeAll,
+    kTransferModeSelected,
+    kTransferModeMissing,
+};
+
 @interface Transfer : NSObject <NSCoding>
 @property NSString *orderNumber;
 @property NSString *eventName;
 @property TransferStatus status;
+@property TransferMode mode;
 @property BOOL uploadThumbs, thumbsUploaded, uploadFullsize, fullsizeUploaded;
 @property NSDate *datePushed, *dateScheduled;
 @property BOOL isQuicPost;
@@ -32,6 +40,7 @@ typedef NS_ENUM(NSInteger, TransferStatus) {
 
 @property (readonly) NSMutableArray *transfers;
 @property (readonly) Transfer *currentlyRunningTransfer;
+@property (assign) NSSet *openedEvents;
 
 @property (nonatomic, copy) void (^reloadTransfers)(void);
 @property (nonatomic, copy) void (^transferStateChanged)(NSString *message);

@@ -13,6 +13,8 @@
         _photographerID = [decoder decodeObjectForKey:@"photographerID"];
         _greenScreen = [decoder decodeObjectForKey:@"greenScreen"];
         _frames = [decoder decodeObjectForKey:@"frames"];
+        _imagesAutoRenamed = [decoder decodeBoolForKey:@"imagesAutoRenamed"];
+        _imagesViewed = [decoder decodeBoolForKey:@"imagesViewed"];
     }
 
     return self;
@@ -25,6 +27,8 @@
     [encoder encodeObject:_photographerID forKey:@"photographerID"];
     [encoder encodeObject:_greenScreen forKey:@"greenScreen"];
     [encoder encodeObject:_frames forKey:@"frames"];
+    [encoder encodeBool:_imagesAutoRenamed forKey:@"imagesAutoRenamed"];
+    [encoder encodeBool:_imagesViewed forKey:@"imagesViewed"];
 }
 
 @end

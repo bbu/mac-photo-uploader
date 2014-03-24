@@ -16,8 +16,19 @@
         _orientation = [decoder decodeIntegerForKey:@"orientation"];
         _imageType = [decoder decodeObjectForKey:@"imageType"];
         _imageErrors = [decoder decodeObjectForKey:@"imageErrors"];
+        _userDidRotate = [decoder decodeBoolForKey:@"userDidRotate"];
+
         _fullsizeSent = [decoder decodeBoolForKey:@"fullsizeSent"];
         _thumbsSent = [decoder decodeBoolForKey:@"thumbsSent"];
+        
+        _isSelected = [decoder decodeBoolForKey:@"isSelected"];
+        _isSelectedFullsizeSent = [decoder decodeBoolForKey:@"isSelectedFullsizeSent"];
+        _isSelectedThumbsSent = [decoder decodeBoolForKey:@"isSelectedThumbsSent"];
+        
+        _isMissing = [decoder decodeBoolForKey:@"isMissing"];
+        _isMissingFullsizeSent = [decoder decodeBoolForKey:@"isMissingFullsizeSent"];
+        _isMissingThumbsSent = [decoder decodeBoolForKey:@"isMissingThumbsSent"];
+        
     }
     
     return self;
@@ -34,8 +45,18 @@
     [encoder encodeInteger:_orientation forKey:@"orientation"];
     [encoder encodeObject:_imageType forKey:@"imageType"];
     [encoder encodeObject:_imageErrors forKey:@"imageErrors"];
+    [encoder encodeBool:_userDidRotate forKey:@"userDidRotate"];
+
     [encoder encodeBool:_fullsizeSent forKey:@"fullsizeSent"];
     [encoder encodeBool:_thumbsSent forKey:@"thumbsSent"];
+    
+    [encoder encodeBool:_isSelected forKey:@"isSelected"];
+    [encoder encodeBool:_isSelectedFullsizeSent forKey:@"isSelectedFullsizeSent"];
+    [encoder encodeBool:_isSelectedThumbsSent forKey:@"isSelectedThumbsSent"];
+    
+    [encoder encodeBool:_isMissing forKey:@"isMissing"];
+    [encoder encodeBool:_isMissingFullsizeSent forKey:@"isMissingFullsizeSent"];
+    [encoder encodeBool:_isMissingThumbsSent forKey:@"isMissingThumbsSent"];
 }
 
 @end

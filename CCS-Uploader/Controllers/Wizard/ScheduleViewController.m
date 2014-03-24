@@ -2,6 +2,7 @@
 
 #import "../WizardWindowController.h"
 #import "../MainWindowController.h"
+#import "../../Models/OrderModel.h"
 #import "../../Services/ListEventsService.h"
 
 @interface ScheduleViewController () {
@@ -79,6 +80,16 @@
 
 - (void)pushTransfer
 {
+    OrderModel *orderModel = wizardWindowController.browseViewController.orderModel;
+    
+    NSIndexSet *transferIndexesToRemove = [wizardWindowController.mainWindowController.transferManager.transfers indexesOfObjectsPassingTest:
+        ^BOOL(Transfer *transfer, NSUInteger idx, BOOL *stop) {
+            return [transfer.orderNumber isEqualToString:wizardWindowController.eventRow.orderNumber] == NSOrderedSame ? NO : YES;
+        }
+    ];
+    
+    [wizardWindowController.mainWindowController.transferManager.transfers removeObjectsAtIndexes:transferIndexesToRemove];
+    
     Transfer *newTransfer1 = [Transfer new];
     Transfer *newTransfer2 = [Transfer new];
     

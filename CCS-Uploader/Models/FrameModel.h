@@ -8,6 +8,11 @@
 @property NSUInteger orientation;
 @property NSMutableString *imageType;
 @property NSMutableString *imageErrors;
-@property BOOL fullsizeSent, thumbsSent;
-@property BOOL needsDelete, newlyAdded, userDidRotate;
+@property BOOL userDidRotate;
+@property BOOL
+    fullsizeSent, thumbsSent,
+    isSelected, isSelectedFullsizeSent, isSelectedThumbsSent,
+    isMissing, isMissingFullsizeSent, isMissingThumbsSent;
+
+@property BOOL needsDelete, newlyAdded;
 @end

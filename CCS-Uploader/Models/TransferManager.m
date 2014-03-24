@@ -88,6 +88,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
         _orderNumber = [decoder decodeObjectForKey:@"orderNumber"];
         _eventName = [decoder decodeObjectForKey:@"eventName"];
         _status = [decoder decodeIntegerForKey:@"status"];
+        _mode = [decoder decodeIntegerForKey:@"mode"];
         _uploadThumbs = [decoder decodeBoolForKey:@"uploadThumbs"];
         _thumbsUploaded = [decoder decodeBoolForKey:@"thumbsUploaded"];
         _uploadFullsize = [decoder decodeBoolForKey:@"uploadFullsize"];
@@ -106,6 +107,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
     [encoder encodeObject:_orderNumber forKey:@"orderNumber"];
     [encoder encodeObject:_eventName forKey:@"eventName"];
     [encoder encodeInteger:_status forKey:@"status"];
+    [encoder encodeInteger:_mode forKey:@"mode"];
     [encoder encodeBool:_uploadThumbs forKey:@"uploadThumbs"];
     [encoder encodeBool:_thumbsUploaded forKey:@"thumbsUploaded"];
     [encoder encodeBool:_uploadFullsize forKey:@"uploadFullsize"];
@@ -133,6 +135,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
 
 @synthesize transfers;
 @synthesize currentlyRunningTransfer;
+@synthesize openedEvents;
 @synthesize reloadTransfers;
 @synthesize transferStateChanged;
 @synthesize startedUploadingImage;
@@ -277,6 +280,56 @@ static NSString *curlStatuses[] = {
     currentlyRunningTransfer = nil;
 }
 
+- (BOOL)conditionToSendThumbs:(FrameModel *)frame
+{
+    BOOL condition = YES;
+    
+    switch (currentlyRunningTransfer.mode) {
+        case kTransferModeUnsent:
+            condition = !frame.thumbsSent && !frame.imageErrors.length;
+            break;
+            
+        case kTransferModeSelected:
+            condition = frame.isSelected && !frame.isSelectedThumbsSent && !frame.imageErrors.length;
+            break;
+            
+        case kTransferModeMissing:
+            condition = frame.isMissing && !frame.isMissingThumbsSent && !frame.imageErrors.length;
+            break;
+            
+        case kTransferModeAll:
+            condition = !frame.imageErrors.length;
+            break;
+    }
+    
+    return condition;
+}
+
+- (BOOL)conditionToSendFullsize:(FrameModel *)frame
+{
+    BOOL condition = YES;
+    
+    switch (currentlyRunningTransfer.mode) {
+        case kTransferModeUnsent:
+            condition = !frame.fullsizeSent && !frame.imageErrors.length;
+            break;
+            
+        case kTransferModeSelected:
+            condition = frame.isSelected && !frame.isSelectedFullsizeSent && !frame.imageErrors.length;
+            break;
+            
+        case kTransferModeMissing:
+            condition = frame.isMissing && !frame.isMissingFullsizeSent && !frame.imageErrors.length;
+            break;
+            
+        case kTransferModeAll:
+            condition = !frame.imageErrors.length;
+            break;
+    }
+    
+    return condition;
+}
+
 - (BOOL)nextPendingFrame
 {
     RunningTransferContext *context = currentlyRunningTransfer.context;
@@ -289,9 +342,9 @@ static NSString *curlStatuses[] = {
             BOOL conditionToSend;
             
             if (context.state == kRunningTransferStateSendingThumbs) {
-                conditionToSend = !frame.thumbsSent && !frame.imageErrors.length;
+                conditionToSend = [self conditionToSendThumbs:frame];
             } else {
-                conditionToSend = !frame.fullsizeSent && !frame.imageErrors.length;
+                conditionToSend = [self conditionToSendFullsize:frame];
             }
             
             if (conditionToSend) {
@@ -559,7 +612,9 @@ static NSString *curlStatuses[] = {
         
         for (RollModel *roll in context.orderModel.rolls) {
             for (FrameModel *frame in roll.frames) {
-                if (!frame.thumbsSent && !frame.imageErrors.length) {
+                BOOL condition = [self conditionToSendThumbs:frame];
+                
+                if (condition) {
                     context.totalCount++;
                 }
             }
@@ -572,7 +627,9 @@ static NSString *curlStatuses[] = {
         
         for (RollModel *roll in context.orderModel.rolls) {
             for (FrameModel *frame in roll.frames) {
-                if (!frame.fullsizeSent && !frame.imageErrors.length) {
+                BOOL condition = [self conditionToSendFullsize:frame];
+                
+                if (condition) {
                     context.totalCount++;
                     context.totalSize += frame.filesize;
                 }
@@ -582,11 +639,7 @@ static NSString *curlStatuses[] = {
         progressIndicator.maxValue = context.totalSize;
     }
     
-    if (context.imageContexts) {
-        [context.imageContexts removeAllObjects];
-    } else {
-        context.imageContexts = [NSMutableArray new];
-    }
+    [context.imageContexts removeAllObjects];
     
     for (NSInteger i = 0; i < numContexts; ++i) {
         ImageTransferContext *imageTransferContext = [ImageTransferContext new];
@@ -717,6 +770,9 @@ static NSString *curlStatuses[] = {
                                 complete:^(PostImageDataResult *result) {
                                     if (!result.error && [result.status isEqualToString:@"Successful"]) {
                                         imageContext.frame.thumbsSent = YES;
+                                        imageContext.frame.isSelectedThumbsSent = YES;
+                                        imageContext.frame.isMissingThumbsSent = YES;
+                                        
                                         context.imagesSent++;
                                         
                                         NSInteger secondsRemaining = 0;
@@ -898,6 +954,9 @@ static NSString *curlStatuses[] = {
                                 complete:^(FullSizePostedResult *result) {
                                     if (!result.error && [result.status isEqualToString:@"Successful"]) {
                                         imageContext.frame.fullsizeSent = YES;
+                                        imageContext.frame.isSelectedFullsizeSent = YES;
+                                        imageContext.frame.isMissingFullsizeSent = YES;
+                                        
                                         context.imagesSent++;
                                         context.sizeSent += imageContext.frame.filesize;
 
@@ -1155,7 +1214,7 @@ static NSString *curlStatuses[] = {
     }
     
     for (Transfer *transfer in transfers) {
-        if (transfer.status == kTransferStatusQueued) {
+        if (transfer.status == kTransferStatusQueued && ![openedEvents containsObject:transfer.orderNumber]) {
             return initRunningTransfer(transfer);
         }
     }

@@ -436,6 +436,7 @@
             RollModel *newRoll = [RollModel new];
             
             newRoll.frames = [NSMutableArray new];
+            newRoll.imagesAutoRenamed = autoNumberFrames;
             newRoll.number = (autoNumberRolls || !derivedRollName) ?
                 [NSString stringWithFormat:@"%05ld", nextRollNumber] : derivedRollName;
             
@@ -500,6 +501,9 @@
         NSInteger framesInTargetRoll = 0;
         
         if (framesRemaining > 0) {
+            targetRoll.imagesAutoRenamed = autoNumberFrames;
+            targetRoll.imagesViewed = NO;
+            
             NSString *rollPath = [rootDir stringByAppendingPathComponent:targetRoll.number];
             
             for (NSInteger nextFrameNumber = [self deriveNextFrameNumber:targetRoll];
@@ -557,6 +561,7 @@
             RollModel *newRoll = [RollModel new];
             
             newRoll.frames = [NSMutableArray new];
+            newRoll.imagesAutoRenamed = autoNumberFrames;
             newRoll.number = (autoNumberRolls || !derivedRollName) ?
                 [NSString stringWithFormat:@"%05ld", nextRollNumber] : derivedRollName;
             
