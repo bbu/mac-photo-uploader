@@ -168,12 +168,12 @@ static NSString *transferStatuses[] = {
             }
         } else if ([tableColumn.identifier isEqualToString:@"Thumbs"]) {
             result.textField.stringValue = transfer.uploadThumbs ?
-                (transfer.thumbsUploaded ? @"Uploaded" : @"Not yet active") : @"Not included";
+                (transfer.thumbsUploaded ? @"Uploaded" : @"In progress") : @"";
         } else if ([tableColumn.identifier isEqualToString:@"Fullsize"]) {
             result.textField.stringValue = transfer.uploadFullsize ?
-                (transfer.fullsizeUploaded ? @"Uploaded" : @"Not yet active") : @"Not included";
+                (transfer.fullsizeUploaded ? @"Uploaded" : @"In progress") : @"";
         } else if ([tableColumn.identifier isEqualToString:@"Date"]) {
-            result.textField.stringValue = [dateFormatter stringFromDate:transfer.datePushed];
+            result.textField.stringValue = [timeFormatter stringFromDate:transfer.datePushed];
         } else if ([tableColumn.identifier isEqualToString:@"Progress"]) {
             NSProgressIndicator *progressIndicator = (NSProgressIndicator *)result.subviews[0];
             

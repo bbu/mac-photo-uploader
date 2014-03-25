@@ -1,6 +1,15 @@
 #import <Cocoa/Cocoa.h>
+#import <Quartz/Quartz.h>
 
-@class WizardWindowController, EventRow, OrderModel;
+@class WizardWindowController, EventRow, OrderModel, FrameModel;
+
+@interface ImageInBrowserView : NSObject
+
+- (id)initWithFrame:(FrameModel *)frame path:(NSString *)path;
+
+@property FrameModel *frame;
+@property NSString *path;
+@end
 
 @interface BrowseViewController : NSViewController
 
@@ -9,5 +18,6 @@
 - (void)saveOrderModel;
 
 @property (readonly) OrderModel *orderModel;
+@property (readonly) NSString *ccsPassword;
 
 @end

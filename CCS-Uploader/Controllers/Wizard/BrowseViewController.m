@@ -15,21 +15,15 @@
 
 #import <Quartz/Quartz.h>
 
-@interface ImageInBrowserView : NSObject {
-    NSString *filepath;
-    FrameModel *frameModel;
-}
-@end
-
 @implementation ImageInBrowserView
 
-- (id)initWithFrameModel:(FrameModel *)frame path:(NSString *)path
+- (id)initWithFrame:(FrameModel *)frame path:(NSString *)path
 {
     self = [super init];
     
     if (self) {
-        filepath = path;
-        frameModel = frame;
+        _path = path;
+        _frame = frame;
     }
     
     return self;
@@ -42,23 +36,23 @@
 
 - (id)imageRepresentation
 {
-    return filepath;
+    return _path;
 }
 
 - (NSString *)imageUID
 {
-    return filepath;
+    return _path;
 }
 
 - (id)imageTitle
 {
-    return [NSString stringWithFormat:@"%@", [frameModel.name stringByAppendingPathExtension:frameModel.extension]];
+    return [NSString stringWithFormat:@"%@", [_frame.name stringByAppendingPathExtension:_frame.extension]];
 }
 
 - (id)imageSubtitle
 {
-    if (!frameModel.imageErrors.length) {
-        return [NSString stringWithFormat:@"%@%ld × %ld", frameModel.fullsizeSent ? @"[Sent] " : @"", frameModel.width, frameModel.height];
+    if (!_frame.imageErrors.length) {
+        return [NSString stringWithFormat:@"%@%ld × %ld", _frame.fullsizeSent ? @"[Sent] " : @"", _frame.width, _frame.height];
     } else {
         return @"[ERRORS]";
     }
@@ -66,7 +60,7 @@
 
 - (NSUInteger)imageVersion
 {
-    NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:filepath error:nil];
+    NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:_path error:nil];
     return attributes.fileModificationDate.hash + attributes.fileSize;
 }
 @end
@@ -123,6 +117,7 @@
 @implementation BrowseViewController
 
 @synthesize orderModel;
+@synthesize ccsPassword;
 
 - (id)initWithWizardController:(WizardWindowController *)parent
 {
@@ -398,7 +393,7 @@
 {
     NSString *columnID = tableColumn.identifier;
     id view = [tableView makeViewWithIdentifier:tableColumn.identifier owner:self];
-    
+
     if (tableView == tblRolls) {
         RollModel *roll = orderModel.rolls[row];
         
@@ -607,7 +602,7 @@
 {
     wizardWindowController.eventRow = orderModel.eventRow;
     
-    NSData *storedMarketRows = [[NSUserDefaults standardUserDefaults] objectForKey:@"marketSettingsRows"];
+    NSData *storedMarketRows = [[NSUserDefaults standardUserDefaults] objectForKey:kMarketSettings];
     NSArray *marketSettingsRows = nil;
     
     if (storedMarketRows) {
@@ -776,6 +771,10 @@
 
 - (IBAction)clickedDeleteRoll:(id)sender
 {
+    if (!tblRolls.isEnabled) {
+        return;
+    }
+    
     NSInteger row = [tblRolls rowForView:sender];
     
     NSAlert *alert = [NSAlert alertWithMessageText:@"Do you really want to delete this roll?"
@@ -794,6 +793,10 @@
 
 - (IBAction)clickedViewRoll:(id)sender
 {
+    if (!tblRolls.isEnabled) {
+        return;
+    }
+    
     NSInteger row = [tblRolls rowForView:sender];
     RollModel *targetRoll = orderModel.rolls[row];
     
@@ -816,7 +819,7 @@
         NSString *filepath = [[rollPath stringByAppendingPathComponent:frame.name]
             stringByAppendingPathExtension:frame.extension];
         
-        ImageInBrowserView *newEntry = [[ImageInBrowserView alloc] initWithFrameModel:frame path:filepath];
+        ImageInBrowserView *newEntry = [[ImageInBrowserView alloc] initWithFrame:frame path:filepath];
         [imagesInBrowser addObject:newEntry];
     }
 

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="5053" systemVersion="13C64" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
-        <deployment version="1070" identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="5053"/>
         <plugIn identifier="com.apple.imagekit.ibplugin" version="5053"/>
     </dependencies>
@@ -257,7 +256,7 @@
                                                 <rect key="frame" x="527" y="1" width="223" height="17"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                 <subviews>
-                                                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" id="BRF-8Z-QKH">
+                                                    <textField identifier="Label" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" id="BRF-8Z-QKH">
                                                         <rect key="frame" x="24" y="-2" width="199" height="17"/>
                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                                         <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="JQn-G0-7b9">
@@ -266,7 +265,7 @@
                                                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                         </textFieldCell>
                                                     </textField>
-                                                    <progressIndicator horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" id="PRw-Wv-gGw">
+                                                    <progressIndicator identifier="Progress" horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" id="PRw-Wv-gGw">
                                                         <rect key="frame" x="2" y="-2" width="16" height="16"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                     </progressIndicator>
@@ -277,7 +276,7 @@
                                             </tableCellView>
                                         </prototypeCellViews>
                                     </tableColumn>
-                                    <tableColumn width="64" minWidth="10" maxWidth="3.4028234663852886e+38" id="A2T-Q8-78u">
+                                    <tableColumn identifier="View" width="64" minWidth="10" maxWidth="3.4028234663852886e+38" id="A2T-Q8-78u">
                                         <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
                                             <font key="font" metaFont="smallSystem"/>
                                             <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -302,7 +301,7 @@
                                             </button>
                                         </prototypeCellViews>
                                     </tableColumn>
-                                    <tableColumn width="64" minWidth="10" maxWidth="3.4028234663852886e+38" id="ea5-qv-1nO">
+                                    <tableColumn identifier="Delete" width="64" minWidth="10" maxWidth="3.4028234663852886e+38" id="ea5-qv-1nO">
                                         <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
                                             <font key="font" metaFont="smallSystem"/>
                                             <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -674,7 +673,7 @@ CA
             </subviews>
         </customView>
         <window title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" hidesOnDeactivate="YES" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="rMF-xz-va9" customClass="NSPanel">
-            <windowStyleMask key="styleMask" utility="YES"/>
+            <windowStyleMask key="styleMask" titled="YES" utility="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="196" y="116" width="546" height="282"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1080"/>
@@ -696,7 +695,7 @@ DQ
                             <action selector="importNewFiles:" target="-2" id="R0j-ey-O6a"/>
                         </connections>
                     </button>
-                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" id="Yao-f9-mej">
+                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" id="Yao-f9-mej">
                         <rect key="frame" x="18" y="245" width="510" height="17"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="New image files have been detected in the event's folder:" id="IdT-9J-qcT">
@@ -749,7 +748,7 @@ DQ
             </view>
         </window>
         <window title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" hidesOnDeactivate="YES" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="79P-Pr-hux" customClass="NSPanel">
-            <windowStyleMask key="styleMask" utility="YES"/>
+            <windowStyleMask key="styleMask" titled="YES" utility="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="196" y="116" width="700" height="331"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1080"/>
@@ -786,7 +785,7 @@ DQ
                             <autoresizingMask key="autoresizingMask"/>
                         </scroller>
                     </scrollView>
-                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" id="aMq-Cw-a2v">
+                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" id="aMq-Cw-a2v">
                         <rect key="frame" x="18" y="294" width="664" height="17"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="The following errors occurred while importing some of the images:" id="34A-E8-vLG">
@@ -868,7 +867,7 @@ DQ
                         <rect key="frame" x="1" y="17" width="340" height="228"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <tableView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnReordering="NO" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" rowSizeStyle="automatic" headerView="ffa-Kt-VzU" viewBased="YES" id="TZN-G2-QJB">
+                            <tableView identifier="Name" focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnReordering="NO" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" rowSizeStyle="automatic" headerView="ffa-Kt-VzU" viewBased="YES" id="TZN-G2-QJB">
                                 <rect key="frame" x="0.0" y="0.0" width="340" height="228"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <size key="intercellSpacing" width="3" height="2"/>
