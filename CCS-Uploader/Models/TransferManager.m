@@ -1183,7 +1183,7 @@ static NSString *curlStatuses[] = {
     
     if (!context.orderModel) {
         NSError *error = nil;
-        context.orderModel = [[OrderModel alloc] initWithEventRow:context.eventRow error:&error];
+        context.orderModel = [[OrderModel alloc] initWithEventRow:context.eventRow extensions:@[@"jpg", @"jpeg", @"png"] error:&error];
         
         if (!context.orderModel) {
             [self abortTransferWithError:[NSString stringWithFormat:@"Unable to create order model: %@", error.localizedDescription]];

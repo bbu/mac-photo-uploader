@@ -22,6 +22,7 @@
                 <outlet property="chkHonourFramesPerRoll" destination="1nF-8n-3tE" id="Ud1-LI-QjM"/>
                 <outlet property="chkPutImagesInCurrentlySelectedRoll" destination="ht2-c3-hbU" id="MAZ-QB-01x"/>
                 <outlet property="errorsImportingImagesSheet" destination="79P-Pr-hux" id="XTZ-rZ-QfQ"/>
+                <outlet property="greenScreenSheet" destination="Hb7-0I-er3" id="df5-MZ-eOZ"/>
                 <outlet property="imageBrowserTitle" destination="bzN-R5-MAb" id="i2f-2O-cLB"/>
                 <outlet property="imageBrowserView" destination="4Ng-qR-G4T" id="Mtc-Jn-cPc"/>
                 <outlet property="includeNewlyAddedImagesSheet" destination="rMF-xz-va9" id="Coe-iE-tWO"/>
@@ -389,6 +390,9 @@
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                     </buttonCell>
+                    <connections>
+                        <action selector="greenScreenClicked:" target="-2" id="XfM-zw-Roj"/>
+                    </connections>
                 </button>
                 <progressIndicator horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" id="5CT-3c-Mnq">
                     <rect key="frame" x="159" y="441" width="16" height="16"/>
@@ -509,6 +513,9 @@
                 <menuItem isSeparatorItem="YES" id="6du-bd-xQW"/>
                 <menuItem title="Green/Blue screen setup" id="1hu-Dy-Xrl">
                     <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="greenScreenClicked:" target="-2" id="dgf-JL-tSd"/>
+                    </connections>
                 </menuItem>
             </items>
         </menu>
@@ -931,6 +938,43 @@ DQ
                 </scrollView>
             </subviews>
         </customView>
+        <window title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" hidesOnDeactivate="YES" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="Hb7-0I-er3" customClass="NSPanel">
+            <windowStyleMask key="styleMask" titled="YES" utility="YES"/>
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+            <rect key="contentRect" x="196" y="116" width="749" height="429"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1080"/>
+            <view key="contentView" id="sof-4E-ze8">
+                <rect key="frame" x="0.0" y="0.0" width="749" height="429"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <button verticalHuggingPriority="750" id="IyZ-mS-XAq">
+                        <rect key="frame" x="463" y="13" width="136" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="hMX-Ue-Ejt">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                            <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
+                        </buttonCell>
+                    </button>
+                    <button verticalHuggingPriority="750" id="orE-69-rv0">
+                        <rect key="frame" x="599" y="13" width="136" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="push" title="Confirm" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Eqe-Ug-Icj">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                            <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
+                        </buttonCell>
+                        <connections>
+                            <action selector="closeGreenScreen:" target="-2" id="qIi-Oc-eSi"/>
+                        </connections>
+                    </button>
+                </subviews>
+            </view>
+        </window>
     </objects>
     <resources>
         <image name="NSActionTemplate" width="14" height="14"/>

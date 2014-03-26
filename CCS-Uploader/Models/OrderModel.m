@@ -24,6 +24,7 @@
     NSMutableArray *rollsToHide, *framesToHide;
     BOOL autoCategorizeImages;
     BOOL newlyAdded;
+    NSSet *allowedExtensions;
     
     NSFileManager *fileMgr;
     NSUserDefaults *defaults;
@@ -55,7 +56,7 @@
     return self;
 }
 
-- (id)initWithEventRow:(EventRow *)event error:(NSError **)error
+- (id)initWithEventRow:(EventRow *)event extensions:(NSArray *)extensions error:(NSError **)error
 {
     if (!(self = [super init])) {
         return nil;
@@ -115,6 +116,8 @@
         }
     }
     
+    //NSSet *allowedExtensions = [NSSet setWithObjects:@"jpg", @"jpeg", @"png", nil];
+    allowedExtensions = [NSSet setWithArray:extensions];
     [self diffWithExistingFiles];
     
     return self;
@@ -145,7 +148,6 @@
     }
     
     NSMutableSet *existingDirs = [NSMutableSet setWithArray:subdirsInRoot];
-    NSSet *allowedExtensions = [NSSet setWithObjects:@"jpg", @"jpeg", @"png", nil];
     
     for (RollModel *roll in rolls) {
         roll.framesHaveErrors = NO;
@@ -333,6 +335,57 @@
     newlyAdded = NO;
 }
 
+- (NSString *)validateName:(NSString *)name isRoll:(BOOL)isRoll
+{
+    NSCharacterSet *charactersToReplace = [[NSCharacterSet alphanumericCharacterSet] invertedSet];
+    
+    NSMutableString *nameWithUnderscores = [[[name componentsSeparatedByCharactersInSet:charactersToReplace]
+        componentsJoinedByString:@"_"] mutableCopy];
+    
+    if (!isRoll && [nameWithUnderscores.lowercaseString hasSuffix:@"z"]) {
+        [nameWithUnderscores appendString:@"_"];
+    }
+    
+    if (isRoll) {
+        if (nameWithUnderscores.length > 25) {
+            return [nameWithUnderscores substringToIndex:25];
+        } else {
+            return nameWithUnderscores;
+        }
+    } else {
+        if (nameWithUnderscores.length > 29) {
+            return [nameWithUnderscores substringToIndex:29];
+        } else {
+            return nameWithUnderscores;
+        }
+    }
+}
+
+- (NSString *)destinationFilepath:(NSString *)fileToCopy tempDir:(NSString *)tempDir
+    removeStringFromFilenames:(NSString *)remove replaceWithStringInFilenames:(NSString *)replace
+{
+    NSMutableString *filenameWithoutExtension = [[fileToCopy.lastPathComponent stringByDeletingPathExtension] mutableCopy];
+    NSString *filenameExtension = fileToCopy.pathExtension;
+    
+    if (remove.length) {
+        [filenameWithoutExtension replaceOccurrencesOfString:remove
+            withString:replace.length ? replace : @""
+            options:0 range:NSMakeRange(0, filenameWithoutExtension.length)];
+    }
+    
+    NSString *validatedName = [self validateName:filenameWithoutExtension isRoll:NO];
+    
+    NSString *destFilepath = [tempDir stringByAppendingPathComponent:
+        [validatedName stringByAppendingPathExtension:filenameExtension]];
+    
+    for (NSInteger dupNumber = 1; [fileMgr fileExistsAtPath:destFilepath]; dupNumber++) {
+        destFilepath = [tempDir stringByAppendingPathComponent:[NSString stringWithFormat:@"%@_%ld.%@",
+            validatedName, dupNumber, filenameExtension]];
+    }
+    
+    return destFilepath;
+}
+
 - (void)addNewImages:(NSArray *)URLs inRoll:(NSInteger)rollIndex framesPerRoll:(NSInteger)framesPerRoll
     autoNumberRolls:(BOOL)autoNumberRolls autoNumberFrames:(BOOL)autoNumberFrames photographer:(NSString *)photographer
     statusField:(NSTextField *)statusField errors:(NSMutableString *)errors
@@ -351,7 +404,8 @@
     NSString *derivedRollName = nil;
     NSInteger copiedFiles = 0;
     
-    NSSet *allowedExtensions = [NSSet setWithObjects:@"jpg", @"jpeg", @"png", nil];
+    NSString *remove = [defaults objectForKey:kRemoveStringFromFilenames];
+    NSString *replace = [defaults objectForKey:kReplaceWithStringInFilenames];
     
     for (NSURL *url in URLs) {
         BOOL isDirectory;
@@ -367,16 +421,12 @@
                 }
                 
                 if (!autoNumberRolls && !derivedRollName) {
-                    derivedRollName = url.path.lastPathComponent;
+                    derivedRollName = [self validateName:url.path.lastPathComponent isRoll:YES];
                 }
                 
                 for (NSString *fileToCopy in filesToCopy) {
-                    NSString *destFilepath = [tempDir stringByAppendingPathComponent:fileToCopy.lastPathComponent];
-                    
-                    for (NSInteger dupNumber = 1; [fileMgr fileExistsAtPath:destFilepath]; dupNumber++) {
-                        destFilepath = [tempDir stringByAppendingPathComponent:[NSString stringWithFormat:@"%@_%ld.%@",
-                            [fileToCopy.lastPathComponent stringByDeletingPathExtension], dupNumber, fileToCopy.pathExtension]];
-                    }
+                    NSString *destFilepath = [self destinationFilepath:fileToCopy tempDir:tempDir
+                        removeStringFromFilenames:remove replaceWithStringInFilenames:replace];
                     
                     NSError *error = nil;
                     
@@ -397,12 +447,8 @@
                 NSString *fileToCopy = url.path;
                 
                 if ([allowedExtensions containsObject:fileToCopy.pathExtension.lowercaseString]) {
-                    NSString *destFilepath = [tempDir stringByAppendingPathComponent:fileToCopy.lastPathComponent];
-                    
-                    for (NSInteger dupNumber = 1; [fileMgr fileExistsAtPath:destFilepath]; dupNumber++) {
-                        destFilepath = [tempDir stringByAppendingPathComponent:[NSString stringWithFormat:@"%@_%ld.%@",
-                            [fileToCopy.lastPathComponent stringByDeletingPathExtension], dupNumber, fileToCopy.pathExtension]];
-                    }
+                    NSString *destFilepath = [self destinationFilepath:fileToCopy tempDir:tempDir
+                        removeStringFromFilenames:remove replaceWithStringInFilenames:replace];
                     
                     NSError *error = nil;
                     
@@ -660,15 +706,27 @@
     
     if (targetRoll) {
         NSString *oldRollPath = [rootDir stringByAppendingPathComponent:targetRoll.number];
-        NSString *newRollPath = [rootDir stringByAppendingPathComponent:newName];
+        NSString *validatedNewName = [self validateName:newName isRoll:YES];
+        NSString *newRollPath = [rootDir stringByAppendingPathComponent:validatedNewName];
         
         if ([fileMgr moveItemAtPath:oldRollPath toPath:newRollPath error:error]) {
-            targetRoll.number = [newName copy];
+            targetRoll.number = validatedNewName;
             return YES;
         }
     }
     
     return NO;
+}
+
+- (BOOL)autoRenumberRoll:(NSInteger)rollIndex
+{
+    RollModel *targetRoll = (rollIndex == -1) ? nil : [rolls objectAtIndex:rollIndex];
+    
+    if (targetRoll) {
+        
+    }
+    
+    return YES;
 }
 
 - (NSInteger)deriveNextRollNumber

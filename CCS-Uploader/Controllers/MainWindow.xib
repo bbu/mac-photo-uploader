@@ -327,7 +327,6 @@
                                                     </binding>
                                                     <outlet property="dataSource" destination="-2" id="bIf-hO-aUE"/>
                                                     <outlet property="delegate" destination="-2" id="U4s-C1-pCO"/>
-                                                    <outlet property="menu" destination="I1J-Lg-YJs" id="qqh-QG-gTn"/>
                                                 </connections>
                                             </tableView>
                                         </subviews>

@@ -153,9 +153,6 @@
         [tblSelectedRolls reloadData];
         [tblSelectedRolls selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
         
-        //[selectImagesSheet setFrame:CGRectMake(0, 0, wizardWindowController.window.frame.size.width + 60,
-        //    wizardWindowController.window.frame.size.height - 70) display:YES];
-        
         [NSApp beginSheet:selectImagesSheet modalForWindow:wizardWindowController.window
             modalDelegate:nil didEndSelector:nil contextInfo:nil];
     } else if (selectedCell.tag == 3) {

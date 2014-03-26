@@ -17,7 +17,7 @@
 @property BOOL autoCategorizeImages;
 @property (readonly) BOOL newlyAdded;
 
-- (id)initWithEventRow:(EventRow *)event error:(NSError **)error;
+- (id)initWithEventRow:(EventRow *)event extensions:(NSArray *)extensions error:(NSError **)error;
 - (void)diffWithExistingFiles;
 - (void)ignoreNewlyAdded;
 - (void)includeNewlyAdded;

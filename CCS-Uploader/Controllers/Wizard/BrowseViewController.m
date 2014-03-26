@@ -80,7 +80,7 @@
         *chkHonourFramesPerRoll;
 
     IBOutlet NSPopover *advancedOptionsPopover, *viewRollPopover, *photographersPopover;
-    IBOutlet NSPanel *includeNewlyAddedImagesSheet, *errorsImportingImagesSheet;
+    IBOutlet NSPanel *includeNewlyAddedImagesSheet, *errorsImportingImagesSheet, *greenScreenSheet;
     IBOutlet NSTextView *txtNewFiles, *txtImportErrors;
     IBOutlet NSButton *btnAddPhotographer;
     IBOutlet NSTextField *txtPhotographerName;
@@ -313,6 +313,18 @@
     
     [loadingIndicator stopAnimation:nil];
     [loadingTitle setHidden:YES];
+}
+
+- (IBAction)greenScreenClicked:(id)sender
+{
+    [NSApp beginSheet:greenScreenSheet modalForWindow:wizardWindowController.window
+        modalDelegate:nil didEndSelector:nil contextInfo:nil];
+}
+
+- (IBAction)closeGreenScreen:(id)sender
+{
+    [greenScreenSheet close];
+    [NSApp endSheet:greenScreenSheet];
 }
 
 - (IBAction)photographersClicked:(id)sender
@@ -551,7 +563,7 @@
                                                                 orderModel = nil;
                                                                 [tblRolls reloadData];
                                                                 
-                                                                orderModel = [[OrderModel alloc] initWithEventRow:event error:&error];
+                                                                orderModel = [[OrderModel alloc] initWithEventRow:event extensions:uploadExtensions error:&error];
                                                                 
                                                                 if (orderModel == nil) {
                                                                     [wizardWindowController.mainWindowController.openedEvents removeObject:event.orderNumber];
@@ -637,6 +649,10 @@
     [tblPhotographers reloadData];
     
     for (DivisionRow *division in divisions) {
+        if ([division.name isEqualToString:@"Default Division"]) {
+            continue;
+        }
+        
         BOOL found = NO;
         
         for (RollModel *roll in orderModel.rolls) {
@@ -742,6 +758,7 @@
             [alert beginSheetModalForWindow:wizardWindowController.window completionHandler:nil];
             textField.stringValue = oldName;
         } else {
+            [tblRolls reloadData];
             [orderModel save];
         }
     }

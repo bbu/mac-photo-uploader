@@ -39,7 +39,7 @@
         horizontalWatermark:[NSData dataWithContentsOfFile:@"/Users/blagovest/Downloads/testh.tif"]
         verticalWatermark:[NSData dataWithContentsOfFile:@"/Users/blagovest/Downloads/testv.tif"]
         compressionQuality:0.8];
-    */
+    */    
 }
 
 - (BOOL)application:(NSApplication *)sender openFile:(NSString *)filename
