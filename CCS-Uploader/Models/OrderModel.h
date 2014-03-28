@@ -27,6 +27,7 @@
 
 - (void)deleteRollAtIndex:(NSInteger)rollIndex;
 - (BOOL)renameRollAtIndex:(NSInteger)rollIndex newName:(NSString *)newName error:(NSError **)error;
+- (void)autoRenumberRollAtIndex:(NSInteger)rollIndex;
 - (BOOL)save;
 - (BOOL)delete;
 

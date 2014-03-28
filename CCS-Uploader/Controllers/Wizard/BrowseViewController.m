@@ -672,7 +672,7 @@
                 roll.number = division.name;
                 roll.photographer = @"None";
                 roll.frames = [NSMutableArray new];
-                [orderModel.rolls insertObject:roll atIndex:0];
+                [orderModel.rolls addObject:roll];
             }
         }
     }
@@ -762,6 +762,22 @@
             [orderModel save];
         }
     }
+}
+
+- (IBAction)clickedAutoRenumberRoll:(id)sender
+{
+    NSInteger rollIndex = [tblRolls clickedRow];
+    [orderModel autoRenumberRollAtIndex:rollIndex];
+    [orderModel save];
+}
+
+- (IBAction)clickedAutoRenumberAllRolls:(id)sender
+{
+    for (NSInteger rollIndex = 0; rollIndex < orderModel.rolls.count; ++rollIndex) {
+        [orderModel autoRenumberRollAtIndex:rollIndex];
+    }
+
+    [orderModel save];
 }
 
 - (IBAction)changedPhotographer:(id)sender

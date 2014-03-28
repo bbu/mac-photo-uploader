@@ -718,15 +718,57 @@
     return NO;
 }
 
-- (BOOL)autoRenumberRoll:(NSInteger)rollIndex
+- (void)autoRenumberRollAtIndex:(NSInteger)rollIndex
 {
     RollModel *targetRoll = (rollIndex == -1) ? nil : [rolls objectAtIndex:rollIndex];
+    NSError *error = nil;
+    NSInteger counter = 1;
     
     if (targetRoll) {
+        targetRoll.imagesAutoRenamed = YES;
+        NSString *rollPath = [rootDir stringByAppendingPathComponent:targetRoll.number];
+        NSString *currentFramePath, *newFrameName, *newFramePath;
         
+        for (FrameModel *frame in targetRoll.frames) {
+            if (frame.name.length == 4) {
+                currentFramePath = [rollPath stringByAppendingPathComponent:
+                    [frame.name stringByAppendingPathExtension:frame.extension]];
+                
+                newFrameName = [NSString stringWithFormat:@"__%@", frame.name];
+
+                newFramePath = [rollPath stringByAppendingPathComponent:
+                    [newFrameName stringByAppendingPathExtension:frame.extension]];
+                
+                if ([fileMgr moveItemAtPath:currentFramePath toPath:newFramePath error:&error]) {
+                    frame.name = [newFrameName copy];
+                    frame.thumbsSent = frame.isSelectedThumbsSent = frame.isMissingThumbsSent = NO;
+                    frame.fullsizeSent = frame.isSelectedFullsizeSent = frame.isMissingFullsizeSent = NO;
+                }
+            }
+            
+            counter++;
+        }
+        
+        counter = 1;
+        
+        for (FrameModel *frame in targetRoll.frames) {
+            currentFramePath = [rollPath stringByAppendingPathComponent:
+                [frame.name stringByAppendingPathExtension:frame.extension]];
+            
+            newFrameName = [NSString stringWithFormat:@"%04ld", counter];
+            
+            newFramePath = [rollPath stringByAppendingPathComponent:
+                [newFrameName stringByAppendingPathExtension:frame.extension]];
+            
+            if ([fileMgr moveItemAtPath:currentFramePath toPath:newFramePath error:&error]) {
+                frame.name = [newFrameName copy];
+                frame.thumbsSent = frame.isSelectedThumbsSent = frame.isMissingThumbsSent = NO;
+                frame.fullsizeSent = frame.isSelectedFullsizeSent = frame.isMissingFullsizeSent = NO;
+            }
+            
+            counter++;
+        }
     }
-    
-    return YES;
 }
 
 - (NSInteger)deriveNextRollNumber
