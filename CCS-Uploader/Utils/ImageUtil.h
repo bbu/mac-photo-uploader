@@ -17,6 +17,10 @@ typedef NS_ENUM(NSInteger, IURotation) {
 
 + (BOOL)setExif:(NSString *)imageFilename value:(NSInteger)value;
 + (BOOL)jpegIsCorrupt:(NSString *)filename;
+
++ (BOOL)dimensionsAreValidForGreenScreen:(CGFloat)fgWidth fgHeight:(CGFloat)fgHeight
+    bgWidth:(CGFloat)bgWidth bgHeight:(CGFloat)bgHeight;
+
 + (void)generateThumbnailForImage:(NSImage *)image atPath:(NSString *)newFilePath forWidth:(int)width;
 
 + (BOOL)resizeAndRotateImage:(NSString *)inputImageFilename outputImageFilename:(NSString *)outputImageFilename

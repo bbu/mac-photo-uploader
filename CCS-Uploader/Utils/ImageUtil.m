@@ -147,6 +147,16 @@ releaseSource:
     return !(endBytes[0] == 0xFF && endBytes[1] == 0xD9);
 }
 
++ (BOOL)dimensionsAreValidForGreenScreen:(CGFloat)fgWidth fgHeight:(CGFloat)fgHeight
+    bgWidth:(CGFloat)bgWidth bgHeight:(CGFloat)bgHeight
+{
+    CGFloat fgAspect = fgWidth / fgHeight;
+    CGFloat bgAspect = bgWidth / bgHeight;
+    CGFloat aspectDiff = fabs((fgAspect - bgAspect) / bgAspect);
+    
+    return aspectDiff > 0.0155 ? NO : YES;
+}
+
 + (void)generateThumbnailForImage:(NSImage *)image atPath:(NSString *)newFilePath forWidth:(int)width
 {
     CGSize size = CGSizeMake(width, image.size.height * (float)width / (float)image.size.width);
