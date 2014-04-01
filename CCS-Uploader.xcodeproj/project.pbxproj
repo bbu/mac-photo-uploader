@@ -47,6 +47,13 @@
 		2B533EC7188FE63300A4D8A2 /* LoadingView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2B533EC5188FE63300A4D8A2 /* LoadingView.xib */; };
 		2B533ECB189002C600A4D8A2 /* EventsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B533EC9189002C600A4D8A2 /* EventsViewController.m */; };
 		2B533ECC189002C600A4D8A2 /* EventsView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2B533ECA189002C600A4D8A2 /* EventsView.xib */; };
+		2B547D9C18EACC2900DCF616 /* GetSingleImageInfoService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B547D9B18EACC2900DCF616 /* GetSingleImageInfoService.m */; };
+		2B547D9F18EAD3F200DCF616 /* GetChromaKeyEventInformationService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B547D9E18EAD3F200DCF616 /* GetChromaKeyEventInformationService.m */; };
+		2B547DA218EAF26100DCF616 /* SetChromaKeyRollMakePNGOnlyService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B547DA118EAF26100DCF616 /* SetChromaKeyRollMakePNGOnlyService.m */; };
+		2B547DA518EAF64100DCF616 /* SetChromaKeyRollService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B547DA418EAF64100DCF616 /* SetChromaKeyRollService.m */; };
+		2B547DA818EAFC2F00DCF616 /* RollHasImagesService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B547DA718EAFC2F00DCF616 /* RollHasImagesService.m */; };
+		2B547DAB18EAFFA000DCF616 /* DeleteChromaKeyRoll2Service.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B547DAA18EAFFA000DCF616 /* DeleteChromaKeyRoll2Service.m */; };
+		2B547DAE18EB013300DCF616 /* DeleteChromaKeyRollService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B547DAD18EB013300DCF616 /* DeleteChromaKeyRollService.m */; };
 		2B5693C4188689E000E13C17 /* AccountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B5693C2188689E000E13C17 /* AccountViewController.m */; };
 		2B5693C5188689E000E13C17 /* AccountView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2B5693C3188689E000E13C17 /* AccountView.xib */; };
 		2B5693C71886AB2800E13C17 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B5693C61886AB2800E13C17 /* QuartzCore.framework */; };
@@ -144,6 +151,20 @@
 		2B533EC8189002C600A4D8A2 /* EventsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EventsViewController.h; sourceTree = "<group>"; };
 		2B533EC9189002C600A4D8A2 /* EventsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EventsViewController.m; sourceTree = "<group>"; };
 		2B533ECA189002C600A4D8A2 /* EventsView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = EventsView.xib; sourceTree = "<group>"; };
+		2B547D9A18EACC2900DCF616 /* GetSingleImageInfoService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GetSingleImageInfoService.h; sourceTree = "<group>"; };
+		2B547D9B18EACC2900DCF616 /* GetSingleImageInfoService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GetSingleImageInfoService.m; sourceTree = "<group>"; };
+		2B547D9D18EAD3F200DCF616 /* GetChromaKeyEventInformationService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GetChromaKeyEventInformationService.h; sourceTree = "<group>"; };
+		2B547D9E18EAD3F200DCF616 /* GetChromaKeyEventInformationService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GetChromaKeyEventInformationService.m; sourceTree = "<group>"; };
+		2B547DA018EAF26100DCF616 /* SetChromaKeyRollMakePNGOnlyService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SetChromaKeyRollMakePNGOnlyService.h; sourceTree = "<group>"; };
+		2B547DA118EAF26100DCF616 /* SetChromaKeyRollMakePNGOnlyService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SetChromaKeyRollMakePNGOnlyService.m; sourceTree = "<group>"; };
+		2B547DA318EAF64100DCF616 /* SetChromaKeyRollService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SetChromaKeyRollService.h; sourceTree = "<group>"; };
+		2B547DA418EAF64100DCF616 /* SetChromaKeyRollService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SetChromaKeyRollService.m; sourceTree = "<group>"; };
+		2B547DA618EAFC2F00DCF616 /* RollHasImagesService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RollHasImagesService.h; sourceTree = "<group>"; };
+		2B547DA718EAFC2F00DCF616 /* RollHasImagesService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RollHasImagesService.m; sourceTree = "<group>"; };
+		2B547DA918EAFFA000DCF616 /* DeleteChromaKeyRoll2Service.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DeleteChromaKeyRoll2Service.h; sourceTree = "<group>"; };
+		2B547DAA18EAFFA000DCF616 /* DeleteChromaKeyRoll2Service.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DeleteChromaKeyRoll2Service.m; sourceTree = "<group>"; };
+		2B547DAC18EB013300DCF616 /* DeleteChromaKeyRollService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DeleteChromaKeyRollService.h; sourceTree = "<group>"; };
+		2B547DAD18EB013300DCF616 /* DeleteChromaKeyRollService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DeleteChromaKeyRollService.m; sourceTree = "<group>"; };
 		2B5693C1188689E000E13C17 /* AccountViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AccountViewController.h; sourceTree = "<group>"; };
 		2B5693C2188689E000E13C17 /* AccountViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AccountViewController.m; sourceTree = "<group>"; };
 		2B5693C3188689E000E13C17 /* AccountView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = AccountView.xib; sourceTree = "<group>"; };
@@ -379,6 +400,20 @@
 				2B35F96218A2F246005199CA /* UpdateVisibleService.m */,
 				2B35F96418A2F50B005199CA /* VerifyOrderService.h */,
 				2B35F96518A2F50B005199CA /* VerifyOrderService.m */,
+				2B547D9A18EACC2900DCF616 /* GetSingleImageInfoService.h */,
+				2B547D9B18EACC2900DCF616 /* GetSingleImageInfoService.m */,
+				2B547D9D18EAD3F200DCF616 /* GetChromaKeyEventInformationService.h */,
+				2B547D9E18EAD3F200DCF616 /* GetChromaKeyEventInformationService.m */,
+				2B547DA018EAF26100DCF616 /* SetChromaKeyRollMakePNGOnlyService.h */,
+				2B547DA118EAF26100DCF616 /* SetChromaKeyRollMakePNGOnlyService.m */,
+				2B547DA318EAF64100DCF616 /* SetChromaKeyRollService.h */,
+				2B547DA418EAF64100DCF616 /* SetChromaKeyRollService.m */,
+				2B547DA618EAFC2F00DCF616 /* RollHasImagesService.h */,
+				2B547DA718EAFC2F00DCF616 /* RollHasImagesService.m */,
+				2B547DA918EAFFA000DCF616 /* DeleteChromaKeyRoll2Service.h */,
+				2B547DAA18EAFFA000DCF616 /* DeleteChromaKeyRoll2Service.m */,
+				2B547DAC18EB013300DCF616 /* DeleteChromaKeyRollService.h */,
+				2B547DAD18EB013300DCF616 /* DeleteChromaKeyRollService.m */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -490,16 +525,20 @@
 				2B51D15218979D2B0021AD20 /* ListEventsService.m in Sources */,
 				2B4766111887E328008DF1FD /* AdvancedViewController.m in Sources */,
 				2B35F96018A2E121005199CA /* PostImageDataService.m in Sources */,
+				2B547DA218EAF26100DCF616 /* SetChromaKeyRollMakePNGOnlyService.m in Sources */,
 				2B2905AF18991548003C4345 /* CheckOrderNumberService.m in Sources */,
 				2B50FF8418B1FE7F00DBFCA0 /* ScheduleViewController.m in Sources */,
 				2B51D15B1897FCBA0021AD20 /* ListDivisionsService.m in Sources */,
+				2B547DAB18EAFFA000DCF616 /* DeleteChromaKeyRoll2Service.m in Sources */,
 				2B48F33318D313E600E2271F /* TransferFileParser.m in Sources */,
 				2B74BF141883D50B00D0B78B /* AppDelegate.m in Sources */,
 				2B7ACBE7188680D700C68B0B /* FoldersViewController.m in Sources */,
 				2B51D1551897E6830021AD20 /* ListPhotographersService.m in Sources */,
+				2B547DA818EAFC2F00DCF616 /* RollHasImagesService.m in Sources */,
 				2B35F96618A2F50B005199CA /* VerifyOrderService.m in Sources */,
 				2B74BF0D1883D50B00D0B78B /* main.m in Sources */,
 				2B35F96318A2F246005199CA /* UpdateVisibleService.m in Sources */,
+				2B547D9F18EAD3F200DCF616 /* GetChromaKeyEventInformationService.m in Sources */,
 				2B758C5018929A460045DE48 /* ImageUtil.m in Sources */,
 				2B7943C21896810600DCD80D /* AuthService.m in Sources */,
 				2B1D707518A238300021230E /* FullSizeImageDimensionsByRollService.m in Sources */,
@@ -511,10 +550,12 @@
 				2B2DBC2118BB412F00E4FA18 /* TransferManager.m in Sources */,
 				2B51D1581897E6A90021AD20 /* AddPhotographerService.m in Sources */,
 				2BF6D28018A29BC300F3929F /* ActivatePreviewsAndThumbsService.m in Sources */,
+				2B547DAE18EB013300DCF616 /* DeleteChromaKeyRollService.m in Sources */,
 				2B1D706F18A228100021230E /* FullSizePostedService.m in Sources */,
 				2B3499BD189E852600A45D6C /* FileUtil.m in Sources */,
 				2B533EBB188FB2AF00A4D8A2 /* WizardWindowController.m in Sources */,
 				2B3499C0189EDCC800A45D6C /* Base64.m in Sources */,
+				2B547DA518EAF64100DCF616 /* SetChromaKeyRollService.m in Sources */,
 				2B533EC6188FE63300A4D8A2 /* LoadingViewController.m in Sources */,
 				2B1BDC6E18AA208900671C54 /* CCSPassword.m in Sources */,
 				2B5693C4188689E000E13C17 /* AccountViewController.m in Sources */,
@@ -526,6 +567,7 @@
 				2B31E7B31887D05E0089D868 /* ImageUploadViewController.m in Sources */,
 				2B533EC1188FBF8500A4D8A2 /* LoginViewController.m in Sources */,
 				2B5E0B2E188410620023095C /* PrefsWindowController.m in Sources */,
+				2B547D9C18EACC2900DCF616 /* GetSingleImageInfoService.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

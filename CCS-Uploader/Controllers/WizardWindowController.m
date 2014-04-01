@@ -204,7 +204,7 @@
         [mainWindowController.openedEvents removeObject:self.eventRow.orderNumber];
     }
     
-    if (wizardStep == kWizardStepBrowse) {
+    if (wizardStep == kWizardStepBrowse || wizardStep == kWizardStepReview || wizardStep == kWizardStepSchedule) {
         [browseViewController saveOrderModel];
     }
     
@@ -255,7 +255,7 @@
         } break;
 
         case kWizardStepBrowse: {
-            [browseViewController saveOrderModel];
+            //[browseViewController saveOrderModel];
             [reviewViewController reload];
             [self showStep:kWizardStepReview];
         } break;

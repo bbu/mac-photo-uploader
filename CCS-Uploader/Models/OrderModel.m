@@ -290,8 +290,10 @@
     newlyAdded = NO;
 }
 
-- (void)includeNewlyAdded
+- (void)includeNewlyAdded:(NSTextField *)statusField
 {
+    NSInteger importedFiles = 0;
+    
     for (RollModel *roll in rolls) {
         if (roll.newlyAdded) {
             roll.newlyAdded = NO;
@@ -319,6 +321,9 @@
                     if (frame.imageErrors.length != 0) {
                         roll.framesHaveErrors = YES;
                     }
+                    
+                    [statusField performSelectorOnMainThread:@selector(setStringValue:)
+                        withObject:[NSString stringWithFormat:@"%ld files imported", ++importedFiles] waitUntilDone:YES];
                 }
             }
         }

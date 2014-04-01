@@ -20,7 +20,7 @@
 - (id)initWithEventRow:(EventRow *)event extensions:(NSArray *)extensions error:(NSError **)error;
 - (void)diffWithExistingFiles;
 - (void)ignoreNewlyAdded;
-- (void)includeNewlyAdded;
+- (void)includeNewlyAdded:(NSTextField *)statusField;
 - (void)addNewImages:(NSArray *)urls inRoll:(NSInteger)rollIndex framesPerRoll:(NSInteger)framesPerRoll
     autoNumberRolls:(BOOL)autoNumberRolls autoNumberFrames:(BOOL)autoNumberFrames photographer:(NSString *)photographer
     statusField:(NSTextField *)statusField errors:(NSMutableString *)errors;

@@ -2,6 +2,8 @@
 #import "Utils/TransferFileParser.h"
 #import "Utils/ImageUtil.h"
 
+#import "Services/GetChromaKeyEventInformationService.h"
+
 @interface AppDelegate () {
     IBOutlet NSMenu *statusBarMenu;
     NSStatusItem *statusItem;
@@ -39,7 +41,17 @@
         horizontalWatermark:[NSData dataWithContentsOfFile:@"/Users/blagovest/Downloads/testh.tif"]
         verticalWatermark:[NSData dataWithContentsOfFile:@"/Users/blagovest/Downloads/testv.tif"]
         compressionQuality:0.8];
-    */    
+    */
+    
+    /*
+    GetChromaKeyEventInformationService *s = [GetChromaKeyEventInformationService new];
+    
+    [s startGetChromaKeyEventInformation:@"1991" password:@"1991" eventID:@"1479547"
+        complete:^(GetChromaKeyEventInformationResult *result) {
+            NSLog(@"complete");
+        }
+    ];
+    */
 }
 
 - (BOOL)application:(NSApplication *)sender openFile:(NSString *)filename

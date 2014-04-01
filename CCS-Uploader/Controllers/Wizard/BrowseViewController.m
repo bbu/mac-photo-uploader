@@ -149,6 +149,8 @@
 {
     NSMutableString *errors = [NSMutableString new];
     
+    [self performSelectorOnMainThread:@selector(disableControls:) withObject:@"Preparing to copy files..." waitUntilDone:YES];
+    
     [orderModel addNewImages:params[@"URLs"]
         inRoll:((NSNumber *)params[@"inRoll"]).integerValue
         framesPerRoll:((NSNumber *)params[@"framesPerRoll"]).integerValue
@@ -158,7 +160,7 @@
         statusField:loadingTitle
         errors:errors];
 
-    [orderModel save];
+    //[orderModel save];
 
     [tblRolls performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:YES];
     [self performSelectorOnMainThread:@selector(enableControls) withObject:nil waitUntilDone:YES];
@@ -166,6 +168,17 @@
     if (errors.length != 0) {
         [self performSelectorOnMainThread:@selector(showImportErrors:) withObject:errors waitUntilDone:YES];
     }
+}
+
+- (void)importImagesInBackground
+{
+    [self performSelectorOnMainThread:@selector(disableControls:) withObject:@"Importing files..." waitUntilDone:YES];
+    
+    [orderModel includeNewlyAdded:loadingTitle];
+    
+    [tblRolls performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:YES];
+    [self performSelectorOnMainThread:@selector(enableControls) withObject:nil waitUntilDone:YES];
+    
 }
 
 - (void)showImportErrors:(NSString *)errors
@@ -233,7 +246,6 @@
         @"photographer": photographer
     };
     
-    [self disableControls:@"Preparing to copy files"];
     [self performSelectorInBackground:@selector(copyImagesInBackground:) withObject:params];
     
     return YES;
@@ -275,7 +287,6 @@
                     @"autoNumberFrames": [NSNumber numberWithBool:chkAutoNumberFrames.state == NSOnState ? YES : NO]
                 };
                 
-                [self disableControls:@"Preparing to copy files"];
                 [self performSelectorInBackground:@selector(copyImagesInBackground:) withObject:params];
             }
         }
@@ -729,11 +740,13 @@
 
 - (IBAction)importNewFiles:(id)sender
 {
-    [orderModel includeNewlyAdded];
     [includeNewlyAddedImagesSheet close];
-    [tblRolls reloadData];
-    //[orderModel save];
     [NSApp endSheet:includeNewlyAddedImagesSheet];
+
+    [self performSelectorInBackground:@selector(importImagesInBackground) withObject:nil];
+    
+    //[tblRolls reloadData];
+    //[orderModel save];
 }
 
 - (IBAction)closeErrors:(id)sender
@@ -759,7 +772,7 @@
             textField.stringValue = oldName;
         } else {
             [tblRolls reloadData];
-            [orderModel save];
+            //[orderModel save];
         }
     }
 }
@@ -768,7 +781,7 @@
 {
     NSInteger rollIndex = [tblRolls clickedRow];
     [orderModel autoRenumberRollAtIndex:rollIndex];
-    [orderModel save];
+    //[orderModel save];
 }
 
 - (IBAction)clickedAutoRenumberAllRolls:(id)sender
@@ -777,7 +790,7 @@
         [orderModel autoRenumberRollAtIndex:rollIndex];
     }
 
-    [orderModel save];
+    //[orderModel save];
 }
 
 - (IBAction)changedPhotographer:(id)sender
@@ -788,7 +801,7 @@
     if (rollIndex >= 0) {
         RollModel *roll = orderModel.rolls[rollIndex];
         roll.photographer = [btn.selectedItem.title copy];
-        [tblRolls reloadData];
+        //[tblRolls reloadData];
     }
 }
 
@@ -817,7 +830,7 @@
         completionHandler:^(NSModalResponse response) {
             if (response == NSModalResponseOK) {
                 [orderModel deleteRollAtIndex:row];
-                [orderModel save];
+                //[orderModel save];
                 [tblRolls removeRowsAtIndexes:[NSIndexSet indexSetWithIndex:row] withAnimation:NSTableViewAnimationEffectFade];
             }
         }
@@ -1034,7 +1047,7 @@
 - (void)popoverDidClose:(NSNotification *)notification
 {
     if (rollsNeedReload) {
-        [orderModel save];
+        //[orderModel save];
         [tblRolls performSelector:@selector(reloadData) withObject:nil afterDelay:0];
         rollsNeedReload = NO;
     }

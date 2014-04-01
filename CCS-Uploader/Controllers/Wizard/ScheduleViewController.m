@@ -373,6 +373,8 @@
     newTransfer1.orderNumber = newTransfer2.orderNumber = wizardWindowController.eventRow.orderNumber;
     newTransfer1.eventName = newTransfer2.eventName = wizardWindowController.eventRow.eventName;
     
+    [orderModel save];
+    
     switch (whichImagesRadios.selectedTag) {
         case 1:
             newTransfer1.mode = newTransfer2.mode = kTransferModeUnsent;
@@ -380,12 +382,10 @@
             
         case 2:
             newTransfer1.mode = newTransfer2.mode = kTransferModeSelected;
-            [orderModel save];
             break;
             
         case 3:
             newTransfer1.mode = newTransfer2.mode = kTransferModeMissing;
-            [orderModel save];
             break;
     }
     
