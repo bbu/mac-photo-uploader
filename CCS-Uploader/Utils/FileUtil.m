@@ -134,4 +134,16 @@
     return [NSString stringWithFormat:@"%4.2f %@", convertedValue, tokens[multiplyFactor]];
 }
 
++ (NSString *)versionString
+{
+    static NSString *result;
+    
+    if (result == nil) {
+        NSString *currentVersion = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
+        result = [NSString stringWithFormat:@"CCSUploaderMac %@", currentVersion];
+    }
+    
+    return result;
+}
+
 @end

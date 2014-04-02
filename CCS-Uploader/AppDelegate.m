@@ -3,6 +3,7 @@
 #import "Utils/ImageUtil.h"
 
 #import "Services/GetChromaKeyEventInformationService.h"
+#import "Services/VersionService.h"
 
 @interface AppDelegate () {
     IBOutlet NSMenu *statusBarMenu;
@@ -51,7 +52,7 @@
             NSLog(@"complete");
         }
     ];
-    */
+    */    
 }
 
 - (BOOL)application:(NSApplication *)sender openFile:(NSString *)filename

@@ -62,6 +62,8 @@
 		2B5E0B2F188410620023095C /* PrefsWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2B5E0B2D188410620023095C /* PrefsWindow.xib */; };
 		2B5E0B33188415200023095C /* MainWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B5E0B31188415200023095C /* MainWindowController.m */; };
 		2B5E0B34188415200023095C /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2B5E0B32188415200023095C /* MainWindow.xib */; };
+		2B63EC3718EBE68500B16F4E /* VersionService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B63EC3618EBE68500B16F4E /* VersionService.m */; };
+		2B63EC3A18EC485B00B16F4E /* SendFeedbackService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B63EC3918EC485B00B16F4E /* SendFeedbackService.m */; };
 		2B74BF011883D50B00D0B78B /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B74BF001883D50B00D0B78B /* Cocoa.framework */; };
 		2B74BF0B1883D50B00D0B78B /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 2B74BF091883D50B00D0B78B /* InfoPlist.strings */; };
 		2B74BF0D1883D50B00D0B78B /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B74BF0C1883D50B00D0B78B /* main.m */; };
@@ -176,6 +178,10 @@
 		2B5E0B30188415200023095C /* MainWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MainWindowController.h; sourceTree = "<group>"; };
 		2B5E0B31188415200023095C /* MainWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MainWindowController.m; sourceTree = "<group>"; };
 		2B5E0B32188415200023095C /* MainWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MainWindow.xib; sourceTree = "<group>"; };
+		2B63EC3518EBE68500B16F4E /* VersionService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VersionService.h; sourceTree = "<group>"; };
+		2B63EC3618EBE68500B16F4E /* VersionService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VersionService.m; sourceTree = "<group>"; };
+		2B63EC3818EC485B00B16F4E /* SendFeedbackService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SendFeedbackService.h; sourceTree = "<group>"; };
+		2B63EC3918EC485B00B16F4E /* SendFeedbackService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SendFeedbackService.m; sourceTree = "<group>"; };
 		2B74BEFD1883D50B00D0B78B /* CCS Uploader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "CCS Uploader.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2B74BF001883D50B00D0B78B /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		2B74BF031883D50B00D0B78B /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -414,6 +420,10 @@
 				2B547DAA18EAFFA000DCF616 /* DeleteChromaKeyRoll2Service.m */,
 				2B547DAC18EB013300DCF616 /* DeleteChromaKeyRollService.h */,
 				2B547DAD18EB013300DCF616 /* DeleteChromaKeyRollService.m */,
+				2B63EC3518EBE68500B16F4E /* VersionService.h */,
+				2B63EC3618EBE68500B16F4E /* VersionService.m */,
+				2B63EC3818EC485B00B16F4E /* SendFeedbackService.h */,
+				2B63EC3918EC485B00B16F4E /* SendFeedbackService.m */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -561,12 +571,14 @@
 				2B5693C4188689E000E13C17 /* AccountViewController.m in Sources */,
 				2B229E6618A38176000B19DD /* FrameModel.m in Sources */,
 				2B58D637189A4452004D21CF /* Service.m in Sources */,
+				2B63EC3718EBE68500B16F4E /* VersionService.m in Sources */,
 				2B43135B189112B500580D54 /* BrowseViewController.m in Sources */,
 				2B229E6318A38162000B19DD /* RollModel.m in Sources */,
 				2B50FF7F18B1FDD400DBFCA0 /* ReviewViewController.m in Sources */,
 				2B31E7B31887D05E0089D868 /* ImageUploadViewController.m in Sources */,
 				2B533EC1188FBF8500A4D8A2 /* LoginViewController.m in Sources */,
 				2B5E0B2E188410620023095C /* PrefsWindowController.m in Sources */,
+				2B63EC3A18EC485B00B16F4E /* SendFeedbackService.m in Sources */,
 				2B547D9C18EACC2900DCF616 /* GetSingleImageInfoService.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

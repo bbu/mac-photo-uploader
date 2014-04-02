@@ -2,6 +2,7 @@
 #import "Prefs/AdvancedViewController.h"
 
 #import "../Models/TransferManager.h"
+#import "../Services/VersionService.h"
 
 @interface MainWindowController () {
     IBOutlet NSPopUpButton *btnFilterTransfers;
@@ -21,6 +22,8 @@
     NSMutableSet *openedEvents;
     NSMutableArray *filteredTransfers;
     NSDateFormatter *dateFormatter, *timeFormatter;
+    
+    VersionService *versionService;
 }
 
 @end
@@ -55,6 +58,8 @@ static NSString *transferStatuses[] = {
         
         timeFormatter = [NSDateFormatter new];
         timeFormatter.dateFormat = @"MM/dd/Y, hh:mm a";
+
+        versionService = [VersionService new];
     }
     
     return self;
@@ -263,13 +268,56 @@ static NSString *transferStatuses[] = {
     transferManager.reloadTransfers();
 }
 
+- (void)checkForUpdate
+{
+    [versionService startCheckVersion:
+        ^(VersionResult *result) {
+            if (!result.error && !result.errorOccurred && result.upgradeAvailable) {
+                NSAlert *alert;
+                
+                if (result.upgradeRequired) {
+                    alert = [NSAlert alertWithMessageText:result.message
+                        defaultButton:[NSString stringWithFormat:@"Update to %@", result.latestVersion]
+                        alternateButton:@"Release History"
+                        otherButton:@"Visit Website"
+                        informativeTextWithFormat:@"%@", result.latestNotes ? result.latestNotes : @""];
+                } else {
+                    alert = [NSAlert alertWithMessageText:@""
+                        defaultButton:@"Yes"
+                        alternateButton:@"No"
+                        otherButton:@"Visit Website"
+                        informativeTextWithFormat:@"%@", result.latestNotes ? result.latestNotes : @""];
+
+                    alert.messageText = [NSString stringWithFormat:@"A new version is available.\r\rWould you like to update to version %@ now?", result.latestVersion];
+                }
+                
+                NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
+                
+                [alert beginSheetModalForWindow:self.window
+                    completionHandler:^(NSModalResponse response) {
+                        if (response == NSModalResponseOK) {
+                            [workspace openURL:[NSURL URLWithString:result.installerURL]];
+                            [transferManager save];
+                            [NSApp terminate:nil];
+                        } else if (response == -1) {
+                            [workspace openURL:[NSURL URLWithString:result.websiteURL]];
+                        } else if (response == NSModalResponseCancel) {
+                            if (result.upgradeRequired) {
+                                [workspace openURL:[NSURL URLWithString:result.releaseHistoryURL]];
+                            }
+                        }
+                    }
+                ];
+            }
+        }
+    ];
+}
+
 - (void)windowDidLoad
 {
     [super windowDidLoad];
     
     transferManager.reloadTransfers = ^(void) {
-        NSInteger selectedRow = tblTransfers.selectedRow;
-
         filteredTransfers = [[transferManager.transfers
             sortedArrayUsingComparator:^NSComparisonResult(Transfer *transfer1, Transfer *transfer2) {
                 if (transfer1.status < transfer2.status) {
@@ -318,7 +366,6 @@ static NSString *transferStatuses[] = {
         }
         
         [tblTransfers reloadData];
-        [tblTransfers selectRowIndexes:[NSIndexSet indexSetWithIndex:selectedRow] byExtendingSelection:NO];
     };
     
     transferManager.startedUploadingImage = ^(NSInteger slot, NSString *pathToImage) {
@@ -359,6 +406,14 @@ static NSString *transferStatuses[] = {
     
     [NSTimer scheduledTimerWithTimeInterval:0.2 target:transferManager
         selector:@selector(processTransfers) userInfo:nil repeats:YES];
+    
+    [self checkForUpdate];
+    
+    [NSTimer scheduledTimerWithTimeInterval:12 * 3600 target:self
+        selector:@selector(checkForUpdate) userInfo:nil repeats:YES];
+    
+    self.window.title = [NSString stringWithFormat:@"CCS Uploader %@",
+        [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"]];
 }
 
 @end

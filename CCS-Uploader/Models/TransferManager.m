@@ -750,7 +750,7 @@ static NSString *curlStatuses[] = {
                                 roll:imageContext.roll.number
                                 frame:imageContext.frame.name
                                 extension:imageContext.frame.extension
-                                version:@"CCSUploaderMac 1.0"
+                                version:[FileUtil versionString]
                                 bypassPassword:NO
                                 fullsizeImage:imageContext.fullsizeImage
                                 previewImage:imageContext.previewImage
@@ -948,7 +948,7 @@ static NSString *curlStatuses[] = {
                                 roll:imageContext.roll.number
                                 frame:imageContext.frame.name
                                 filename:imageContext.fileNameOnFtpServer
-                                version:@"CCSUploaderMac 1.0"
+                                version:[FileUtil versionString]
                                 bypassPassword:NO
                                 createPreviewAndThumb:NO
                                 complete:^(FullSizePostedResult *result) {
@@ -1160,7 +1160,7 @@ static NSString *curlStatuses[] = {
                 startVerifyOrder:context.eventRow.ccsAccount
                 password:context.ccsPassword
                 orderNumber:currentlyRunningTransfer.orderNumber
-                version:@"CCSUploaderMac 1.0"
+                version:[FileUtil versionString]
                 bypassPassword:NO
                 complete:^(VerifyOrderResult *result) {
                     if (!result.error && [result.status isEqualToString:@"Successful"]) {

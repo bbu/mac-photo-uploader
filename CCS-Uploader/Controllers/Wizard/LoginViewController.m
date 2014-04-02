@@ -1,4 +1,5 @@
 #import "LoginViewController.h"
+
 #import "../WizardWindowController.h"
 #import "../Prefs/AdvancedViewController.h"
 
@@ -8,13 +9,10 @@
 @interface LoginViewController () {
     IBOutlet NSPopUpButton *btnService;
     IBOutlet NSTextField *txtUsername, *txtPassword, *lblCoreURL, *txtCoreURL, *txtEventNumber;
+    
     AuthService *authService;
     ListEventsService *listEventService;
     WizardWindowController *wizardWindowController;
-
-    NSString *quicPostUser, *quicPostPass;
-    NSString *coreUser, *corePass, *coreDomain;
-    NSNumber *quicPostSelected;
 }
 @end
 
@@ -37,12 +35,12 @@
 {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     
-    quicPostUser = [defaults objectForKey:kQuicPostUser];
-    quicPostPass = [defaults objectForKey:kQuicPostPass];
-    coreUser = [defaults objectForKey:kCoreUser];
-    corePass = [defaults objectForKey:kCorePass];
-    coreDomain = [defaults objectForKey:kCoreDomain];
-    quicPostSelected = [defaults objectForKey:kQuicPostSelected];
+    NSString *quicPostUser = [defaults objectForKey:kQuicPostUser];
+    NSString *quicPostPass = [defaults objectForKey:kQuicPostPass];
+    NSString *coreUser = [defaults objectForKey:kCoreUser];
+    NSString *corePass = [defaults objectForKey:kCorePass];
+    NSString *coreDomain = [defaults objectForKey:kCoreDomain];
+    NSNumber *quicPostSelected = [defaults objectForKey:kQuicPostSelected];
     
     if (!quicPostSelected) {
         quicPostSelected = [NSNumber numberWithBool:YES];
@@ -78,8 +76,8 @@
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     
     if (btnService.selectedTag == 0) {
-        quicPostUser = [defaults objectForKey:kQuicPostUser];
-        quicPostPass = [defaults objectForKey:kQuicPostPass];
+        NSString *quicPostUser = [defaults objectForKey:kQuicPostUser];
+        NSString *quicPostPass = [defaults objectForKey:kQuicPostPass];
 
         txtUsername.stringValue = quicPostUser ? [quicPostUser copy] : @"";
         txtPassword.stringValue = quicPostPass ? [quicPostPass copy] : @"";
@@ -87,9 +85,9 @@
         [txtCoreURL setHidden:YES];
         txtCoreURL.stringValue = @"";
     } else {
-        coreUser = [defaults objectForKey:kCoreUser];
-        corePass = [defaults objectForKey:kCorePass];
-        coreDomain = [defaults objectForKey:kCoreDomain];
+        NSString *coreUser = [defaults objectForKey:kCoreUser];
+        NSString *corePass = [defaults objectForKey:kCorePass];
+        NSString *coreDomain = [defaults objectForKey:kCoreDomain];
         
         txtUsername.stringValue = coreUser ? [coreUser copy] : @"";
         txtPassword.stringValue = corePass ? [corePass copy] : @"";
@@ -110,7 +108,17 @@
             @"You must enter a username." : (!txtPassword.stringValue.length ?
                 @"You must enter a password." : @"You must enter a CORE URL when the CORE service is selected.");
         
-        [alert beginSheetModalForWindow:wizardWindowController.window completionHandler:nil];
+        [alert beginSheetModalForWindow:wizardWindowController.window
+            completionHandler:^(NSModalResponse response) {
+                if (!txtUsername.stringValue.length) {
+                    [txtUsername becomeFirstResponder];
+                } else if (!txtPassword.stringValue.length) {
+                    [txtPassword becomeFirstResponder];
+                } else {
+                    [txtCoreURL becomeFirstResponder];
+                }
+            }
+        ];
         return;
     }
     
@@ -162,7 +170,11 @@
                                     NSAlert *alert = [NSAlert new];
                                     alert.messageText = @"Could not find an event with the specified number.";
                                     [wizardWindowController showStep:kWizardStepLogin];
-                                    [alert beginSheetModalForWindow:wizardWindowController.window completionHandler:nil];
+                                    [alert beginSheetModalForWindow:wizardWindowController.window
+                                        completionHandler:^(NSModalResponse response) {
+                                            [txtEventNumber becomeFirstResponder];
+                                        }
+                                    ];
                                 }
                             }
                         ];

@@ -1,14 +1,24 @@
 #import "WizardWindowController.h"
 #import "MainWindowController.h"
 
+#import "../Utils/FileUtil.h"
+
 #import "../Services/ListEventsService.h"
+#import "../Services/SendFeedbackService.h"
 
 @interface WizardWindowController () {
     MainWindowController *mainWindowController;
     
     IBOutlet NSView *contentView;
     IBOutlet NSTextField *txtStepTitle, *txtStepDescription;
-    IBOutlet NSButton *btnCancel, *btnBack, *btnNext;
+    IBOutlet NSButton *btnCancel, *btnBack, *btnNext, *btnSubmitFeedback;
+
+    IBOutlet NSPanel *submitFeedbackSheet;
+    IBOutlet NSTextField *txtFeedbackName, *txtFeedbackEmail, *txtFeedbackText;
+    IBOutlet NSPopUpButton *feedbackType;
+    IBOutlet NSTextField *sendingFeedbackLabel;
+    IBOutlet NSProgressIndicator *sendingFeedbackProgress;
+    IBOutlet NSButton *btnFeedbackCancel, *btnFeedbackSubmit;
     
     LoadingViewController *loadingViewController;
     LoginViewController *loginViewController;
@@ -18,6 +28,7 @@
     ScheduleViewController *scheduleViewController;
 
     ListEventsService *listEventService;
+    SendFeedbackService *sendFeedbackService;
     
     WizardStep wizardStep;
     
@@ -58,6 +69,7 @@
         reviewViewController = [[ReviewViewController alloc] initWithWizardController:self];
         scheduleViewController = [[ScheduleViewController alloc] initWithWizardController:self];
         listEventService = [ListEventsService new];
+        sendFeedbackService = [SendFeedbackService new];
     }
     
     return self;
@@ -211,6 +223,116 @@
     [self.window close];
 }
 
+- (IBAction)btnSubmitFeedbackClicked:(id)sender
+{
+    txtFeedbackName.stringValue = @"";
+    txtFeedbackEmail.stringValue = @"";
+    [feedbackType selectItemAtIndex:0];
+    txtFeedbackText.stringValue = @"";
+    [sendingFeedbackLabel setHidden:YES];
+    
+    [NSApp beginSheet:submitFeedbackSheet modalForWindow:self.window
+        modalDelegate:nil didEndSelector:nil contextInfo:nil];
+}
+
+- (IBAction)btnFeedbackCancelClicked:(id)sender
+{
+    [submitFeedbackSheet close];
+    [NSApp endSheet:submitFeedbackSheet];
+}
+
+- (IBAction)btnFeedbackSubmitClicked:(id)sender
+{
+    if (!txtFeedbackName.stringValue.length) {
+        [txtFeedbackName becomeFirstResponder];
+        return;
+    }
+    
+    if (!txtFeedbackEmail.stringValue.length) {
+        [txtFeedbackEmail becomeFirstResponder];
+        return;
+    }
+    
+    if (!txtFeedbackText.stringValue.length) {
+        [txtFeedbackText becomeFirstResponder];
+        return;
+    }
+    
+    NSString *credentials = @"";
+    
+    if (effectiveUser) {
+        credentials = [NSString stringWithFormat:@"%@:%@@%@", effectiveUser, effectivePass,
+            effectiveCoreDomain ? effectiveCoreDomain : @"quicpost"];
+    }
+    
+    NSString *ccsAccount = @"";
+    NSString *orderNumber = @"";
+    
+    if (eventRow) {
+        ccsAccount = eventRow.ccsAccount;
+        orderNumber = eventRow.orderNumber;
+    }
+    
+    NSString *destZipFile = [FileUtil pathForDataFile:@"feedback.zip"];
+    NSString *sourceFile = [FileUtil pathForDataFile:@"26723637.ccsorder"];
+    
+    NSTask *createZip = [NSTask new];
+    createZip.launchPath = @"/usr/bin/zip";
+    createZip.arguments = @[@"-rq", destZipFile, sourceFile];
+    [createZip launch];
+    
+    while (createZip.isRunning) {
+        usleep(25);
+    }
+    
+    NSData *zipData = [NSData dataWithContentsOfFile:destZipFile];
+    
+    BOOL started = [sendFeedbackService
+        startSendFeedback:[FileUtil versionString]
+        credentials:credentials
+        ccsAccount:ccsAccount
+        orderNumber:orderNumber
+        system:effectiveCoreDomain ? @"CORE" : @"QuicPost"
+        program:@"Wizard"
+        description:txtFeedbackText.stringValue
+        type:feedbackType.selectedItem.title
+        name:txtFeedbackName.stringValue
+        email:txtFeedbackEmail.stringValue
+        files:zipData
+        complete:^(ServiceResult *result) {
+            [btnFeedbackCancel setEnabled:YES];
+            [btnFeedbackSubmit setEnabled:YES];
+            [txtFeedbackName setEnabled:YES];
+            [txtFeedbackEmail setEnabled:YES];
+            [feedbackType setEnabled:YES];
+            [txtFeedbackText setEnabled:YES];
+
+            [sendingFeedbackProgress stopAnimation:nil];
+            
+            if (result.error) {
+                sendingFeedbackLabel.stringValue = result.error.localizedDescription;
+            } else {
+                [sendingFeedbackLabel setHidden:YES];
+                [submitFeedbackSheet close];
+                [NSApp endSheet:submitFeedbackSheet];
+            }
+        }
+    ];
+    
+    if (started) {
+        [btnFeedbackCancel setEnabled:NO];
+        [btnFeedbackSubmit setEnabled:NO];
+        [txtFeedbackName setEnabled:NO];
+        [txtFeedbackEmail setEnabled:NO];
+        [feedbackType setEnabled:NO];
+        [txtFeedbackText setEnabled:NO];
+        
+        sendingFeedbackLabel.stringValue = @"Sending feedback";
+        [sendingFeedbackLabel setHidden:NO];
+        [sendingFeedbackProgress startAnimation:nil];
+    }
+}
+
 - (IBAction)btnBackClicked:(id)sender
 {
     switch (wizardStep) {
@@ -223,6 +345,7 @@
         } break;
 
         case kWizardStepBrowse: {
+            self.window.title = @"Uploader Wizard";
             [browseViewController saveOrderModel];
             [mainWindowController.openedEvents removeObject:eventRow.orderNumber];
             [self showStep:kWizardStepEvents];
@@ -302,9 +425,9 @@
     if (step == kWizardStepLogin || step == kWizardStepSchedule) {
         btnNext.keyEquivalent = @"\r";
     } else {
-        btnNext.keyEquivalent = @"";
+        btnNext.keyEquivalent = @"";
     }
-    
+
     if (step == kWizardStepSchedule) {
         btnNext.title = @"Push transfer";
     } else {

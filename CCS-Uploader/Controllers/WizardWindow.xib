@@ -1,15 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="4514" systemVersion="13B42" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="5053" systemVersion="13C64" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="4514"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="5053"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="WizardWindowController">
             <connections>
                 <outlet property="btnBack" destination="2uo-uy-iMa" id="xOg-sa-CCB"/>
                 <outlet property="btnCancel" destination="2Sw-fG-xJJ" id="TGw-Vq-yXq"/>
+                <outlet property="btnFeedbackCancel" destination="Jcj-QZ-iAi" id="rZ1-02-dr1"/>
+                <outlet property="btnFeedbackSubmit" destination="gjr-0l-XGK" id="hjY-YR-0DY"/>
                 <outlet property="btnNext" destination="cRU-EX-XSb" id="4oi-Je-kjz"/>
+                <outlet property="btnSubmitFeedback" destination="wsp-x2-UOI" id="REd-bx-dVo"/>
                 <outlet property="contentView" destination="RzR-e4-TF5" id="Qq3-cN-Mms"/>
+                <outlet property="feedbackType" destination="Me4-Go-sLK" id="nF7-LW-XRi"/>
+                <outlet property="sendingFeedbackLabel" destination="txB-tp-7hu" id="QCM-MW-rk2"/>
+                <outlet property="sendingFeedbackProgress" destination="7TW-v9-mYI" id="hpS-Ru-4Lj"/>
+                <outlet property="submitFeedbackSheet" destination="1jH-8p-Q07" id="hQm-Y3-j9a"/>
+                <outlet property="txtFeedbackEmail" destination="m7i-68-MRg" id="9dw-7D-MbI"/>
+                <outlet property="txtFeedbackName" destination="x0D-9i-HPF" id="akk-k6-8EF"/>
+                <outlet property="txtFeedbackText" destination="kHf-31-lyc" id="XYh-Hv-HwB"/>
                 <outlet property="txtStepDescription" destination="DAq-Kl-cs0" id="XnN-hr-a1a"/>
                 <outlet property="txtStepTitle" destination="Ps9-PZ-Ktf" id="IsQ-bo-V2T"/>
                 <outlet property="window" destination="1" id="3"/>
@@ -17,7 +27,7 @@
         </customObject>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
         <customObject id="-3" userLabel="Application"/>
-        <window title="Uploader Wizard" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" wantsToBeColor="NO" animationBehavior="documentWindow" id="1">
+        <window title="Uploader Wizard" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" animationBehavior="documentWindow" id="1">
             <windowStyleMask key="styleMask" titled="YES" miniaturizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="277" y="495" width="584" height="317"/>
@@ -35,6 +45,8 @@
                         <buttonCell key="cell" type="push" title="Next →" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="4ZS-hN-JqH">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system" size="14"/>
+                            <string key="keyEquivalent"></string>
+                            <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                         </buttonCell>
                         <connections>
                             <action selector="btnNextClicked:" target="-2" id="1as-Es-M9u"/>
@@ -49,6 +61,8 @@
                         <buttonCell key="cell" type="push" title="← Back" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="MEh-c7-qVB">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system" size="14"/>
+                            <string key="keyEquivalent"></string>
+                            <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                         </buttonCell>
                         <connections>
                             <action selector="btnBackClicked:" target="-2" id="H3o-HQ-7Wu"/>
@@ -118,6 +132,17 @@ Gw
                             <action selector="btnCancelClicked:" target="-2" id="ABT-OD-PLc"/>
                         </connections>
                     </button>
+                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="wsp-x2-UOI">
+                        <rect key="frame" x="150" y="21" width="109" height="17"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="inline" title="Submit Feedback" bezelStyle="inline" alignment="center" borderStyle="border" inset="2" id="uMs-Xd-sdW">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="smallSystemBold"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="btnSubmitFeedbackClicked:" target="-2" id="Ap8-lT-hOY"/>
+                        </connections>
+                    </button>
                 </subviews>
                 <constraints>
                     <constraint firstItem="cRU-EX-XSb" firstAttribute="leading" secondItem="2uo-uy-iMa" secondAttribute="trailing" constant="7" id="0x6-ik-otr"/>
@@ -126,6 +151,7 @@ Gw
                     <constraint firstAttribute="bottom" secondItem="2Sw-fG-xJJ" secondAttribute="bottom" constant="20" id="7gG-g9-fns"/>
                     <constraint firstItem="KdI-xD-MfH" firstAttribute="leading" secondItem="2" secondAttribute="leading" constant="20" id="Bn1-gh-E3V"/>
                     <constraint firstItem="KdI-xD-MfH" firstAttribute="top" secondItem="Ps9-PZ-Ktf" secondAttribute="bottom" constant="12" id="DvZ-T5-SIs"/>
+                    <constraint firstAttribute="bottom" secondItem="wsp-x2-UOI" secondAttribute="bottom" constant="22" id="MiM-M4-hVd"/>
                     <constraint firstAttribute="bottom" secondItem="2uo-uy-iMa" secondAttribute="bottom" constant="20" id="RSj-pP-REB"/>
                     <constraint firstItem="Ps9-PZ-Ktf" firstAttribute="leading" secondItem="2" secondAttribute="leading" constant="20" id="RfO-bv-Ifm"/>
                     <constraint firstItem="2uo-uy-iMa" firstAttribute="top" secondItem="KdI-xD-MfH" secondAttribute="bottom" constant="20" id="ViT-fc-jDP"/>
@@ -134,9 +160,11 @@ Gw
                     <constraint firstItem="DAq-Kl-cs0" firstAttribute="leading" secondItem="2" secondAttribute="leading" constant="20" id="awq-Y8-LiJ"/>
                     <constraint firstAttribute="trailing" secondItem="cRU-EX-XSb" secondAttribute="trailing" constant="20" id="cES-cl-Wqb"/>
                     <constraint firstItem="2Sw-fG-xJJ" firstAttribute="top" secondItem="KdI-xD-MfH" secondAttribute="bottom" constant="20" id="idz-uC-B5X"/>
+                    <constraint firstItem="wsp-x2-UOI" firstAttribute="leading" secondItem="2Sw-fG-xJJ" secondAttribute="trailing" constant="8" id="m0l-sG-7Mc"/>
                     <constraint firstItem="DAq-Kl-cs0" firstAttribute="top" secondItem="Ps9-PZ-Ktf" secondAttribute="bottom" constant="2" id="nWm-Ql-H5Q"/>
                     <constraint firstItem="Ps9-PZ-Ktf" firstAttribute="top" secondItem="2" secondAttribute="top" constant="20" id="qYG-Ep-cLO"/>
                     <constraint firstItem="DAq-Kl-cs0" firstAttribute="top" secondItem="Ps9-PZ-Ktf" secondAttribute="bottom" constant="2" id="rT3-iH-9VI"/>
+                    <constraint firstItem="wsp-x2-UOI" firstAttribute="top" secondItem="KdI-xD-MfH" secondAttribute="bottom" constant="23" id="v5n-w3-F1o"/>
                     <constraint firstAttribute="trailing" secondItem="KdI-xD-MfH" secondAttribute="trailing" constant="20" id="ymg-if-fg0"/>
                     <constraint firstItem="cRU-EX-XSb" firstAttribute="top" secondItem="KdI-xD-MfH" secondAttribute="bottom" constant="20" id="zR7-lk-SYa"/>
                 </constraints>
@@ -144,6 +172,143 @@ Gw
             <connections>
                 <outlet property="delegate" destination="-2" id="4"/>
             </connections>
+        </window>
+        <window title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" hidesOnDeactivate="YES" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="1jH-8p-Q07" customClass="NSPanel">
+            <windowStyleMask key="styleMask" titled="YES" utility="YES"/>
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+            <rect key="contentRect" x="196" y="116" width="584" height="386"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1080"/>
+            <view key="contentView" id="wdy-sa-FFv">
+                <rect key="frame" x="0.0" y="0.0" width="584" height="386"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <box autoresizesSubviews="NO" fixedFrame="YES" title="Submit Feedback" borderType="line" translatesAutoresizingMaskIntoConstraints="NO" id="gWW-kG-h9e">
+                        <rect key="frame" x="17" y="57" width="550" height="309"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <view key="contentView">
+                            <rect key="frame" x="1" y="1" width="548" height="293"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="yhR-43-rFf">
+                                    <rect key="frame" x="16" y="202" width="130" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Type of Feedback:" id="G75-nO-lDA">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <popUpButton verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Me4-Go-sLK">
+                                    <rect key="frame" x="150" y="197" width="208" height="26"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <popUpButtonCell key="cell" type="push" title="Bug Report" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="0rL-JF-n1R" id="XvJ-Jz-38d">
+                                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                        <font key="font" metaFont="system"/>
+                                        <menu key="menu" title="OtherViews" id="zYh-l4-jFd">
+                                            <items>
+                                                <menuItem title="Bug Report" state="on" id="0rL-JF-n1R"/>
+                                                <menuItem title="Suggestion" id="zBL-zc-iE5"/>
+                                                <menuItem title="General" id="O7m-Un-tIQ"/>
+                                                <menuItem title="Other" id="1Cb-LS-MeK">
+                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                </menuItem>
+                                            </items>
+                                        </menu>
+                                    </popUpButtonCell>
+                                </popUpButton>
+                                <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="kHf-31-lyc">
+                                    <rect key="frame" x="18" y="14" width="512" height="176"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Enter your feedback" drawsBackground="YES" id="ZXm-Dx-Kof">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="kwB-xI-Qb9">
+                                    <rect key="frame" x="16" y="232" width="130" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Email Address:" id="Hae-g2-X7M">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="m7i-68-MRg">
+                                    <rect key="frame" x="152" y="229" width="203" height="22"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Required" drawsBackground="YES" id="4Ix-3E-ol1">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="XHV-vQ-Bpy">
+                                    <rect key="frame" x="16" y="262" width="130" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Your Name:" id="UQb-Xy-LPS">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="x0D-9i-HPF">
+                                    <rect key="frame" x="152" y="259" width="203" height="22"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Required" drawsBackground="YES" id="p2I-Go-nWF">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                            </subviews>
+                        </view>
+                        <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
+                        <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                    </box>
+                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="gjr-0l-XGK">
+                        <rect key="frame" x="440" y="13" width="130" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="push" title="Submit" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="afi-0k-qGe">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                            <string key="keyEquivalent" base64-UTF8="YES">
+DQ
+</string>
+                        </buttonCell>
+                        <connections>
+                            <action selector="btnFeedbackSubmitClicked:" target="-2" id="ofJ-Yz-jrw"/>
+                        </connections>
+                    </button>
+                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Jcj-QZ-iAi">
+                        <rect key="frame" x="14" y="13" width="130" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="P10-zV-Z2M">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                            <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
+                        </buttonCell>
+                        <connections>
+                            <action selector="btnFeedbackCancelClicked:" target="-2" id="uxa-ee-RAL"/>
+                        </connections>
+                    </button>
+                    <progressIndicator horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="7TW-v9-mYI">
+                        <rect key="frame" x="422" y="22" width="16" height="16"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    </progressIndicator>
+                    <textField hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="txB-tp-7hu">
+                        <rect key="frame" x="144" y="22" width="272" height="17"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" alignment="right" title="Sending feedback" id="9py-4V-CJl">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                </subviews>
+            </view>
         </window>
     </objects>
 </document>

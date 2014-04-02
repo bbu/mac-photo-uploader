@@ -623,6 +623,9 @@
 
 - (void)loadEvent
 {
+    wizardWindowController.window.title = [NSString stringWithFormat:@"%@: %@",
+        orderModel.eventRow.orderNumber, orderModel.eventRow.eventName];
+    
     wizardWindowController.eventRow = orderModel.eventRow;
     
     NSData *storedMarketRows = [[NSUserDefaults standardUserDefaults] objectForKey:kMarketSettings];
