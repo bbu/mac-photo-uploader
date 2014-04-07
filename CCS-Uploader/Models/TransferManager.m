@@ -13,6 +13,7 @@
 #import "../Services/UpdateVisibleService.h"
 #import "../Services/ActivatePreviewsAndThumbsService.h"
 #import "../Services/ActivateFullSizeService.h"
+#import "../Services/ImportImagesService.h"
 
 #define kTransfersDataFile @"transfers.ccstransfers"
 
@@ -54,6 +55,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
     kRunningTransferStateActivatingThumbs,
     kRunningTransferStateSendingFullSize,
     kRunningTransferStateActivatingFullSize,
+    kRunningTransferStateImportingFullSize,
     kRunningTransferStateFinished,
 };
 
@@ -131,6 +133,7 @@ typedef NS_ENUM(NSInteger, RunningTransferState) {
     VerifyOrderService *verifyOrderService;
     ActivatePreviewsAndThumbsService *activatePreviewsAndThumbsService;
     ActivateFullSizeService *activateFullSizeService;
+    ImportImagesService *importImagesService;
 }
 
 @synthesize transfers;
@@ -256,15 +259,14 @@ static NSString *curlStatuses[] = {
         }
         
         listEventService = [ListEventsService new];
-        [listEventService setEffectiveServiceRoot:kServiceRootCore coreDomain:kDefaultCoreDomain];
         checkOrderNumberService = [CheckOrderNumberService new];
-        [checkOrderNumberService setEffectiveServiceRoot:kServiceRootCore coreDomain:kDefaultCoreDomain];
         eventSettingsService = [EventSettingsService new];
-        [eventSettingsService setEffectiveServiceRoot:kServiceRootCore coreDomain:kDefaultCoreDomain];
 
         verifyOrderService = [VerifyOrderService new];
         activatePreviewsAndThumbsService = [ActivatePreviewsAndThumbsService new];
         activateFullSizeService = [ActivateFullSizeService new];
+        
+        importImagesService = [ImportImagesService new];
     }
     
     return self;
@@ -688,6 +690,7 @@ static NSString *curlStatuses[] = {
     switch (context.state) {
         case kRunningTransferStateIdle: {
             transferStateChanged(@"Setting up transfer");
+            progressTitle.stringValue = @"Transferring images will start shortly...";
             context.state = kRunningTransferStateSetup;
         } break;
             
@@ -711,6 +714,11 @@ static NSString *curlStatuses[] = {
             
             if (!context.estimated) {
                 [self estimateTransfer];
+                
+                progressTitle.stringValue = [NSString stringWithFormat:@"%ld of %ld thumbs sent, estimating time remaining...",
+                    context.imagesSent,
+                    context.totalCount
+                ];
             }
             
             for (ImageTransferContext *imageContext in context.imageContexts) {
@@ -871,6 +879,13 @@ static NSString *curlStatuses[] = {
             
             if (!context.estimated) {
                 [self estimateTransfer];
+                
+                progressTitle.stringValue = [NSString stringWithFormat:@"%ld of %ld full-size images sent (%@ of %@), estimating time remaining...",
+                    context.imagesSent,
+                    context.totalCount,
+                    [FileUtil humanFriendlyFilesize:context.sizeSent],
+                    [FileUtil humanFriendlyFilesize:context.totalSize]
+                ];
             }
             
             for (ImageTransferContext *imageContext in context.imageContexts) {
@@ -1026,6 +1041,7 @@ static NSString *curlStatuses[] = {
                     complete:^(ActivateFullSizeResult *result) {
                         if (!result.error && [result.status isEqualToString:@"AuthenticationSuccessful"]) {
                             currentlyRunningTransfer.fullsizeUploaded = YES;
+                            context.state = kRunningTransferStateImportingFullSize;
                         } else {
                             if (result.error) {
                                 [currentlyRunningTransfer.errors appendFormat:
@@ -1036,8 +1052,34 @@ static NSString *curlStatuses[] = {
                                     @"Could not activate full-size images, the server returned \"%@\" with a status of \"%@\"\r",
                                     result.message, result.status];
                             }
+                            
+                            context.state = kRunningTransferStateFinished;
+                            transferStateChanged(@"Finished");
                         }
-                        
+                    }
+                ];
+            }
+        } break;
+            
+        case kRunningTransferStateImportingFullSize: {
+            if (!importImagesService.started) {
+                [importImagesService
+                    startImportImages:context.effectiveUser
+                    password:context.effectivePass
+                    orderNumber:context.eventRow.orderNumber
+                    eventID:context.eventRow.eventID
+                    spotImagesToRollDivision:context.orderModel.autoCategorizeImages
+                    complete:^(ImportImagesResult *result) {
+                        if (result.error) {
+                            [currentlyRunningTransfer.errors appendFormat:
+                                @"Could not import full-size images into %@, an error occurred: %@\r",
+                                currentlyRunningTransfer.isQuicPost ? @"QuicPost" : @"CORE", result.error.localizedDescription];
+                        } else if (result.status != 1 && result.message.length) {
+                            [currentlyRunningTransfer.errors appendFormat:
+                                @"Could not import full-size images into %@, the server returned \"%@\" with a status of %ld\r",
+                                currentlyRunningTransfer.isQuicPost ? @"QuicPost" : @"CORE", result.message, result.status];
+                        }
+                     
                         context.state = kRunningTransferStateFinished;
                         transferStateChanged(@"Finished");
                     }
@@ -1071,12 +1113,14 @@ static NSString *curlStatuses[] = {
             
             [listEventService setEffectiveServiceRoot:kServiceRootQuicPost coreDomain:nil];
             [checkOrderNumberService setEffectiveServiceRoot:kServiceRootQuicPost coreDomain:nil];
+            [importImagesService setEffectiveServiceRoot:kServiceRootQuicPost coreDomain:nil];
         } else {
             context.effectiveUser = [defaults objectForKey:kCoreUser];
             context.effectivePass = [defaults objectForKey:kCorePass];
 
             [listEventService setEffectiveServiceRoot:kServiceRootCore coreDomain:[defaults objectForKey:kCoreDomain]];
             [checkOrderNumberService setEffectiveServiceRoot:kServiceRootCore coreDomain:[defaults objectForKey:kCoreDomain]];
+            [importImagesService setEffectiveServiceRoot:kServiceRootCore coreDomain:[defaults objectForKey:kCoreDomain]];
         }
     }
     
@@ -1254,6 +1298,7 @@ static NSString *curlStatuses[] = {
         [verifyOrderService cancel];
         
         [activateFullSizeService cancel];
+        [importImagesService cancel];
         [activatePreviewsAndThumbsService cancel];
         
         progressIndicator.doubleValue = 0;

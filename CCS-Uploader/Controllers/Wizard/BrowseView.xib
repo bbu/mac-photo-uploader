@@ -8,32 +8,49 @@
         <customObject id="-2" userLabel="File's Owner" customClass="BrowseViewController">
             <connections>
                 <outlet property="advancedOptionsPopover" destination="Ev0-cL-VcC" id="aUQ-CH-x6i"/>
+                <outlet property="btnAddBackground" destination="zJF-pJ-loQ" id="8cY-k1-3nQ"/>
+                <outlet property="btnAddFolder" destination="bnu-LE-a01" id="z8H-fh-Y9J"/>
                 <outlet property="btnAddPhotographer" destination="xsO-9x-jVv" id="8Lz-kV-GsN"/>
                 <outlet property="btnAdvancedOptions" destination="3qT-86-83T" id="PEa-z6-76Z"/>
                 <outlet property="btnBrowse" destination="AXN-uX-0NY" id="Y25-DJ-1rO"/>
+                <outlet property="btnCancelGreenScreen" destination="IyZ-mS-XAq" id="5BU-CG-ccV"/>
+                <outlet property="btnConfirmGreenScreen" destination="orE-69-rv0" id="atF-Ag-MPt"/>
                 <outlet property="btnDeleteSelectedFrames" destination="GRS-Ng-0qk" id="c4i-qZ-TYP"/>
                 <outlet property="btnGreenScreen" destination="3tM-Sx-CYf" id="AgI-cM-ZBg"/>
                 <outlet property="btnPhotographers" destination="4PM-wW-Wr1" id="g9W-Q7-Kcc"/>
                 <outlet property="btnRotationDegrees" destination="glx-9l-D8b" id="ArC-3P-BVm"/>
                 <outlet property="btnRotationDirection" destination="wkX-R8-wgd" id="Jnn-oE-cm7"/>
+                <outlet property="cbFolder" destination="VGj-qk-0wg" id="1MH-vg-Yxx"/>
+                <outlet property="chkAllImagesAreOnGreenScreen" destination="5pp-HC-KZ0" id="e3S-MI-vsZ"/>
+                <outlet property="chkAllowCustomerToChoose" destination="5J9-c6-wQc" id="4Qk-Dw-brd"/>
                 <outlet property="chkAutoCategorizeImages" destination="QfY-Fh-1Qt" id="poa-5n-WWt"/>
                 <outlet property="chkAutoNumberFrames" destination="yi3-c7-3TE" id="BsY-2L-hGx"/>
                 <outlet property="chkAutoNumberRolls" destination="gyN-Yg-Rzh" id="Y0W-1a-vsf"/>
                 <outlet property="chkHonourFramesPerRoll" destination="1nF-8n-3tE" id="Ud1-LI-QjM"/>
+                <outlet property="chkPreviouslyProvided" destination="qry-pn-LxH" id="tYq-K5-6x6"/>
                 <outlet property="chkPutImagesInCurrentlySelectedRoll" destination="ht2-c3-hbU" id="MAZ-QB-01x"/>
                 <outlet property="errorsImportingImagesSheet" destination="79P-Pr-hux" id="XTZ-rZ-QfQ"/>
                 <outlet property="greenScreenSheet" destination="Hb7-0I-er3" id="df5-MZ-eOZ"/>
                 <outlet property="imageBrowserTitle" destination="bzN-R5-MAb" id="i2f-2O-cLB"/>
                 <outlet property="imageBrowserView" destination="4Ng-qR-G4T" id="Mtc-Jn-cPc"/>
+                <outlet property="imgBackgroundPreview" destination="Sr1-z7-2O1" id="aYU-xx-pyG"/>
                 <outlet property="includeNewlyAddedImagesSheet" destination="rMF-xz-va9" id="Coe-iE-tWO"/>
                 <outlet property="loadingIndicator" destination="5CT-3c-Mnq" id="9i3-k3-k1C"/>
                 <outlet property="loadingTitle" destination="NS3-3q-xBI" id="elV-Vt-Ptd"/>
                 <outlet property="photographersPopover" destination="H7P-Bz-PqB" id="q8p-J2-4Vr"/>
+                <outlet property="tblBackgrounds" destination="RjN-4C-63p" id="2Hm-Rh-xNd"/>
                 <outlet property="tblPhotographers" destination="TZN-G2-QJB" id="JQp-Wl-V2G"/>
                 <outlet property="tblRolls" destination="Eum-26-wUS" id="Cjw-xt-uA5"/>
+                <outlet property="txtHorzBackgroundEventNumber" destination="zJi-es-sjE" id="EID-be-EUy"/>
+                <outlet property="txtHorzBackgroundFrame" destination="84G-3W-8fK" id="aHW-gL-55Q"/>
+                <outlet property="txtHorzBackgroundRoll" destination="KYw-Id-6Gw" id="zJk-zc-0FM"/>
                 <outlet property="txtImportErrors" destination="ZZk-pA-zf8" id="Zsj-sH-0Lc"/>
                 <outlet property="txtNewFiles" destination="etA-Be-cCt" id="LaC-yF-YDb"/>
+                <outlet property="txtOutputFolder" destination="TqZ-xg-Lmi" id="yXD-VT-d6a"/>
                 <outlet property="txtPhotographerName" destination="XzP-et-Czv" id="JU4-MA-Gwh"/>
+                <outlet property="txtVertBackgroundEventNumber" destination="14c-Sq-86i" id="M0S-Dz-WmU"/>
+                <outlet property="txtVertBackgroundFrame" destination="VVQ-UC-YZW" id="KsV-pt-rl9"/>
+                <outlet property="txtVertBackgroundRoll" destination="NQe-5o-nfH" id="a2D-dT-SGw"/>
                 <outlet property="view" destination="1" id="2"/>
                 <outlet property="viewRollPopover" destination="yFD-oL-e8k" id="gwg-UO-aJ7"/>
             </connections>
@@ -959,6 +976,9 @@ DQ
 Gw
 </string>
                         </buttonCell>
+                        <connections>
+                            <action selector="cancelGreenScreen:" target="-2" id="okC-jg-IKU"/>
+                        </connections>
                     </button>
                     <button verticalHuggingPriority="750" id="orE-69-rv0">
                         <rect key="frame" x="854" y="13" width="136" height="32"/>
@@ -971,7 +991,7 @@ Gw
 </string>
                         </buttonCell>
                         <connections>
-                            <action selector="closeGreenScreen:" target="-2" id="qIi-Oc-eSi"/>
+                            <action selector="confirmGreenScreen:" target="-2" id="QNI-0k-UKt"/>
                         </connections>
                     </button>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="Ok4-yx-fFJ">
@@ -986,7 +1006,7 @@ Gw
                     <button id="5pp-HC-KZ0">
                         <rect key="frame" x="283" y="513" width="339" height="18"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <buttonCell key="cell" type="check" title="All images in this folder are on green/blue screen" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="FEj-Hj-Ei5">
+                        <buttonCell key="cell" type="check" title="All images in this folder are on green/blue screen" bezelStyle="regularSquare" imagePosition="left" inset="2" id="FEj-Hj-Ei5">
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>
@@ -994,7 +1014,7 @@ Gw
                     <button id="5J9-c6-wQc">
                         <rect key="frame" x="18" y="483" width="331" height="18"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <buttonCell key="cell" type="check" title="Allow customer to choose backgrounds online" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="auX-SF-aks">
+                        <buttonCell key="cell" type="check" title="Allow customer to choose backgrounds online" bezelStyle="regularSquare" imagePosition="left" inset="2" id="auX-SF-aks">
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>
@@ -1020,7 +1040,7 @@ Gw
                                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                 <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                                 <tableColumns>
-                                                    <tableColumn width="24" minWidth="24" maxWidth="1000" id="HYV-vi-dnH">
+                                                    <tableColumn identifier="Icon" width="24" minWidth="24" maxWidth="1000" id="HYV-vi-dnH">
                                                         <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
                                                             <font key="font" metaFont="smallSystem"/>
                                                             <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1049,7 +1069,7 @@ Gw
                                                             </tableCellView>
                                                         </prototypeCellViews>
                                                     </tableColumn>
-                                                    <tableColumn width="170" minWidth="40" maxWidth="1000" id="ijB-ov-5Wy">
+                                                    <tableColumn identifier="HorzBackground" width="170" minWidth="40" maxWidth="1000" id="ijB-ov-5Wy">
                                                         <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Horizontal Background">
                                                             <font key="font" metaFont="smallSystem"/>
                                                             <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1082,7 +1102,7 @@ Gw
                                                             </tableCellView>
                                                         </prototypeCellViews>
                                                     </tableColumn>
-                                                    <tableColumn width="99.84375" minWidth="10" maxWidth="3.4028234663852886e+38" id="0cV-JS-Dvp">
+                                                    <tableColumn identifier="HorzDimensions" width="99.84375" minWidth="10" maxWidth="3.4028234663852886e+38" id="0cV-JS-Dvp">
                                                         <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Dimensions">
                                                             <font key="font" metaFont="smallSystem"/>
                                                             <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1115,7 +1135,7 @@ Gw
                                                             </tableCellView>
                                                         </prototypeCellViews>
                                                     </tableColumn>
-                                                    <tableColumn width="170" minWidth="10" maxWidth="3.4028234663852886e+38" id="Rmu-rg-YkD">
+                                                    <tableColumn identifier="VertBackground" width="170" minWidth="10" maxWidth="3.4028234663852886e+38" id="Rmu-rg-YkD">
                                                         <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Vertical Background">
                                                             <font key="font" metaFont="smallSystem"/>
                                                             <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1148,7 +1168,7 @@ Gw
                                                             </tableCellView>
                                                         </prototypeCellViews>
                                                     </tableColumn>
-                                                    <tableColumn width="100" minWidth="10" maxWidth="3.4028234663852886e+38" id="MhC-km-GWe">
+                                                    <tableColumn identifier="VertDimensions" width="100" minWidth="10" maxWidth="3.4028234663852886e+38" id="MhC-km-GWe">
                                                         <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Dimensions">
                                                             <font key="font" metaFont="smallSystem"/>
                                                             <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1181,7 +1201,7 @@ Gw
                                                             </tableCellView>
                                                         </prototypeCellViews>
                                                     </tableColumn>
-                                                    <tableColumn width="100" minWidth="10" maxWidth="3.4028234663852886e+38" id="ojD-6H-gAm">
+                                                    <tableColumn identifier="OutputFolder" width="100" minWidth="10" maxWidth="3.4028234663852886e+38" id="ojD-6H-gAm">
                                                         <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Output Folder">
                                                             <font key="font" metaFont="smallSystem"/>
                                                             <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1214,7 +1234,7 @@ Gw
                                                             </tableCellView>
                                                         </prototypeCellViews>
                                                     </tableColumn>
-                                                    <tableColumn width="55.18359375" minWidth="10" maxWidth="3.4028234663852886e+38" id="rT2-8w-2Gc">
+                                                    <tableColumn identifier="Delete" width="55.18359375" minWidth="10" maxWidth="3.4028234663852886e+38" id="rT2-8w-2Gc">
                                                         <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
                                                             <font key="font" metaFont="smallSystem"/>
                                                             <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1386,7 +1406,7 @@ Gw
                     <button id="qry-pn-LxH">
                         <rect key="frame" x="18" y="454" width="400" height="18"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <buttonCell key="cell" type="check" title="Previously provided backgrounds to be pre-rendered" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="qcl-kv-P7E">
+                        <buttonCell key="cell" type="check" title="Previously provided backgrounds to be pre-rendered" bezelStyle="regularSquare" imagePosition="left" inset="2" id="qcl-kv-P7E">
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>

@@ -26,6 +26,7 @@
 		2B35F96B18A2FA48005199CA /* OrderModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B35F96A18A2FA48005199CA /* OrderModel.m */; };
 		2B43135B189112B500580D54 /* BrowseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B431359189112B500580D54 /* BrowseViewController.m */; };
 		2B43135C189112B500580D54 /* BrowseView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2B43135A189112B500580D54 /* BrowseView.xib */; };
+		2B4388A118F2BAD8000B2DA9 /* ImportImagesService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B4388A018F2BAD8000B2DA9 /* ImportImagesService.m */; };
 		2B4766111887E328008DF1FD /* AdvancedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B47660F1887E328008DF1FD /* AdvancedViewController.m */; };
 		2B4766121887E328008DF1FD /* AdvancedView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2B4766101887E328008DF1FD /* AdvancedView.xib */; };
 		2B4766161887FEBC008DF1FD /* MarketSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B4766141887FEBC008DF1FD /* MarketSettingsViewController.m */; };
@@ -119,6 +120,8 @@
 		2B431358189112B500580D54 /* BrowseViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BrowseViewController.h; sourceTree = "<group>"; };
 		2B431359189112B500580D54 /* BrowseViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BrowseViewController.m; sourceTree = "<group>"; };
 		2B43135A189112B500580D54 /* BrowseView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = BrowseView.xib; sourceTree = "<group>"; };
+		2B43889F18F2BAD8000B2DA9 /* ImportImagesService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImportImagesService.h; sourceTree = "<group>"; };
+		2B4388A018F2BAD8000B2DA9 /* ImportImagesService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImportImagesService.m; sourceTree = "<group>"; };
 		2B47660E1887E328008DF1FD /* AdvancedViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AdvancedViewController.h; sourceTree = "<group>"; };
 		2B47660F1887E328008DF1FD /* AdvancedViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AdvancedViewController.m; sourceTree = "<group>"; };
 		2B4766101887E328008DF1FD /* AdvancedView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = AdvancedView.xib; sourceTree = "<group>"; };
@@ -424,6 +427,8 @@
 				2B63EC3618EBE68500B16F4E /* VersionService.m */,
 				2B63EC3818EC485B00B16F4E /* SendFeedbackService.h */,
 				2B63EC3918EC485B00B16F4E /* SendFeedbackService.m */,
+				2B43889F18F2BAD8000B2DA9 /* ImportImagesService.h */,
+				2B4388A018F2BAD8000B2DA9 /* ImportImagesService.m */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -477,6 +482,11 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0500;
+				TargetAttributes = {
+					2B74BEFC1883D50B00D0B78B = {
+						DevelopmentTeam = 5VTR7J89FT;
+					};
+				};
 			};
 			buildConfigurationList = 2B74BEF81883D50B00D0B78B /* Build configuration list for PBXProject "CCS-Uploader" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -547,6 +557,7 @@
 				2B547DA818EAFC2F00DCF616 /* RollHasImagesService.m in Sources */,
 				2B35F96618A2F50B005199CA /* VerifyOrderService.m in Sources */,
 				2B74BF0D1883D50B00D0B78B /* main.m in Sources */,
+				2B4388A118F2BAD8000B2DA9 /* ImportImagesService.m in Sources */,
 				2B35F96318A2F246005199CA /* UpdateVisibleService.m in Sources */,
 				2B547D9F18EAD3F200DCF616 /* GetChromaKeyEventInformationService.m in Sources */,
 				2B758C5018929A460045DE48 /* ImageUtil.m in Sources */,
@@ -689,6 +700,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "CCS-Uploader/CCS-Uploader-Prefix.pch";
 				INFOPLIST_FILE = "CCS-Uploader/CCS-Uploader-Info.plist";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -702,6 +714,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "CCS-Uploader/CCS-Uploader-Prefix.pch";
 				INFOPLIST_FILE = "CCS-Uploader/CCS-Uploader-Info.plist";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};

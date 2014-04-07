@@ -15,6 +15,10 @@
         *imgUploading1, *imgUploading2, *imgUploading3, *imgUploading4,
         *imgUploading5, *imgUploading6, *imgUploading7, *imgUploading8;
     
+    IBOutlet NSTextField
+        *lblUploading1, *lblUploading2, *lblUploading3, *lblUploading4,
+        *lblUploading5, *lblUploading6, *lblUploading7, *lblUploading8;
+
     IBOutlet NSPopover *errorsPopover;
     IBOutlet NSTextView *txtErrors;
     
@@ -155,32 +159,41 @@ static NSString *transferStatuses[] = {
         result.objectValue = transfer.eventName;
         return result;
     } else {
-        NSTableCellView *result = [tableView makeViewWithIdentifier:tableColumn.identifier owner:self];
+        NSTableCellView *cellView = [tableView makeViewWithIdentifier:tableColumn.identifier owner:self];
         
-        if (result == nil) {
-            result = [[NSTableCellView alloc] initWithFrame:NSZeroRect];
-            result.identifier = tableColumn.identifier;
+        if (cellView == nil) {
+            cellView = [[NSTableCellView alloc] initWithFrame:NSZeroRect];
+            cellView.identifier = tableColumn.identifier;
         }
         
         if ([tableColumn.identifier isEqualToString:@"Event"]) {
-            result.textField.stringValue = [NSString stringWithFormat:@"%@: %@", transfer.orderNumber, transfer.eventName];
+            cellView.textField.stringValue = [NSString stringWithFormat:@"%@: %@", transfer.orderNumber, transfer.eventName];
         } else if ([tableColumn.identifier isEqualToString:@"Status"]) {
             if (transfer.status != kTransferStatusScheduled) {
-                result.textField.stringValue = transferStatuses[transfer.status];
+                cellView.textField.stringValue = transferStatuses[transfer.status];
             } else {
-                result.textField.stringValue = [NSString stringWithFormat:@"Scheduled for %@",
+                cellView.textField.stringValue = [NSString stringWithFormat:@"Scheduled for %@",
                     [timeFormatter stringFromDate:transfer.dateScheduled]];
             }
-        } else if ([tableColumn.identifier isEqualToString:@"Thumbs"]) {
-            result.textField.stringValue = transfer.uploadThumbs ?
-                (transfer.thumbsUploaded ? @"Uploaded" : @"In progress") : @"";
-        } else if ([tableColumn.identifier isEqualToString:@"Fullsize"]) {
-            result.textField.stringValue = transfer.uploadFullsize ?
-                (transfer.fullsizeUploaded ? @"Uploaded" : @"In progress") : @"";
+        } else if ([tableColumn.identifier isEqualToString:@"Thumbs"] || [tableColumn.identifier isEqualToString:@"Fullsize"]) {
+            BOOL doUpload = [tableColumn.identifier isEqualToString:@"Thumbs"] ? transfer.uploadThumbs : transfer.uploadFullsize;
+            BOOL uploaded = [tableColumn.identifier isEqualToString:@"Thumbs"] ? transfer.thumbsUploaded : transfer.fullsizeUploaded;
+            
+            if (transfer.status == kTransferStatusComplete) {
+                cellView.textField.stringValue = doUpload ? (uploaded ? @"Uploaded" : @"In progress") : @"Not included";
+            } else if (transfer.status == kTransferStatusAborted || transfer.status == kTransferStatusErrors) {
+                cellView.textField.stringValue = doUpload ? (uploaded ? @"Attempted" : @"Not attempted") : @"Not included";
+            } else if (transfer.status == kTransferStatusRunning) {
+                cellView.textField.stringValue = doUpload ? (uploaded ? @"Uploaded" : @"In progress") : @"Not included";
+            } else if (transfer.status == kTransferStatusQueued || transfer.status == kTransferStatusScheduled) {
+                cellView.textField.stringValue = doUpload ? (uploaded ? @"Uploaded" : @"To be uploaded") : @"Not included";
+            } else if (transfer.status == kTransferStatusStopped) {
+                cellView.textField.stringValue = doUpload ? (uploaded ? @"Uploaded" : @"Stopped") : @"Not included";
+            }
         } else if ([tableColumn.identifier isEqualToString:@"Date"]) {
-            result.textField.stringValue = [timeFormatter stringFromDate:transfer.datePushed];
+            cellView.textField.stringValue = [timeFormatter stringFromDate:transfer.datePushed];
         } else if ([tableColumn.identifier isEqualToString:@"Progress"]) {
-            NSProgressIndicator *progressIndicator = (NSProgressIndicator *)result.subviews[0];
+            NSProgressIndicator *progressIndicator = (NSProgressIndicator *)cellView.subviews[0];
             
             if (transfer.status == kTransferStatusQueued || transfer.status == kTransferStatusRunning) {
                 [progressIndicator startAnimation:nil];
@@ -190,35 +203,35 @@ static NSString *transferStatuses[] = {
                 [progressIndicator setHidden:YES];
             }
         } else if ([tableColumn.identifier isEqualToString:@"Stop"]) {
-            NSButtonCell *btn = (NSButtonCell *)result;
+            NSButtonCell *btn = (NSButtonCell *)cellView;
             
             if (transfer.status == kTransferStatusRunning || transfer.status == kTransferStatusQueued) {
                 btn.title = @"Stop";
-                [result setHidden:NO];
+                [cellView setHidden:NO];
             } else if (transfer.status == kTransferStatusStopped) {
                 btn.title = @"Resume";
-                [result setHidden:NO];
-            } else if (transfer.status == kTransferStatusAborted || transfer.status == kTransferStatusComplete || transfer.status == kTransferStatusErrors) {
+                [cellView setHidden:NO];
+            } else if (transfer.status == kTransferStatusAborted || transfer.status == kTransferStatusErrors) {
                 btn.title = @"Retry";
-                [result setHidden:NO];
+                [cellView setHidden:NO];
             } else {
-                [result setHidden:YES];
+                [cellView setHidden:YES];
             }
         } else if ([tableColumn.identifier isEqualToString:@"Delete"]) {
             if (transfer.status == kTransferStatusRunning) {
-                [result setHidden:YES];
+                [cellView setHidden:YES];
             } else {
-                [result setHidden:NO];
+                [cellView setHidden:NO];
             }
         } else if ([tableColumn.identifier isEqualToString:@"Errors"]) {
             if (transfer.errors && transfer.errors.length != 0) {
-                [result setHidden:NO];
+                [cellView setHidden:NO];
             } else {
-                [result setHidden:YES];
+                [cellView setHidden:YES];
             }
         }
 
-        return result;
+        return cellView;
     }
 }
 
@@ -374,8 +387,24 @@ static NSString *transferStatuses[] = {
             imgUploading5, imgUploading6, imgUploading7, imgUploading8,
         ];
         
+        NSArray *labels = @[
+            lblUploading1, lblUploading2, lblUploading3, lblUploading4,
+            lblUploading5, lblUploading6, lblUploading7, lblUploading8,
+        ];
+        
         NSImageView *imageView = imageViews[slot];
+        NSTextField *label = labels[slot];
         NSImage *image = [[NSImage alloc] initWithContentsOfFile:pathToImage];
+        label.stringValue = pathToImage;
+        
+        NSArray *pathComponents = pathToImage.pathComponents;
+        
+        if (pathComponents.count >= 2) {
+            NSString *roll = pathComponents[pathComponents.count - 2];
+            NSString *frame = pathComponents[pathComponents.count - 1];
+            label.stringValue = [NSString stringWithFormat:@"%@\r%@", roll, frame];
+        }
+        
         imageView.image = image;
     };
     
@@ -385,7 +414,14 @@ static NSString *transferStatuses[] = {
             imgUploading5, imgUploading6, imgUploading7, imgUploading8,
         ];
         
+        NSArray *labels = @[
+            lblUploading1, lblUploading2, lblUploading3, lblUploading4,
+            lblUploading5, lblUploading6, lblUploading7, lblUploading8,
+        ];
+
         NSImageView *imageView = imageViews[slot];
+        NSTextField *label = labels[slot];
+        label.stringValue = @"";
         imageView.image = nil;
     };
     

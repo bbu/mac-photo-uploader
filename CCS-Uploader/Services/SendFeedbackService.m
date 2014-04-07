@@ -22,6 +22,7 @@
 
 - (BOOL)startSendFeedback:(NSString *)version
     credentials:(NSString *)credentials
+    url:(NSString *)url
     ccsAccount:(NSString *)ccsAccount
     orderNumber:(NSString *)orderNumber
     system:(NSString *)system
@@ -38,12 +39,13 @@
     }
     
     NSString *postBody = [NSString stringWithFormat:
-        @"version=%@&Credentials=%@&ccsaccount=%@&ordernumber=%@&"
+        @"version=%@&Credentials=%@&Credentials=%@&ccsaccount=%@&ordernumber=%@&"
         @"system=%@&program=%@&description=%@&type=%@&"
         @"name=%@&returnemail=%@&files=%@",
         
         [version stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
         [credentials stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
+        [url stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
         [ccsAccount stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
         [orderNumber stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
                           
@@ -56,6 +58,8 @@
         [email stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
         files ? [self escapedBase64:files.base64EncodedString] : @""
     ];
+    
+    //NSLog(@"POST Body:\r%@", postBody);
     
     NSMutableURLRequest *request = [Service postRequestWithURL:[self serviceURL] body:postBody];
     
@@ -70,8 +74,8 @@
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
-    NSString *stringResponse = [[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding];
-    NSLog(@"String response:\r%@", stringResponse);
+    //NSString *stringResponse = [[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding];
+    //NSLog(@"Response:\r%@", stringResponse);
     
     urlConnection = nil, started = NO;
     finished(result);

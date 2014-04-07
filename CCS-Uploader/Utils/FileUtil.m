@@ -146,4 +146,30 @@
     return result;
 }
 
++ (NSData *)zipDataForFiles:(NSArray *)files
+{
+    NSString *destZipFile = @"/tmp/ccsuploaderlog.zip";
+    NSTask *createZipTask = [NSTask new];
+    
+    createZipTask.launchPath = @"/usr/bin/zip";
+    
+    createZipTask.arguments = [@[@"-rqj", destZipFile] arrayByAddingObjectsFromArray:files];
+    [createZipTask launch];
+    
+    while (createZipTask.isRunning) {
+        usleep(25);
+    }
+    
+    NSData *zipData = [NSData dataWithContentsOfFile:destZipFile];
+    [[NSFileManager defaultManager] removeItemAtPath:destZipFile error:nil];
+    
+    return zipData;
+}
+
++ (int)createLogFile
+{
+    return system("syslog -F '$(Sender) $Time <$((Level)(str))>: $Message' | grep -p \"^CCS Uploader \" "
+        "> /tmp/ccsuploader.log");
+}
+
 @end

@@ -75,9 +75,29 @@
     return self;
 }
 
+- (void)centerWindow
+{
+    static CGFloat offset = 20;
+    
+    CGFloat windowWidth = self.window.frame.size.width;
+    CGFloat windowHeight = self.window.frame.size.height;
+    CGFloat screenWidth = [NSScreen mainScreen].visibleFrame.size.width;
+    CGFloat screenHeight = [NSScreen mainScreen].visibleFrame.size.height;
+    
+    [self.window setFrameOrigin:NSMakePoint((screenWidth - windowWidth) / 2. - offset, (screenHeight - windowHeight) / 2. + offset)];
+
+    if (offset >= 140) {
+        offset = 20;
+    } else {
+        offset += 20;
+    }
+}
+
 - (IBAction)showWindow:(id)sender
 {
     [super showWindow:sender];
+    [self centerWindow];
+    
     [loginViewController reloadAccounts];
     [self showStep:kWizardStepLogin];
 }
@@ -85,7 +105,8 @@
 - (void)openEvent:(NSString *)orderNumber isQuicPost:(BOOL)isQuicPost
 {
     [super showWindow:nil];
-    
+    [self centerWindow];
+
     [loadingViewController view];
     loadingViewController.txtMessage.stringValue = @"Checking the event...";
     txtStepTitle.stringValue = [NSString stringWithFormat:@"Opening event number %@ (%@)", orderNumber, isQuicPost ? @"QuicPost" : @"CORE"];
@@ -149,7 +170,8 @@
     source:(NSString *)source filename:(NSString *)filename
 {
     [super showWindow:nil];
-    
+    [self centerWindow];
+
     [loadingViewController view];
     loadingViewController.txtMessage.stringValue = @"Checking the event...";
     txtStepTitle.stringValue = filename.lastPathComponent;
@@ -214,6 +236,7 @@
 {
     if (self.eventRow != nil && self.eventRow.orderNumber != nil) {
         [mainWindowController.openedEvents removeObject:self.eventRow.orderNumber];
+        self.eventRow = nil;
     }
     
     if (wizardStep == kWizardStepBrowse || wizardStep == kWizardStepReview || wizardStep == kWizardStepSchedule) {
@@ -259,10 +282,16 @@
     }
     
     NSString *credentials = @"";
+    NSString *url = @"";
     
     if (effectiveUser) {
-        credentials = [NSString stringWithFormat:@"%@:%@@%@", effectiveUser, effectivePass,
-            effectiveCoreDomain ? effectiveCoreDomain : @"quicpost"];
+        credentials = [NSString stringWithFormat:@"%@", effectiveUser];
+    }
+    
+    if (effectiveCoreDomain) {
+        url = effectiveCoreDomain;
+    } else {
+        url = @"quicpost.candid.com/CORE";
     }
     
     NSString *ccsAccount = @"";
@@ -273,23 +302,17 @@
         orderNumber = eventRow.orderNumber;
     }
     
-    NSString *destZipFile = [FileUtil pathForDataFile:@"feedback.zip"];
-    NSString *sourceFile = [FileUtil pathForDataFile:@"26723637.ccsorder"];
+    NSData *zipData = nil;
     
-    NSTask *createZip = [NSTask new];
-    createZip.launchPath = @"/usr/bin/zip";
-    createZip.arguments = @[@"-rq", destZipFile, sourceFile];
-    [createZip launch];
-    
-    while (createZip.isRunning) {
-        usleep(25);
+    if (![FileUtil createLogFile]) {
+        zipData = [FileUtil zipDataForFiles:@[@"/tmp/ccsuploader.log"]];
+        [[NSFileManager defaultManager] removeItemAtPath:@"/tmp/ccsuploader.log" error:nil];
     }
-    
-    NSData *zipData = [NSData dataWithContentsOfFile:destZipFile];
     
     BOOL started = [sendFeedbackService
         startSendFeedback:[FileUtil versionString]
         credentials:credentials
+        url:url
         ccsAccount:ccsAccount
         orderNumber:orderNumber
         system:effectiveCoreDomain ? @"CORE" : @"QuicPost"
@@ -348,6 +371,7 @@
             self.window.title = @"Uploader Wizard";
             [browseViewController saveOrderModel];
             [mainWindowController.openedEvents removeObject:eventRow.orderNumber];
+            eventRow = nil;
             [self showStep:kWizardStepEvents];
             [eventsViewController refreshIfEmpty];
         } break;

@@ -9,5 +9,7 @@
 + (NSString *)pathForDataDir:(NSString *)dirname;
 + (NSString *)humanFriendlyFilesize:(NSUInteger)value;
 + (NSString *)versionString;
++ (NSData *)zipDataForFiles:(NSArray *)files;
++ (int)createLogFile;
 
 @end

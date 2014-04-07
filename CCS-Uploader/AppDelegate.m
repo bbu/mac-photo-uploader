@@ -35,7 +35,7 @@
     [NSApp activateIgnoringOtherApps:YES];
     [mainWindowController showWindow:nil];
     [mainWindowController.window makeKeyAndOrderFront:nil];
-    
+
     /*
     [ImageUtil resizeAndRotateImage:@"/Users/blagovest/Downloads/lotus.jpg" outputImageFilename:@"/Users/blagovest/Downloads/watermark.jpg"
         resizeToMaxSide:120 rotate:kDontRotate

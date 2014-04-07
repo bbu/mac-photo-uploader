@@ -92,6 +92,17 @@
     NSMutableArray *imagesInBrowser;
     BOOL rollsNeedReload;
     
+    IBOutlet NSComboBox *cbFolder;
+    IBOutlet NSButton *btnAddFolder;
+    IBOutlet NSButton *chkAllImagesAreOnGreenScreen, *chkAllowCustomerToChoose, *chkPreviouslyProvided;
+    IBOutlet NSTextField *txtVertBackgroundEventNumber, *txtVertBackgroundRoll, *txtVertBackgroundFrame;
+    IBOutlet NSTextField *txtHorzBackgroundEventNumber, *txtHorzBackgroundRoll, *txtHorzBackgroundFrame;
+    IBOutlet NSTextField *txtOutputFolder;
+    IBOutlet NSButton *btnAddBackground;
+    IBOutlet NSTableView *tblBackgrounds;
+    IBOutlet NSImageView *imgBackgroundPreview;
+    IBOutlet NSButton *btnCancelGreenScreen, *btnConfirmGreenScreen;
+    
     CheckOrderNumberService *checkOrderNumberService;
     EventSettingsService *eventSettingsService;
     UploadExtensionsService *uploadExtensionsService;
@@ -328,12 +339,43 @@
 
 - (IBAction)greenScreenClicked:(id)sender
 {
+    NSInteger rollIndex = tblRolls.clickedRow;
+    
+    if (rollIndex == -1) {
+        rollIndex = tblRolls.selectedRow;
+        
+        if (rollIndex == -1) {
+            NSAlert *alert = [NSAlert alertWithMessageText:@"You must select a folder first." defaultButton:@"OK"
+                alternateButton:@"" otherButton:@"" informativeTextWithFormat:@""];
+            
+            [alert beginSheetModalForWindow:wizardWindowController.window completionHandler:nil];
+            return;
+        }
+    }
+    
+    rollModelShown = orderModel.rolls[rollIndex];
+    [self prepareGreenScreenSheet];
+    
     [NSApp beginSheet:greenScreenSheet modalForWindow:wizardWindowController.window
         modalDelegate:nil didEndSelector:nil contextInfo:nil];
 }
 
-- (IBAction)closeGreenScreen:(id)sender
+- (void)prepareGreenScreenSheet
 {
+    chkAllImagesAreOnGreenScreen.state = rollModelShown.greenScreen ? NSOnState : NSOffState;
+
+}
+
+- (IBAction)cancelGreenScreen:(id)sender
+{
+    rollModelShown = nil;
+    [greenScreenSheet close];
+    [NSApp endSheet:greenScreenSheet];
+}
+
+- (IBAction)confirmGreenScreen:(id)sender
+{
+    rollModelShown = nil;
     [greenScreenSheet close];
     [NSApp endSheet:greenScreenSheet];
 }
@@ -464,6 +506,19 @@
         if ([columnID isEqualToString:@"Name"]) {
             cell.textField.stringValue = photographer.name;
         }
+    } else if (tableView == tblBackgrounds) {
+        NSTableCellView *cell = view;
+        
+        if ([columnID isEqualToString:@"Icon"]) {
+            
+        } else if ([columnID isEqualToString:@"HorzBackground"]) {
+            
+        } else if ([columnID isEqualToString:@"HorzDimensions"]) {
+        } else if ([columnID isEqualToString:@"VertBackground"]) {
+        } else if ([columnID isEqualToString:@"VertDimensions"]) {
+        } else if ([columnID isEqualToString:@"OutputFolder"]) {
+        } else if ([columnID isEqualToString:@"Delete"]) {
+        }
     }
     
     return view;
@@ -472,13 +527,15 @@
 - (void)startLoadEvent:(EventRow *)event fromWizard:(BOOL)fromWizard
 {
     void (^terminate)(NSString *) = ^(NSString *message) {
+        wizardWindowController.eventRow = nil;
+
         NSAlert *alert = [NSAlert new];
         alert.messageText = message;
         
         if (fromWizard) {
             [wizardWindowController showStep:kWizardStepEvents];
         }
-        
+
         [alert beginSheetModalForWindow:wizardWindowController.window
             completionHandler:^(NSModalResponse response) {
                 if (!fromWizard) {
@@ -487,6 +544,8 @@
             }
         ];
     };
+    
+    wizardWindowController.eventRow = event;
     
     for (Transfer *transfer in wizardWindowController.mainWindowController.transferManager.transfers) {
         if ([transfer.orderNumber isEqualToString:event.orderNumber] &&
@@ -626,7 +685,7 @@
     wizardWindowController.window.title = [NSString stringWithFormat:@"%@: %@",
         orderModel.eventRow.orderNumber, orderModel.eventRow.eventName];
     
-    wizardWindowController.eventRow = orderModel.eventRow;
+    //wizardWindowController.eventRow = orderModel.eventRow;
     
     NSData *storedMarketRows = [[NSUserDefaults standardUserDefaults] objectForKey:kMarketSettings];
     NSArray *marketSettingsRows = nil;
