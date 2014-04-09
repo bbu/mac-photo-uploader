@@ -2,6 +2,7 @@
 #import "MainWindowController.h"
 
 #import "../Utils/FileUtil.h"
+#import "../Models/OrderModel.h"
 
 #import "../Services/ListEventsService.h"
 #import "../Services/SendFeedbackService.h"
@@ -264,6 +265,21 @@
     [NSApp endSheet:submitFeedbackSheet];
 }
 
+- (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)commandSelector
+{
+    BOOL result = NO;
+    
+    if (commandSelector == @selector(insertNewline:)) {
+        [textView insertNewlineIgnoringFieldEditor:self];
+        result = YES;
+    } else if (commandSelector == @selector(insertTab:)) {
+        [textView insertTabIgnoringFieldEditor:self];
+        result = YES;
+    }
+    
+    return result;
+}
+
 - (IBAction)btnFeedbackSubmitClicked:(id)sender
 {
     if (!txtFeedbackName.stringValue.length) {
@@ -402,9 +418,15 @@
         } break;
 
         case kWizardStepBrowse: {
-            //[browseViewController saveOrderModel];
-            [reviewViewController reload];
-            [self showStep:kWizardStepReview];
+            if (browseViewController.orderModel.rolls.count == 0) {
+                NSAlert *alert = [NSAlert alertWithMessageText:@"You must add at least one folder in order to proceed." defaultButton:@"OK" alternateButton:@"" otherButton:@"" informativeTextWithFormat:@""];
+                
+                [alert beginSheetModalForWindow:self.window completionHandler:nil];
+            } else {
+                //[browseViewController saveOrderModel];
+                [reviewViewController reload];
+                [self showStep:kWizardStepReview];
+            }
         } break;
             
         case kWizardStepReview: {

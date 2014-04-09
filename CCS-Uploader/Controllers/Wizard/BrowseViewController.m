@@ -13,6 +13,14 @@
 #import "../../Services/AddPhotographerService.h"
 #import "../../Services/UpdateVisibleService.h"
 
+#import "../../Services/GetSingleImageInfoService.h"
+#import "../../Services/GetChromaKeyEventInformationService.h"
+#import "../../Services/SetChromaKeyRollMakePNGOnlyService.h"
+#import "../../Services/SetChromaKeyRollService.h"
+#import "../../Services/RollHasImagesService.h"
+#import "../../Services/DeleteChromaKeyRoll2Service.h"
+#import "../../Services/DeleteChromaKeyRollService.h"
+
 #import <Quartz/Quartz.h>
 
 @implementation ImageInBrowserView
@@ -95,13 +103,15 @@
     IBOutlet NSComboBox *cbFolder;
     IBOutlet NSButton *btnAddFolder;
     IBOutlet NSButton *chkAllImagesAreOnGreenScreen, *chkAllowCustomerToChoose, *chkPreviouslyProvided;
-    IBOutlet NSTextField *txtVertBackgroundEventNumber, *txtVertBackgroundRoll, *txtVertBackgroundFrame;
     IBOutlet NSTextField *txtHorzBackgroundEventNumber, *txtHorzBackgroundRoll, *txtHorzBackgroundFrame;
+    IBOutlet NSTextField *txtVertBackgroundEventNumber, *txtVertBackgroundRoll, *txtVertBackgroundFrame;
     IBOutlet NSTextField *txtOutputFolder;
     IBOutlet NSButton *btnAddBackground;
     IBOutlet NSTableView *tblBackgrounds;
     IBOutlet NSImageView *imgBackgroundPreview;
     IBOutlet NSButton *btnCancelGreenScreen, *btnConfirmGreenScreen;
+    IBOutlet NSTextField *lblGreenScreenStatus;
+    IBOutlet NSProgressIndicator *greenScreenProgress;
     
     CheckOrderNumberService *checkOrderNumberService;
     EventSettingsService *eventSettingsService;
@@ -111,8 +121,17 @@
     AddPhotographerService *addPhotographerService;
     UpdateVisibleService *updateVisibleService;
     
+    GetSingleImageInfoService *getSingleImageInfoService;
+    GetChromaKeyEventInformationService *getChromaKeyEventInformationService;
+    SetChromaKeyRollMakePNGOnlyService *setChromaKeyRollMakePNGOnlyService;
+    SetChromaKeyRollService *setChromaKeyRollService;
+    RollHasImagesService *rollHasImagesService;
+    DeleteChromaKeyRoll2Service *deleteChromaKeyRoll2Service;
+    DeleteChromaKeyRollService *deleteChromaKeyRollService;
+    
     OrderModel *orderModel;
-    NSMutableArray *photographers, *divisions;
+    NSMutableArray *photographers, *divisions, *greenScreenBackgrounds, *filteredGreenScreenBackgrounds;
+    BOOL allowDynamicBackgrounds;
     
     NSInteger framesPerRoll;
     BOOL usingPreloader;
@@ -136,6 +155,7 @@
     
     if (self) {
         wizardWindowController = parent;
+        
         checkOrderNumberService = [CheckOrderNumberService new];
         eventSettingsService = [EventSettingsService new];
         uploadExtensionsService = [UploadExtensionsService new];
@@ -144,6 +164,14 @@
         addPhotographerService = [AddPhotographerService new];
         updateVisibleService = [UpdateVisibleService new];
         
+        getSingleImageInfoService = [GetSingleImageInfoService new];
+        getChromaKeyEventInformationService = [GetChromaKeyEventInformationService new];
+        setChromaKeyRollMakePNGOnlyService = [SetChromaKeyRollMakePNGOnlyService new];
+        setChromaKeyRollService = [SetChromaKeyRollService new];
+        rollHasImagesService = [RollHasImagesService new];
+        deleteChromaKeyRoll2Service = [DeleteChromaKeyRoll2Service new];
+        deleteChromaKeyRollService = [DeleteChromaKeyRollService new];
+
         imagesInBrowser = [NSMutableArray new];
     }
 
@@ -171,9 +199,8 @@
         statusField:loadingTitle
         errors:errors];
 
-    //[orderModel save];
-
-    [tblRolls performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:YES];
+    [loadingTitle performSelectorOnMainThread:@selector(setStringValue:) withObject:@"Saving event" waitUntilDone:YES];
+    [orderModel save];
     [self performSelectorOnMainThread:@selector(enableControls) withObject:nil waitUntilDone:YES];
     
     if (errors.length != 0) {
@@ -186,10 +213,10 @@
     [self performSelectorOnMainThread:@selector(disableControls:) withObject:@"Importing files..." waitUntilDone:YES];
     
     [orderModel includeNewlyAdded:loadingTitle];
+    [loadingTitle performSelectorOnMainThread:@selector(setStringValue:) withObject:@"Saving event" waitUntilDone:YES];
+    [orderModel save];
     
-    [tblRolls performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:YES];
     [self performSelectorOnMainThread:@selector(enableControls) withObject:nil waitUntilDone:YES];
-    
 }
 
 - (void)showImportErrors:(NSString *)errors
@@ -323,6 +350,13 @@
 
 - (void)enableControls
 {
+    [self matchRollsWithGreenScreen];
+
+    NSInteger selectedRow = tblRolls.selectedRow;
+    [tblRolls reloadData];
+    [tblRolls selectRowIndexes:[NSIndexSet indexSetWithIndex:selectedRow] byExtendingSelection:YES];
+    [tblRolls becomeFirstResponder];
+    
     [btnBrowse setEnabled:YES];
     [btnGreenScreen setEnabled:YES];
     [btnPhotographers setEnabled:YES];
@@ -354,16 +388,373 @@
     }
     
     rollModelShown = orderModel.rolls[rollIndex];
-    [self prepareGreenScreenSheet];
+    [self prepareGreenScreenSheet:NO];
     
     [NSApp beginSheet:greenScreenSheet modalForWindow:wizardWindowController.window
         modalDelegate:nil didEndSelector:nil contextInfo:nil];
 }
 
-- (void)prepareGreenScreenSheet
+- (void)matchRollsWithGreenScreen
 {
-    chkAllImagesAreOnGreenScreen.state = rollModelShown.greenScreen ? NSOnState : NSOffState;
+    for (RollModel *roll in orderModel.rolls) {
+        roll.greenScreen = NO;
+        
+        for (BackgroundRow *background in greenScreenBackgrounds) {
+            if ([background.sourceRoll isEqualToString:roll.number]) {
+                roll.greenScreen = YES;
+                break;
+            }
+        }
+    }
+}
 
+- (void)switchGreenScreenBackgroundControls:(BOOL)enabled clearFields:(BOOL)clearFields
+{
+    NSArray *controlsToSwitch = @[
+        txtHorzBackgroundEventNumber, txtHorzBackgroundRoll, txtHorzBackgroundFrame,
+        txtVertBackgroundEventNumber, txtVertBackgroundRoll, txtVertBackgroundFrame,
+        txtOutputFolder, btnAddBackground, tblBackgrounds, imgBackgroundPreview
+    ];
+    
+    for (NSControl *control in controlsToSwitch) {
+        [control setEnabled:enabled];
+    }
+    
+    if (clearFields) {
+        txtHorzBackgroundEventNumber.stringValue = txtVertBackgroundEventNumber.stringValue = orderModel.eventRow.orderNumber;
+        txtHorzBackgroundRoll.stringValue = txtHorzBackgroundFrame.stringValue = @"";
+        txtVertBackgroundRoll.stringValue = txtVertBackgroundFrame.stringValue = @"";
+        txtOutputFolder.stringValue = @"";
+    }
+}
+
+- (void)switchGreenScreenControls:(BOOL)enabled
+{
+    if (enabled) {
+        [chkAllImagesAreOnGreenScreen setEnabled:YES];
+        
+        if (chkAllImagesAreOnGreenScreen.state == NSOnState) {
+            [chkAllowCustomerToChoose setEnabled:YES];
+            [chkPreviouslyProvided setEnabled:YES];
+            
+            if (chkPreviouslyProvided.state == NSOnState) {
+                [self switchGreenScreenBackgroundControls:YES clearFields:NO];
+            } else {
+                [self switchGreenScreenBackgroundControls:NO clearFields:NO];
+            }
+        } else {
+            [chkAllowCustomerToChoose setEnabled:NO];
+            [chkPreviouslyProvided setEnabled:NO];
+            [self switchGreenScreenBackgroundControls:NO clearFields:NO];
+        }
+    } else {
+        [chkAllImagesAreOnGreenScreen setEnabled:NO];
+        [chkAllowCustomerToChoose setEnabled:NO];
+        [chkPreviouslyProvided setEnabled:NO];
+        [self switchGreenScreenBackgroundControls:NO clearFields:NO];
+    }
+    
+    [btnCancelGreenScreen setEnabled:enabled];
+    [btnConfirmGreenScreen setEnabled:enabled];
+}
+
+- (IBAction)allImagesAreOnGreenScreenChecked:(id)sender
+{
+    BOOL enabled = chkAllImagesAreOnGreenScreen.state == NSOnState ? YES : NO;
+    
+    [chkAllowCustomerToChoose setEnabled:enabled];
+    [chkPreviouslyProvided setEnabled:enabled];
+    
+    if (enabled && chkPreviouslyProvided.state == NSOnState) {
+        [self switchGreenScreenBackgroundControls:YES clearFields:YES];
+    } else {
+        [self switchGreenScreenBackgroundControls:NO clearFields:YES];
+    }
+}
+
+- (IBAction)allowCustomerToChooseChecked:(id)sender
+{
+    
+}
+
+- (IBAction)previouslyProvidedChecked:(id)sender
+{
+    BOOL enabled = chkPreviouslyProvided.state == NSOnState ? YES : NO;
+    [self switchGreenScreenBackgroundControls:enabled clearFields:YES];
+}
+
+- (IBAction)deleteGreenScreenBackground:(id)sender
+{
+    if (![tblBackgrounds isEnabled]) {
+        return;
+    }
+    
+    void (^restoreForm)(NSString *) = ^(NSString *message) {
+        lblGreenScreenStatus.stringValue = message;
+        [greenScreenProgress stopAnimation:nil];
+        [self switchGreenScreenControls:YES];
+    };
+    
+    NSInteger row = [tblBackgrounds rowForView:sender];
+    BackgroundRow *background = filteredGreenScreenBackgrounds[row];
+    
+    lblGreenScreenStatus.stringValue = @"Checking whether the roll has images...";
+    [greenScreenProgress startAnimation:nil];
+    [self switchGreenScreenControls:NO];
+    
+    [rollHasImagesService
+        startRollHasImages:orderModel.eventRow.ccsAccount
+        password:ccsPassword
+        orderNumber:orderModel.eventRow.orderNumber
+        roll:rollModelShown.number
+        complete:^(RollHasImagesResult *result) {
+            if (result.error) {
+                restoreForm([NSString stringWithFormat:@"Could not check whether the roll has images: %@", result.error.localizedDescription]);
+            } else if (result.hasImages) {
+                restoreForm(@"Unable to delete background, roll has images sent");
+            } else {
+                lblGreenScreenStatus.stringValue = @"Deleting selected background...";
+                
+                [deleteChromaKeyRoll2Service
+                    startDeleteChromaKeyRoll2:orderModel.eventRow.ccsAccount
+                    password:ccsPassword
+                    orderNo:orderModel.eventRow.orderNumber
+                    roll:background.sourceRoll
+                    destinationRoll:background.destinationRoll
+                    complete:^(ServiceResult *result) {
+                        if (result.error) {
+                            restoreForm([NSString stringWithFormat:@"Could not delete background: %@", result.error.localizedDescription]);
+                        } else {
+                            [getChromaKeyEventInformationService
+                                startGetChromaKeyEventInformation:orderModel.eventRow.ccsAccount
+                                password:ccsPassword
+                                eventID:orderModel.eventRow.eventID
+                                complete:^(GetChromaKeyEventInformationResult *result) {
+                                    if (result.error) {
+                                        restoreForm([NSString stringWithFormat:@"Could not refresh green screen info: %@", result.error.localizedDescription]);
+                                    } else {
+                                        restoreForm(@"");
+                                        greenScreenBackgrounds = result.backgrounds;
+                                        [self matchRollsWithGreenScreen];
+                                        [self prepareGreenScreenSheet:YES];
+                                        NSInteger selectedRow = tblRolls.selectedRow;
+                                        [tblRolls reloadData];
+                                        [tblRolls selectRowIndexes:[NSIndexSet indexSetWithIndex:selectedRow] byExtendingSelection:NO];
+                                    }
+                                }
+                            ];
+                        }
+                    }
+                ];
+            }
+        }
+    ];
+}
+
+- (IBAction)addGreenScreenBackground:(id)sender
+{
+    void (^restoreForm)(NSString *) = ^(NSString *message) {
+        lblGreenScreenStatus.stringValue = message;
+        [greenScreenProgress stopAnimation:nil];
+        [self switchGreenScreenControls:YES];
+    };
+    
+    if (!txtVertBackgroundRoll.stringValue.length && !txtHorzBackgroundRoll.stringValue.length) {
+        [txtHorzBackgroundRoll becomeFirstResponder];
+        return;
+    }
+    
+    [txtHorzBackgroundEventNumber becomeFirstResponder];
+    
+    lblGreenScreenStatus.stringValue = @"Checking whether the background exists at CCS...";
+    [greenScreenProgress startAnimation:nil];
+    [self switchGreenScreenControls:NO];
+    
+    BOOL isVertical = txtVertBackgroundRoll.stringValue.length ? YES : NO;
+
+    [getSingleImageInfoService
+        startGetSingleImageInfo:orderModel.eventRow.ccsAccount
+        password:ccsPassword
+        orderNumber:isVertical ? txtVertBackgroundEventNumber.stringValue : txtHorzBackgroundEventNumber.stringValue
+        roll:isVertical ? txtVertBackgroundRoll.stringValue : txtHorzBackgroundRoll.stringValue
+        frame:isVertical ? txtVertBackgroundFrame.stringValue : txtHorzBackgroundFrame.stringValue
+        complete:^(GetSingleImageInfoResult *result) {
+            if (result.error) {
+                restoreForm([NSString stringWithFormat:@"Could not check image: %@", result.error.localizedDescription]);
+            } else if (result.width && result.height) {
+                NSInteger firstWidth = result.width;
+                NSInteger firstHeight = result.height;
+                
+                if (isVertical && txtHorzBackgroundRoll.stringValue.length) {
+                    [getSingleImageInfoService
+                        startGetSingleImageInfo:orderModel.eventRow.ccsAccount
+                        password:ccsPassword
+                        orderNumber:txtHorzBackgroundEventNumber.stringValue
+                        roll:txtHorzBackgroundRoll.stringValue
+                        frame:txtHorzBackgroundFrame.stringValue
+                        complete:^(GetSingleImageInfoResult *result) {
+                            if (result.error) {
+                                restoreForm([NSString stringWithFormat:@"Could not check image: %@", result.error.localizedDescription]);
+                            } else if (result.width && result.height) {
+                                NSInteger secondWidth = result.width;
+                                NSInteger secondHeight = result.height;
+
+                                BOOL allPassed = YES;
+                                
+                                for (FrameModel *frame in rollModelShown.frames) {
+                                    if (![ImageUtil dimensionsAreValidForGreenScreen:frame.width fgHeight:frame.height bgWidth:firstWidth bgHeight:firstHeight]) {
+                                        allPassed = NO;
+                                        break;
+                                    }
+                                }
+                                
+                                if (allPassed) {
+                                    for (FrameModel *frame in rollModelShown.frames) {
+                                        if (![ImageUtil dimensionsAreValidForGreenScreen:frame.width fgHeight:frame.height bgWidth:secondWidth bgHeight:secondHeight]) {
+                                            allPassed = NO;
+                                            break;
+                                        }
+                                    }
+                                }
+                                
+                                if (allPassed) {
+                                    [setChromaKeyRollService
+                                        startSetChromaKeyRoll:orderModel.eventRow.ccsAccount
+                                        password:ccsPassword
+                                        eventID:orderModel.eventRow.eventID
+                                        sourceRoll:rollModelShown.number
+                                        horzBackgroundOrderNo:txtHorzBackgroundEventNumber.stringValue
+                                        horzBackgroundRoll:txtHorzBackgroundRoll.stringValue
+                                        horzBackgroundFrame:txtHorzBackgroundFrame.stringValue
+                                        vertBackgroundOrderNo:txtVertBackgroundEventNumber.stringValue
+                                        vertBackgroundRoll:txtVertBackgroundRoll.stringValue
+                                        vertBackgroundFrame:txtVertBackgroundFrame.stringValue
+                                        destinationRoll:txtOutputFolder.stringValue
+                                        complete:^(SetChromaKeyRollResult *result) {
+                                            if (result.error) {
+                                                restoreForm(result.error.localizedDescription);
+                                            } else if (result.message.length) {
+                                                restoreForm(result.message);
+                                            } else {
+                                                lblGreenScreenStatus.stringValue = @"Background added, refreshing green screen information";
+                                                
+                                                [getChromaKeyEventInformationService
+                                                    startGetChromaKeyEventInformation:orderModel.eventRow.ccsAccount
+                                                    password:ccsPassword
+                                                    eventID:orderModel.eventRow.eventID
+                                                    complete:^(GetChromaKeyEventInformationResult *result) {
+                                                        if (result.error) {
+                                                            restoreForm([NSString stringWithFormat:@"Could not refresh green screen info: %@", result.error.localizedDescription]);
+                                                        } else {
+                                                            restoreForm(@"");
+                                                            greenScreenBackgrounds = result.backgrounds;
+                                                            [self matchRollsWithGreenScreen];
+                                                            [self prepareGreenScreenSheet:YES];
+                                                            NSInteger selectedRow = tblRolls.selectedRow;
+                                                            [tblRolls reloadData];
+                                                            [tblRolls selectRowIndexes:[NSIndexSet indexSetWithIndex:selectedRow] byExtendingSelection:NO];
+                                                        }
+                                                    }
+                                                ];
+                                            }
+                                        }
+                                    ];
+                                } else {
+                                    restoreForm(@"Some of the images in the roll do not pass the dimension check against the background.");
+                                }
+                            } else {
+                                restoreForm(@"The specified background image does not exist at CCS.");
+                            }
+                        }
+                    ];
+                    
+                } else {
+                    BOOL allPassed = YES;
+                    
+                    for (FrameModel *frame in rollModelShown.frames) {
+                        if (![ImageUtil dimensionsAreValidForGreenScreen:frame.width fgHeight:frame.height bgWidth:firstWidth bgHeight:firstHeight]) {
+                            allPassed = NO;
+                            break;
+                        }
+                    }
+                    
+                    if (allPassed) {
+                        [setChromaKeyRollService
+                            startSetChromaKeyRoll:orderModel.eventRow.ccsAccount
+                            password:ccsPassword
+                            eventID:orderModel.eventRow.eventID
+                            sourceRoll:rollModelShown.number
+                            horzBackgroundOrderNo:isVertical ? @"" : txtHorzBackgroundEventNumber.stringValue
+                            horzBackgroundRoll:isVertical ? @"" : txtHorzBackgroundRoll.stringValue
+                            horzBackgroundFrame:isVertical ? @"" : txtHorzBackgroundFrame.stringValue
+                            vertBackgroundOrderNo:isVertical ? txtVertBackgroundEventNumber.stringValue : @""
+                            vertBackgroundRoll:isVertical ? txtVertBackgroundRoll.stringValue : @""
+                            vertBackgroundFrame:isVertical ? txtVertBackgroundFrame.stringValue : @""
+                            destinationRoll:txtOutputFolder.stringValue
+                            complete:^(SetChromaKeyRollResult *result) {
+                                if (result.error) {
+                                    restoreForm(result.error.localizedDescription);
+                                } else if (result.message.length) {
+                                    restoreForm(result.message);
+                                } else {
+                                    lblGreenScreenStatus.stringValue = @"Background added, refreshing green screen information";
+                                    
+                                    [getChromaKeyEventInformationService
+                                        startGetChromaKeyEventInformation:orderModel.eventRow.ccsAccount
+                                        password:ccsPassword
+                                        eventID:orderModel.eventRow.eventID
+                                        complete:^(GetChromaKeyEventInformationResult *result) {
+                                            if (result.error) {
+                                                restoreForm([NSString stringWithFormat:@"Could not refresh green screen info: %@", result.error.localizedDescription]);
+                                            } else {
+                                                restoreForm(@"");
+                                                greenScreenBackgrounds = result.backgrounds;
+                                                [self matchRollsWithGreenScreen];
+                                                [self prepareGreenScreenSheet:YES];
+                                                NSInteger selectedRow = tblRolls.selectedRow;
+                                                [tblRolls reloadData];
+                                                [tblRolls selectRowIndexes:[NSIndexSet indexSetWithIndex:selectedRow] byExtendingSelection:NO];
+                                            }
+                                        }
+                                    ];
+                                }
+                            }
+                        ];
+                    } else {
+                        restoreForm(@"Some of the images in the roll do not pass the dimension check against the background.");
+                    }
+                }
+            } else {
+                restoreForm(@"The specified background image does not exist at CCS.");
+            }
+        }
+    ];
+}
+
+- (void)prepareGreenScreenSheet:(BOOL)keepSelection
+{
+    lblGreenScreenStatus.stringValue = @"";
+    chkAllImagesAreOnGreenScreen.state = rollModelShown.greenScreen ? NSOnState : NSOffState;
+    [tblBackgrounds reloadData];
+    
+    if (!keepSelection) {
+        chkAllowCustomerToChoose.state = NSOffState;
+    }
+    
+    for (BackgroundRow *background in greenScreenBackgrounds) {
+        if ([background.sourceRoll isEqualToString:rollModelShown.number] &&
+            !background.horzBackgroundOrderNo && !background.vertBackgroundOrderNo) {
+            
+            chkAllowCustomerToChoose.state = NSOnState;
+            break;
+        }
+    }
+    
+    [chkAllowCustomerToChoose setEnabled:rollModelShown.greenScreen];
+    [chkPreviouslyProvided setEnabled:rollModelShown.greenScreen];
+    
+    chkPreviouslyProvided.state = filteredGreenScreenBackgrounds.count ? NSOnState : NSOffState;
+    [self switchGreenScreenBackgroundControls:(rollModelShown.greenScreen && chkPreviouslyProvided.state == NSOnState) ? YES : NO clearFields:YES];
 }
 
 - (IBAction)cancelGreenScreen:(id)sender
@@ -375,9 +766,218 @@
 
 - (IBAction)confirmGreenScreen:(id)sender
 {
-    rollModelShown = nil;
-    [greenScreenSheet close];
-    [NSApp endSheet:greenScreenSheet];
+    void (^restoreForm)(NSString *) = ^(NSString *message) {
+        lblGreenScreenStatus.stringValue = message;
+        [greenScreenProgress stopAnimation:nil];
+        [self switchGreenScreenControls:YES];
+    };
+    
+    void (^obtainBackgrounds)(GetChromaKeyEventInformationResult *) = ^(GetChromaKeyEventInformationResult *result) {
+        greenScreenBackgrounds = result.backgrounds;
+        [self matchRollsWithGreenScreen];
+        [self prepareGreenScreenSheet:YES];
+        NSInteger selectedRow = tblRolls.selectedRow;
+        [tblRolls reloadData];
+        [tblRolls selectRowIndexes:[NSIndexSet indexSetWithIndex:selectedRow] byExtendingSelection:NO];
+        rollModelShown = nil;
+        [greenScreenSheet close];
+        [NSApp endSheet:greenScreenSheet];
+    };
+    
+    if (chkAllImagesAreOnGreenScreen.state == NSOffState ||
+        (chkAllowCustomerToChoose.state == NSOffState && chkPreviouslyProvided.state == NSOffState)) {
+        
+        lblGreenScreenStatus.stringValue = @"Checking whether the roll has images...";
+        [greenScreenProgress startAnimation:nil];
+        [self switchGreenScreenControls:NO];
+        
+        [rollHasImagesService
+            startRollHasImages:orderModel.eventRow.ccsAccount
+            password:ccsPassword
+            orderNumber:orderModel.eventRow.orderNumber
+            roll:rollModelShown.number
+            complete:^(RollHasImagesResult *result) {
+                if (result.error) {
+                    restoreForm([NSString stringWithFormat:@"Could not check whether the roll has images: %@", result.error.localizedDescription]);
+                } else if (result.hasImages) {
+                    restoreForm(@"Unable to delete green screen info, roll has images sent");
+                } else {
+                    lblGreenScreenStatus.stringValue = @"Deleting green screen info...";
+                    
+                    [deleteChromaKeyRollService
+                        startDeleteChromaKeyRoll:orderModel.eventRow.ccsAccount
+                        password:ccsPassword
+                        eventID:orderModel.eventRow.eventID
+                        sourceRoll:rollModelShown.number
+                        complete:^(ServiceResult *result) {
+                            if (result.error) {
+                                restoreForm([NSString stringWithFormat:@"Could not delete green screen info: %@", result.error.localizedDescription]);
+                            } else {
+                                lblGreenScreenStatus.stringValue = @"Background added, refreshing green screen information...";
+                                
+                                [getChromaKeyEventInformationService
+                                    startGetChromaKeyEventInformation:orderModel.eventRow.ccsAccount
+                                    password:ccsPassword
+                                    eventID:orderModel.eventRow.eventID
+                                    complete:^(GetChromaKeyEventInformationResult *result) {
+                                        if (result.error) {
+                                            restoreForm([NSString stringWithFormat:@"Could not refresh green screen info: %@", result.error.localizedDescription]);
+                                        } else {
+                                            restoreForm(@"");
+                                            obtainBackgrounds(result);
+                                        }
+                                    }
+                                ];
+                            }
+                        }
+                    ];
+                }
+            }
+        ];
+    } else if (chkAllowCustomerToChoose.state == NSOnState && chkPreviouslyProvided.state == NSOffState) {
+        lblGreenScreenStatus.stringValue = @"Checking whether the roll has images...";
+        [greenScreenProgress startAnimation:nil];
+        [self switchGreenScreenControls:NO];
+        
+        [rollHasImagesService
+            startRollHasImages:orderModel.eventRow.ccsAccount
+            password:ccsPassword
+            orderNumber:orderModel.eventRow.orderNumber
+            roll:rollModelShown.number
+            complete:^(RollHasImagesResult *result) {
+                if (result.error) {
+                    restoreForm([NSString stringWithFormat:@"Could not check whether the roll has images: %@", result.error.localizedDescription]);
+                } else if (result.hasImages) {
+                    restoreForm(@"Unable to alter green screen info, roll has images sent");
+                } else {
+                    lblGreenScreenStatus.stringValue = @"Deleting green screen info...";
+                    
+                    [deleteChromaKeyRollService
+                        startDeleteChromaKeyRoll:orderModel.eventRow.ccsAccount
+                        password:ccsPassword
+                        eventID:orderModel.eventRow.eventID
+                        sourceRoll:rollModelShown.number
+                        complete:^(ServiceResult *result) {
+                            if (result.error) {
+                                restoreForm([NSString stringWithFormat:@"Could not delete green screen info: %@", result.error.localizedDescription]);
+                            } else {
+                                lblGreenScreenStatus.stringValue = @"Setting dynamic green screen info...";
+                                
+                                [setChromaKeyRollMakePNGOnlyService
+                                    startSetChromaKeyRollMakePNGOnly:orderModel.eventRow.ccsAccount
+                                    password:ccsPassword
+                                    eventID:orderModel.eventRow.eventID
+                                    sourceRoll:rollModelShown.number
+                                    complete:^(ServiceResult *result) {
+                                        if (result.error) {
+                                            restoreForm([NSString stringWithFormat:@"Could not set dynamic green screen info: %@", result.error.localizedDescription]);
+                                        } else {
+                                            lblGreenScreenStatus.stringValue = @"Refreshing green screen info...";
+                                            
+                                            [getChromaKeyEventInformationService
+                                                startGetChromaKeyEventInformation:orderModel.eventRow.ccsAccount
+                                                password:ccsPassword
+                                                eventID:orderModel.eventRow.eventID
+                                                complete:^(GetChromaKeyEventInformationResult *result) {
+                                                    if (result.error) {
+                                                        restoreForm([NSString stringWithFormat:@"Could not refresh green screen info: %@", result.error.localizedDescription]);
+                                                    } else {
+                                                        restoreForm(@"");
+                                                        obtainBackgrounds(result);
+                                                    }
+                                                }
+                                            ];
+                                        }
+                                    }
+                                ];
+                            }
+                        }
+                    ];
+                }
+            }
+        ];
+    } else if (chkAllowCustomerToChoose.state == NSOnState && chkPreviouslyProvided.state == NSOnState) {
+        lblGreenScreenStatus.stringValue = @"Setting green screen info...";
+        [greenScreenProgress startAnimation:nil];
+        [self switchGreenScreenControls:NO];
+        
+        [setChromaKeyRollMakePNGOnlyService
+            startSetChromaKeyRollMakePNGOnly:orderModel.eventRow.ccsAccount
+            password:ccsPassword
+            eventID:orderModel.eventRow.eventID
+            sourceRoll:rollModelShown.number
+            complete:^(ServiceResult *result) {
+                if (result.error) {
+                    restoreForm([NSString stringWithFormat:@"Could not set green screen info: %@", result.error.localizedDescription]);
+                } else {
+                    lblGreenScreenStatus.stringValue = @"Green screen set, refreshing green screen information...";
+                    
+                    [getChromaKeyEventInformationService
+                        startGetChromaKeyEventInformation:orderModel.eventRow.ccsAccount
+                        password:ccsPassword
+                        eventID:orderModel.eventRow.eventID
+                        complete:^(GetChromaKeyEventInformationResult *result) {
+                            if (result.error) {
+                                restoreForm([NSString stringWithFormat:@"Could not refresh green screen info: %@", result.error.localizedDescription]);
+                            } else {
+                                restoreForm(@"");
+                                obtainBackgrounds(result);
+                            }
+                        }
+                    ];
+                }
+            }
+        ];
+    } else if (chkAllowCustomerToChoose.state == NSOffState && chkPreviouslyProvided.state == NSOnState) {
+        lblGreenScreenStatus.stringValue = @"Setting green screen info...";
+        [greenScreenProgress startAnimation:nil];
+        [self switchGreenScreenControls:NO];
+        
+        [rollHasImagesService
+            startRollHasImages:orderModel.eventRow.ccsAccount
+            password:ccsPassword
+            orderNumber:orderModel.eventRow.orderNumber
+            roll:rollModelShown.number
+            complete:^(RollHasImagesResult *result) {
+                if (result.error) {
+                    restoreForm([NSString stringWithFormat:@"Could not check whether the roll has images: %@", result.error.localizedDescription]);
+                } else if (result.hasImages) {
+                    restoreForm(@"Unable to alter green screen info, roll has images sent");
+                } else {
+                    lblGreenScreenStatus.stringValue = @"Deleting green screen info...";
+                    
+                    [deleteChromaKeyRoll2Service
+                        startDeleteChromaKeyRoll2:orderModel.eventRow.ccsAccount
+                        password:ccsPassword
+                        orderNo:orderModel.eventRow.orderNumber
+                        roll:rollModelShown.number
+                        destinationRoll:@""
+                        complete:^(ServiceResult *result) {
+                            if (result.error) {
+                                restoreForm([NSString stringWithFormat:@"Could not delete dynamic green screen info: %@", result.error.localizedDescription]);
+                            } else {
+                                lblGreenScreenStatus.stringValue = @"Refreshing green screen info...";
+                                
+                                [getChromaKeyEventInformationService
+                                    startGetChromaKeyEventInformation:orderModel.eventRow.ccsAccount
+                                    password:ccsPassword
+                                    eventID:orderModel.eventRow.eventID
+                                    complete:^(GetChromaKeyEventInformationResult *result) {
+                                        if (result.error) {
+                                            restoreForm([NSString stringWithFormat:@"Could not refresh green screen info: %@", result.error.localizedDescription]);
+                                        } else {
+                                            restoreForm(@"");
+                                            obtainBackgrounds(result);
+                                        }
+                                    }
+                                ];
+                            }
+                        }
+                    ];
+                }
+            }
+        ];
+    }
 }
 
 - (IBAction)photographersClicked:(id)sender
@@ -449,9 +1049,23 @@
 {
     if (tableView == tblRolls) {
         return orderModel.rolls.count;
-    } else {
+    } else if (tableView == tblPhotographers) {
         return photographers.count;
+    } else if (tableView == tblBackgrounds) {
+        filteredGreenScreenBackgrounds = [NSMutableArray new];
+        
+        for (BackgroundRow *background in greenScreenBackgrounds) {
+            if ([background.sourceRoll isEqualToString:rollModelShown.number] &&
+                (background.horzBackgroundOrderNo || background.vertBackgroundOrderNo)) {
+                
+                [filteredGreenScreenBackgrounds addObject:background];
+            }
+        }
+        
+        return filteredGreenScreenBackgrounds.count;
     }
+    
+    return 0;
 }
 
 - (NSView *)tableView:(NSTableView *)tableView viewForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
@@ -491,7 +1105,9 @@
             cell.textField.stringValue = [NSString stringWithFormat:@"%lu", roll.frames.count];
         } else if ([columnID isEqualToString:@"GreenScreen"]) {
             NSTableCellView *cell = view;
-            cell.imageView.image = row % 2 ? [NSImage imageNamed:@"NSStatusNone"] : [NSImage imageNamed:@"NSStatusNone"];
+            cell.imageView.image = roll.greenScreen ?
+                [NSImage imageNamed:@"NSStatusAvailable"] : [NSImage imageNamed:@"NSStatusNone"];
+            
         } else if ([columnID isEqualToString:@"CurrentTask"]) {
             NSTableCellView *cell = view;
             //cell.textField.stringValue = @"1234 of 9999 thumbs sent";
@@ -508,16 +1124,30 @@
         }
     } else if (tableView == tblBackgrounds) {
         NSTableCellView *cell = view;
+        BackgroundRow *background = filteredGreenScreenBackgrounds[row];
         
         if ([columnID isEqualToString:@"Icon"]) {
             
         } else if ([columnID isEqualToString:@"HorzBackground"]) {
+            cell.textField.stringValue = background.horzBackgroundOrderNo ? [NSString stringWithFormat:@"%@/%@/%@",
+                background.horzBackgroundOrderNo, background.horzBackgroundRoll, background.horzBackgroundFrame] : @"Not specified";
             
         } else if ([columnID isEqualToString:@"HorzDimensions"]) {
+            cell.textField.stringValue = !background.horzBackgroundWidth && !background.horzBackgroundHeight ?
+                @"N/A" : [NSString stringWithFormat:@"%ld × %ld", background.horzBackgroundWidth, background.horzBackgroundHeight];
+
         } else if ([columnID isEqualToString:@"VertBackground"]) {
+            cell.textField.stringValue = background.vertBackgroundOrderNo ? [NSString stringWithFormat:@"%@/%@/%@",
+                background.vertBackgroundOrderNo, background.vertBackgroundRoll, background.vertBackgroundFrame] : @"Not specified";
+
         } else if ([columnID isEqualToString:@"VertDimensions"]) {
+            cell.textField.stringValue = !background.vertBackgroundWidth && !background.vertBackgroundHeight ?
+                @"N/A" : [NSString stringWithFormat:@"%ld × %ld", background.vertBackgroundWidth, background.vertBackgroundHeight];
+            
         } else if ([columnID isEqualToString:@"OutputFolder"]) {
+            cell.textField.stringValue = background.destinationRoll;
         } else if ([columnID isEqualToString:@"Delete"]) {
+            
         }
     }
     
@@ -628,19 +1258,34 @@
 
                                                             } else if (result.loginSuccess && result.processSuccess) {
                                                                 divisions = result.divisions;
-                                                                NSError *error = nil;
-                                                                [self view];
-                                                                orderModel = nil;
-                                                                [tblRolls reloadData];
-                                                                
-                                                                orderModel = [[OrderModel alloc] initWithEventRow:event extensions:uploadExtensions error:&error];
-                                                                
-                                                                if (orderModel == nil) {
-                                                                    [wizardWindowController.mainWindowController.openedEvents removeObject:event.orderNumber];
-                                                                    terminate([NSString stringWithFormat:@"An error occurred while loading up the event. %@", error.localizedDescription]);
-                                                                } else {
-                                                                    [self loadEvent];
-                                                                }
+
+                                                                [getChromaKeyEventInformationService
+                                                                    startGetChromaKeyEventInformation:event.ccsAccount
+                                                                    password:ccsPassword
+                                                                    eventID:event.eventID
+                                                                    complete:^(GetChromaKeyEventInformationResult *result) {
+                                                                        if (result.error) {
+                                                                            [wizardWindowController.mainWindowController.openedEvents removeObject:event.orderNumber];
+                                                                            terminate([NSString stringWithFormat:
+                                                                                @"Could not obtain green screen information. An error occurred: %@", result.error.localizedDescription]);
+                                                                        } else {
+                                                                            greenScreenBackgrounds = result.backgrounds;
+                                                                            NSError *error = nil;
+                                                                            [self view];
+                                                                            orderModel = nil;
+                                                                            [tblRolls reloadData];
+                                                                            
+                                                                            orderModel = [[OrderModel alloc] initWithEventRow:event extensions:uploadExtensions error:&error];
+                                                                            
+                                                                            if (orderModel == nil) {
+                                                                                [wizardWindowController.mainWindowController.openedEvents removeObject:event.orderNumber];
+                                                                                terminate([NSString stringWithFormat:@"An error occurred while loading up the event. %@", error.localizedDescription]);
+                                                                            } else {
+                                                                                [self loadEvent];
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                ];
                                                             } else {
                                                                 [wizardWindowController.mainWindowController.openedEvents removeObject:event.orderNumber];
                                                                 terminate(@"Could not obtain the list of divisions.");
@@ -777,6 +1422,7 @@
         }
     }
     
+    [self matchRollsWithGreenScreen];
     [tblRolls reloadData];
 
     wizardWindowController.txtStepTitle.stringValue = orderModel.eventRow.eventName;

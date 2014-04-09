@@ -278,6 +278,8 @@ static NSString *curlStatuses[] = {
     [currentlyRunningTransfer.errors appendString:message];
     currentlyRunningTransfer.status = kTransferStatusAborted;
     currentlyRunningTransfer.context = nil;
+    transferStateChanged(@"Aborted");
+    progressTitle.stringValue = @"";
     reloadTransfers();
     currentlyRunningTransfer = nil;
 }

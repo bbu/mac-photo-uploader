@@ -45,6 +45,9 @@
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
+    //NSString *stringResponse = [[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding];
+    //NSLog(@"Response:\r%@", stringResponse);
+    
     urlConnection = nil, started = NO;
     
     NSXMLParser *parser = [[NSXMLParser alloc] initWithData:responseData];

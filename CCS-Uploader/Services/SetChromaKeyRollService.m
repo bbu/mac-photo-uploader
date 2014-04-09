@@ -1,7 +1,10 @@
 #import "SetChromaKeyRollService.h"
 
+@implementation SetChromaKeyRollResult
+@end
+
 @interface SetChromaKeyRollService () <NSURLConnectionDelegate, NSXMLParserDelegate> {
-    ServiceResult *result;
+    SetChromaKeyRollResult *result;
 }
 @end
 
@@ -17,7 +20,7 @@
     horzBackgroundOrderNo:(NSString *)horzBackgroundOrderNo horzBackgroundRoll:(NSString *)horzBackgroundRoll horzBackgroundFrame:(NSString *)horzBackgroundFrame
     vertBackgroundOrderNo:(NSString *)vertBackgroundOrderNo vertBackgroundRoll:(NSString *)vertBackgroundRoll vertBackgroundFrame:(NSString *)vertBackgroundFrame
     destinationRoll:(NSString *)destinationRoll
-    complete:(void (^)(ServiceResult *result))block
+    complete:(void (^)(SetChromaKeyRollResult *result))block
 {
     if (started) {
         return NO;
@@ -47,7 +50,7 @@
     
     NSMutableURLRequest *request = [Service postRequestWithURL:[self serviceURL] body:postBody];
     
-    result = [ServiceResult new];
+    result = [SetChromaKeyRollResult new];
     finished = block;
     
     urlConnection = [NSURLConnection connectionWithRequest:request delegate:self];
@@ -58,6 +61,7 @@
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
+    result.message = [[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding];
     urlConnection = nil, started = NO;
     finished(result);
 }

@@ -10,7 +10,7 @@
 
 - (NSString *)serviceURL
 {
-    return @"http://ccstransfer.candid.com/CCSTransferWeb/dev/Feedback.asmx/SendFeedback";
+    return @"http://ccstransfer.candid.com/CCSTransferWeb/dev/Feedback.asmx/SendFeedbackMac";
 }
 
 - (NSString *)escapedBase64:(NSString *)base64

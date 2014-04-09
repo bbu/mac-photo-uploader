@@ -11,6 +11,7 @@
     IBOutlet NSBox *currentTransfer;
     IBOutlet NSProgressIndicator *transferProgress;
     IBOutlet NSTextField *transferProgressTitle;
+    
     IBOutlet NSImageView
         *imgUploading1, *imgUploading2, *imgUploading3, *imgUploading4,
         *imgUploading5, *imgUploading6, *imgUploading7, *imgUploading8;

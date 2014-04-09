@@ -97,6 +97,7 @@
 		2B229E6218A38162000B19DD /* RollModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RollModel.m; sourceTree = "<group>"; };
 		2B229E6418A38176000B19DD /* FrameModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FrameModel.h; sourceTree = "<group>"; };
 		2B229E6518A38176000B19DD /* FrameModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FrameModel.m; sourceTree = "<group>"; };
+		2B247F4518F3F09400A23EDB /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		2B2905AD18991548003C4345 /* CheckOrderNumberService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CheckOrderNumberService.h; sourceTree = "<group>"; };
 		2B2905AE18991548003C4345 /* CheckOrderNumberService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CheckOrderNumberService.m; sourceTree = "<group>"; };
 		2B2DBC1F18BB412F00E4FA18 /* TransferManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TransferManager.h; sourceTree = "<group>"; };
@@ -197,7 +198,6 @@
 		2B74BF101883D50B00D0B78B /* en */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = en; path = en.lproj/Credits.rtf; sourceTree = "<group>"; };
 		2B74BF121883D50B00D0B78B /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		2B74BF131883D50B00D0B78B /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
-		2B74BF161883D50B00D0B78B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		2B758C4E18929A460045DE48 /* ImageUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageUtil.h; sourceTree = "<group>"; };
 		2B758C4F18929A460045DE48 /* ImageUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageUtil.m; sourceTree = "<group>"; };
 		2B7943C01896810600DCD80D /* AuthService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AuthService.h; sourceTree = "<group>"; };
@@ -616,7 +616,7 @@
 		2B74BF151883D50B00D0B78B /* MainMenu.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
-				2B74BF161883D50B00D0B78B /* Base */,
+				2B247F4518F3F09400A23EDB /* en */,
 			);
 			name = MainMenu.xib;
 			sourceTree = "<group>";

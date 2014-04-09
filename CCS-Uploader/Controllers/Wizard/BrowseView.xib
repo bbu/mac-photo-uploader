@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="5053" systemVersion="13C64" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
+        <deployment defaultVersion="1070" identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="5053"/>
         <plugIn identifier="com.apple.imagekit.ibplugin" version="5053"/>
     </dependencies>
@@ -30,11 +31,13 @@
                 <outlet property="chkPreviouslyProvided" destination="qry-pn-LxH" id="tYq-K5-6x6"/>
                 <outlet property="chkPutImagesInCurrentlySelectedRoll" destination="ht2-c3-hbU" id="MAZ-QB-01x"/>
                 <outlet property="errorsImportingImagesSheet" destination="79P-Pr-hux" id="XTZ-rZ-QfQ"/>
+                <outlet property="greenScreenProgress" destination="QHs-X6-jgB" id="T1S-ka-juW"/>
                 <outlet property="greenScreenSheet" destination="Hb7-0I-er3" id="df5-MZ-eOZ"/>
                 <outlet property="imageBrowserTitle" destination="bzN-R5-MAb" id="i2f-2O-cLB"/>
                 <outlet property="imageBrowserView" destination="4Ng-qR-G4T" id="Mtc-Jn-cPc"/>
                 <outlet property="imgBackgroundPreview" destination="Sr1-z7-2O1" id="aYU-xx-pyG"/>
                 <outlet property="includeNewlyAddedImagesSheet" destination="rMF-xz-va9" id="Coe-iE-tWO"/>
+                <outlet property="lblGreenScreenStatus" destination="KSg-we-llY" id="xVz-Yz-qZb"/>
                 <outlet property="loadingIndicator" destination="5CT-3c-Mnq" id="9i3-k3-k1C"/>
                 <outlet property="loadingTitle" destination="NS3-3q-xBI" id="elV-Vt-Ptd"/>
                 <outlet property="photographersPopover" destination="H7P-Bz-PqB" id="q8p-J2-4Vr"/>
@@ -406,6 +409,8 @@
                     <buttonCell key="cell" type="push" title="Green Screen" bezelStyle="rounded" image="NSStatusAvailable" imagePosition="left" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="BHs-sU-on4">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
+                        <string key="keyEquivalent">g</string>
+                        <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                     </buttonCell>
                     <connections>
                         <action selector="greenScreenClicked:" target="-2" id="XfM-zw-Roj"/>
@@ -994,8 +999,8 @@ Gw
                             <action selector="confirmGreenScreen:" target="-2" id="QNI-0k-UKt"/>
                         </connections>
                     </button>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="Ok4-yx-fFJ">
-                        <rect key="frame" x="18" y="514" width="48" height="17"/>
+                    <textField hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="750" id="Ok4-yx-fFJ">
+                        <rect key="frame" x="731" y="514" width="48" height="17"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Folder:" id="dZD-AV-r4c">
                             <font key="font" metaFont="system"/>
@@ -1004,20 +1009,26 @@ Gw
                         </textFieldCell>
                     </textField>
                     <button id="5pp-HC-KZ0">
-                        <rect key="frame" x="283" y="513" width="339" height="18"/>
+                        <rect key="frame" x="18" y="518" width="339" height="18"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="check" title="All images in this folder are on green/blue screen" bezelStyle="regularSquare" imagePosition="left" inset="2" id="FEj-Hj-Ei5">
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>
+                        <connections>
+                            <action selector="allImagesAreOnGreenScreenChecked:" target="-2" id="FcV-oV-A3k"/>
+                        </connections>
                     </button>
                     <button id="5J9-c6-wQc">
-                        <rect key="frame" x="18" y="483" width="331" height="18"/>
+                        <rect key="frame" x="49" y="486" width="331" height="18"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="check" title="Allow customer to choose backgrounds online" bezelStyle="regularSquare" imagePosition="left" inset="2" id="auX-SF-aks">
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>
+                        <connections>
+                            <action selector="allowCustomerToChooseChecked:" target="-2" id="jmu-lp-pyW"/>
+                        </connections>
                     </button>
                     <box autoresizesSubviews="NO" title="Add Previously Loaded Background Images" borderType="line" id="Wf4-v0-KmA">
                         <rect key="frame" x="17" y="57" width="970" height="384"/>
@@ -1060,7 +1071,7 @@ Gw
                                                                     <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" id="8Ok-ak-aFW">
                                                                         <rect key="frame" x="3" y="0.0" width="17" height="17"/>
                                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="NSActionTemplate" id="A5D-Qx-VH6"/>
+                                                                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="NSStatusAvailable" id="A5D-Qx-VH6"/>
                                                                     </imageView>
                                                                 </subviews>
                                                                 <connections>
@@ -1254,10 +1265,17 @@ Gw
                                                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                     <font key="font" metaFont="smallSystemBold"/>
                                                                 </buttonCell>
+                                                                <connections>
+                                                                    <action selector="deleteGreenScreenBackground:" target="-2" id="J8F-Gf-Xj6"/>
+                                                                </connections>
                                                             </button>
                                                         </prototypeCellViews>
                                                     </tableColumn>
                                                 </tableColumns>
+                                                <connections>
+                                                    <outlet property="dataSource" destination="-2" id="Rth-bc-5o2"/>
+                                                    <outlet property="delegate" destination="-2" id="nyI-qY-DiZ"/>
+                                                </connections>
                                             </tableView>
                                         </subviews>
                                         <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1288,7 +1306,7 @@ Gw
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <subviews>
                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="na9-Ne-nbD">
-                                                <rect key="frame" x="16" y="44" width="160" height="17"/>
+                                                <rect key="frame" x="16" y="16" width="160" height="17"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Vertical Background:" id="rmf-B0-rFZ">
                                                     <font key="font" metaFont="system"/>
@@ -1297,7 +1315,7 @@ Gw
                                                 </textFieldCell>
                                             </textField>
                                             <textField verticalHuggingPriority="750" id="14c-Sq-86i">
-                                                <rect key="frame" x="182" y="42" width="165" height="21"/>
+                                                <rect key="frame" x="182" y="14" width="165" height="21"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Event Number" drawsBackground="YES" id="uli-xd-BXS">
                                                     <font key="font" metaFont="system"/>
@@ -1306,7 +1324,7 @@ Gw
                                                 </textFieldCell>
                                             </textField>
                                             <textField verticalHuggingPriority="750" id="NQe-5o-nfH">
-                                                <rect key="frame" x="355" y="42" width="165" height="21"/>
+                                                <rect key="frame" x="355" y="14" width="165" height="21"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Folder" drawsBackground="YES" id="ZVU-nT-hoR">
                                                     <font key="font" metaFont="system"/>
@@ -1315,7 +1333,7 @@ Gw
                                                 </textFieldCell>
                                             </textField>
                                             <textField verticalHuggingPriority="750" id="VVQ-UC-YZW">
-                                                <rect key="frame" x="528" y="42" width="165" height="21"/>
+                                                <rect key="frame" x="528" y="14" width="165" height="21"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Image" drawsBackground="YES" id="r9P-nR-dAD">
                                                     <font key="font" metaFont="system"/>
@@ -1324,7 +1342,7 @@ Gw
                                                 </textFieldCell>
                                             </textField>
                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="DVX-fd-KAN">
-                                                <rect key="frame" x="16" y="16" width="160" height="17"/>
+                                                <rect key="frame" x="16" y="45" width="160" height="17"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Horizontal Background:" id="4jy-Ka-hur">
                                                     <font key="font" metaFont="system"/>
@@ -1333,7 +1351,7 @@ Gw
                                                 </textFieldCell>
                                             </textField>
                                             <textField verticalHuggingPriority="750" id="zJi-es-sjE">
-                                                <rect key="frame" x="182" y="14" width="165" height="21"/>
+                                                <rect key="frame" x="182" y="43" width="165" height="21"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Event Number" drawsBackground="YES" id="k4t-au-LnR">
                                                     <font key="font" metaFont="system"/>
@@ -1342,7 +1360,7 @@ Gw
                                                 </textFieldCell>
                                             </textField>
                                             <textField verticalHuggingPriority="750" id="KYw-Id-6Gw">
-                                                <rect key="frame" x="355" y="14" width="165" height="21"/>
+                                                <rect key="frame" x="355" y="43" width="165" height="21"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Folder" drawsBackground="YES" id="c4q-bO-wAe">
                                                     <font key="font" metaFont="system"/>
@@ -1351,7 +1369,7 @@ Gw
                                                 </textFieldCell>
                                             </textField>
                                             <textField verticalHuggingPriority="750" id="84G-3W-8fK">
-                                                <rect key="frame" x="528" y="14" width="165" height="21"/>
+                                                <rect key="frame" x="528" y="43" width="165" height="21"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Image" drawsBackground="YES" id="gkt-VO-ZAs">
                                                     <font key="font" metaFont="system"/>
@@ -1366,15 +1384,21 @@ Gw
                                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                     <font key="font" metaFont="system"/>
                                                 </buttonCell>
+                                                <connections>
+                                                    <action selector="addGreenScreenBackground:" target="-2" id="mqh-mz-QUE"/>
+                                                </connections>
                                             </button>
-                                            <textField verticalHuggingPriority="750" id="TqZ-xg-Lmi">
+                                            <textField verticalHuggingPriority="750" setsMaxLayoutWidthAtFirstLayout="YES" id="TqZ-xg-Lmi">
                                                 <rect key="frame" x="701" y="28" width="140" height="21"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Output Folder Name" drawsBackground="YES" id="l1c-lr-1gC">
+                                                <textFieldCell key="cell" selectable="YES" editable="YES" state="on" borderStyle="bezel" placeholderString="Output Folder Name" drawsBackground="YES" usesSingleLineMode="YES" id="l1c-lr-1gC">
                                                     <font key="font" metaFont="system"/>
                                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                 </textFieldCell>
+                                                <connections>
+                                                    <outlet property="nextKeyView" destination="zJF-pJ-loQ" id="RKX-6W-J3J"/>
+                                                </connections>
                                             </textField>
                                         </subviews>
                                     </view>
@@ -1386,8 +1410,8 @@ Gw
                         <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
                         <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                     </box>
-                    <comboBox verticalHuggingPriority="750" id="VGj-qk-0wg">
-                        <rect key="frame" x="72" y="510" width="174" height="26"/>
+                    <comboBox hidden="YES" verticalHuggingPriority="750" id="VGj-qk-0wg">
+                        <rect key="frame" x="785" y="510" width="174" height="26"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <comboBoxCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" drawsBackground="YES" completes="NO" numberOfVisibleItems="5" id="Y58-H4-wjd">
                             <font key="font" metaFont="system"/>
@@ -1395,8 +1419,8 @@ Gw
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </comboBoxCell>
                     </comboBox>
-                    <button verticalHuggingPriority="750" id="bnu-LE-a01">
-                        <rect key="frame" x="245" y="505" width="32" height="32"/>
+                    <button hidden="YES" verticalHuggingPriority="750" id="bnu-LE-a01">
+                        <rect key="frame" x="958" y="505" width="32" height="32"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="push" bezelStyle="rounded" image="NSAddTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="i89-Lc-JCl">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -1404,13 +1428,29 @@ Gw
                         </buttonCell>
                     </button>
                     <button id="qry-pn-LxH">
-                        <rect key="frame" x="18" y="454" width="400" height="18"/>
+                        <rect key="frame" x="49" y="457" width="400" height="18"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <buttonCell key="cell" type="check" title="Previously provided backgrounds to be pre-rendered" bezelStyle="regularSquare" imagePosition="left" inset="2" id="qcl-kv-P7E">
+                        <buttonCell key="cell" type="check" title="Previously provided backgrounds to be pre-rendered:" bezelStyle="regularSquare" imagePosition="left" inset="2" id="qcl-kv-P7E">
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>
+                        <connections>
+                            <action selector="previouslyProvidedChecked:" target="-2" id="3QJ-L1-BZX"/>
+                        </connections>
                     </button>
+                    <progressIndicator horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" id="QHs-X6-jgB">
+                        <rect key="frame" x="836" y="22" width="16" height="16"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    </progressIndicator>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="KSg-we-llY">
+                        <rect key="frame" x="150" y="22" width="680" height="17"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" id="lDP-Q3-Oek">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
                 </subviews>
             </view>
         </window>
