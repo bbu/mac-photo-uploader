@@ -77,6 +77,7 @@
 		2B7ACBE7188680D700C68B0B /* FoldersViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B7ACBE5188680D700C68B0B /* FoldersViewController.m */; };
 		2B7ACBE8188680D700C68B0B /* FoldersView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2B7ACBE6188680D700C68B0B /* FoldersView.xib */; };
 		2B7D7F0918A25B4F000BF66B /* EventSettingsService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B7D7F0818A25B4F000BF66B /* EventSettingsService.m */; };
+		2B7DB7E218F821E3005C1772 /* Preloader.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B7DB7E118F821E3005C1772 /* Preloader.m */; };
 		2BED464818B7D16F0018FBD4 /* Quartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2BED464718B7D16F0018FBD4 /* Quartz.framework */; };
 		2BF6D27D18A297AA00F3929F /* UploadExtensionsService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BF6D27C18A297AA00F3929F /* UploadExtensionsService.m */; };
 		2BF6D28018A29BC300F3929F /* ActivatePreviewsAndThumbsService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BF6D27F18A29BC300F3929F /* ActivatePreviewsAndThumbsService.m */; };
@@ -208,6 +209,8 @@
 		2B7ACBE6188680D700C68B0B /* FoldersView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = FoldersView.xib; sourceTree = "<group>"; };
 		2B7D7F0718A25B4F000BF66B /* EventSettingsService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EventSettingsService.h; sourceTree = "<group>"; };
 		2B7D7F0818A25B4F000BF66B /* EventSettingsService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EventSettingsService.m; sourceTree = "<group>"; };
+		2B7DB7E018F821E3005C1772 /* Preloader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Preloader.h; sourceTree = "<group>"; };
+		2B7DB7E118F821E3005C1772 /* Preloader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Preloader.m; sourceTree = "<group>"; };
 		2BED464518B7D1300018FBD4 /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
 		2BED464718B7D16F0018FBD4 /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = System/Library/Frameworks/Quartz.framework; sourceTree = SDKROOT; };
 		2BF6D27B18A297AA00F3929F /* UploadExtensionsService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UploadExtensionsService.h; sourceTree = "<group>"; };
@@ -241,6 +244,8 @@
 				2B229E6518A38176000B19DD /* FrameModel.m */,
 				2B2DBC1F18BB412F00E4FA18 /* TransferManager.h */,
 				2B2DBC2018BB412F00E4FA18 /* TransferManager.m */,
+				2B7DB7E018F821E3005C1772 /* Preloader.h */,
+				2B7DB7E118F821E3005C1772 /* Preloader.m */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -575,6 +580,7 @@
 				2B1D706F18A228100021230E /* FullSizePostedService.m in Sources */,
 				2B3499BD189E852600A45D6C /* FileUtil.m in Sources */,
 				2B533EBB188FB2AF00A4D8A2 /* WizardWindowController.m in Sources */,
+				2B7DB7E218F821E3005C1772 /* Preloader.m in Sources */,
 				2B3499C0189EDCC800A45D6C /* Base64.m in Sources */,
 				2B547DA518EAF64100DCF616 /* SetChromaKeyRollService.m in Sources */,
 				2B533EC6188FE63300A4D8A2 /* LoadingViewController.m in Sources */,

@@ -108,7 +108,7 @@
     IBOutlet NSTextField *txtOutputFolder;
     IBOutlet NSButton *btnAddBackground;
     IBOutlet NSTableView *tblBackgrounds;
-    IBOutlet NSImageView *imgBackgroundPreview;
+    IBOutlet NSImageView *imgHorzBackgroundPreview, *imgVertBackgroundPreview;
     IBOutlet NSButton *btnCancelGreenScreen, *btnConfirmGreenScreen;
     IBOutlet NSTextField *lblGreenScreenStatus;
     IBOutlet NSProgressIndicator *greenScreenProgress;
@@ -181,6 +181,7 @@
 - (void)loadView
 {
     [super loadView];
+    
     [tblRolls registerForDraggedTypes:[NSArray arrayWithObject:(NSString *)kUTTypeFileURL]];
 }
 
@@ -277,7 +278,7 @@
     
     NSDictionary *params = @{
         @"URLs": URLs,
-        @"inRoll": [NSNumber numberWithInteger:chkPutImagesInCurrentlySelectedRoll.state == NSOnState ? tblRolls.selectedRow : (op == NSTableViewDropOn ? row : -1)],
+        @"inRoll": [NSNumber numberWithInteger:op == NSTableViewDropOn ? row : -1],
         @"framesPerRoll": [NSNumber numberWithInteger:chkHonourFramesPerRoll.state == NSOnState ? framesPerRoll : 9999],
         @"autoNumberRolls": [NSNumber numberWithBool:chkAutoNumberRolls.state == NSOnState ? YES : NO],
         @"autoNumberFrames": [NSNumber numberWithBool:chkAutoNumberFrames.state == NSOnState ? YES : NO],
@@ -413,7 +414,7 @@
     NSArray *controlsToSwitch = @[
         txtHorzBackgroundEventNumber, txtHorzBackgroundRoll, txtHorzBackgroundFrame,
         txtVertBackgroundEventNumber, txtVertBackgroundRoll, txtVertBackgroundFrame,
-        txtOutputFolder, btnAddBackground, tblBackgrounds, imgBackgroundPreview
+        txtOutputFolder, btnAddBackground, tblBackgrounds, imgHorzBackgroundPreview, imgVertBackgroundPreview
     ];
     
     for (NSControl *control in controlsToSwitch) {
@@ -757,6 +758,36 @@
     [self switchGreenScreenBackgroundControls:(rollModelShown.greenScreen && chkPreviouslyProvided.state == NSOnState) ? YES : NO clearFields:YES];
 }
 
+- (void)tableViewSelectionDidChange:(NSNotification *)notification
+{
+    NSTableView *tableView = notification.object;
+    
+    if (tableView == tblBackgrounds) {
+        NSInteger selectedRow = tableView.selectedRow;
+        
+        if (selectedRow != -1) {
+            BackgroundRow *background = filteredGreenScreenBackgrounds[selectedRow];
+            
+            if (background.horzBackgroundOrderNo) {
+                NSURL *imageURL = [NSURL URLWithString:[NSString stringWithFormat:@"http://images.partypics.com/events/%@/%@/%@t.jpg",
+                    background.horzBackgroundOrderNo, background.horzBackgroundRoll, background.horzBackgroundFrame]];
+                
+                imgHorzBackgroundPreview.image = [[NSImage alloc] initWithContentsOfURL:imageURL];
+            }
+            
+            if (background.vertBackgroundOrderNo) {
+                NSURL *imageURL = [NSURL URLWithString:[NSString stringWithFormat:@"http://images.partypics.com/events/%@/%@/%@t.jpg",
+                    background.vertBackgroundOrderNo, background.vertBackgroundRoll, background.vertBackgroundFrame]];
+                
+                imgVertBackgroundPreview.image = [[NSImage alloc] initWithContentsOfURL:imageURL];
+            }
+        } else {
+            imgHorzBackgroundPreview.image = nil;
+            imgVertBackgroundPreview.image = nil;
+        }
+    }
+}
+
 - (IBAction)cancelGreenScreen:(id)sender
 {
     rollModelShown = nil;
@@ -954,7 +985,7 @@
                         destinationRoll:@""
                         complete:^(ServiceResult *result) {
                             if (result.error) {
-                                restoreForm([NSString stringWithFormat:@"Could not delete dynamic green screen info: %@", result.error.localizedDescription]);
+                                restoreForm([NSString stringWithFormat:@"Could not alter dynamic green screen info: %@", result.error.localizedDescription]);
                             } else {
                                 lblGreenScreenStatus.stringValue = @"Refreshing green screen info...";
                                 
@@ -1114,6 +1145,10 @@
             [((NSProgressIndicator *)cell.subviews[1]) setHidden:YES];
             [((NSTextField *)cell.subviews[0]) setHidden:YES];
             //[((NSProgressIndicator *)cell.subviews[1]) startAnimation:nil];
+        } else if ([columnID isEqualToString:@"View"]) {
+            
+        } else if ([columnID isEqualToString:@"Delete"]) {
+            
         }
     } else if (tableView == tblPhotographers) {
         NSTableCellView *cell = view;
@@ -1442,7 +1477,6 @@
     [orderModel ignoreNewlyAdded];
     [includeNewlyAddedImagesSheet close];
     [tblRolls reloadData];
-    //[orderModel save];
     [NSApp endSheet:includeNewlyAddedImagesSheet];
 }
 
@@ -1452,9 +1486,6 @@
     [NSApp endSheet:includeNewlyAddedImagesSheet];
 
     [self performSelectorInBackground:@selector(importImagesInBackground) withObject:nil];
-    
-    //[tblRolls reloadData];
-    //[orderModel save];
 }
 
 - (IBAction)closeErrors:(id)sender
@@ -1759,6 +1790,26 @@
         [tblRolls performSelector:@selector(reloadData) withObject:nil afterDelay:0];
         rollsNeedReload = NO;
     }
+}
+
+- (void)processThumbnails:(NSTimer *)timer
+{
+    if (wizardWindowController.wizardStep == kWizardStepBrowse) {
+        NSLog(@"tick");
+    }
+    
+    NSTableCellView *cell = [tblRolls viewAtColumn:5 row:0 makeIfNecessary:NO];
+
+    cell.textField.stringValue = @"1234 of 9999 thumbs sent";
+    [((NSProgressIndicator *)cell.subviews[1]) setHidden:NO];
+    [((NSTextField *)cell.subviews[0]) setHidden:NO];
+    [((NSProgressIndicator *)cell.subviews[1]) startAnimation:nil];
+    
+    NSButton *bcell = [tblRolls viewAtColumn:7 row:0 makeIfNecessary:0];
+    [bcell setHidden:YES];
+    
+    bcell = [tblRolls viewAtColumn:6 row:0 makeIfNecessary:0];
+    bcell.title = @"Stop";
 }
 
 @end

@@ -36,6 +36,8 @@
                 <outlet property="imageBrowserTitle" destination="bzN-R5-MAb" id="i2f-2O-cLB"/>
                 <outlet property="imageBrowserView" destination="4Ng-qR-G4T" id="Mtc-Jn-cPc"/>
                 <outlet property="imgBackgroundPreview" destination="Sr1-z7-2O1" id="aYU-xx-pyG"/>
+                <outlet property="imgHorzBackgroundPreview" destination="Sr1-z7-2O1" id="DG6-vx-tQF"/>
+                <outlet property="imgVertBackgroundPreview" destination="pJa-vf-OWW" id="9ae-et-7Uu"/>
                 <outlet property="includeNewlyAddedImagesSheet" destination="rMF-xz-va9" id="Coe-iE-tWO"/>
                 <outlet property="lblGreenScreenStatus" destination="KSg-we-llY" id="xVz-Yz-qZb"/>
                 <outlet property="loadingIndicator" destination="5CT-3c-Mnq" id="9i3-k3-k1C"/>
@@ -1294,7 +1296,7 @@ Gw
                                     </tableHeaderView>
                                 </scrollView>
                                 <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" id="Sr1-z7-2O1">
-                                    <rect key="frame" x="783" y="11" width="170" height="271"/>
+                                    <rect key="frame" x="783" y="149" width="170" height="133"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" imageFrameStyle="grayBezel" id="Pi9-ce-b7g"/>
                                 </imageView>
@@ -1388,7 +1390,7 @@ Gw
                                                     <action selector="addGreenScreenBackground:" target="-2" id="mqh-mz-QUE"/>
                                                 </connections>
                                             </button>
-                                            <textField verticalHuggingPriority="750" setsMaxLayoutWidthAtFirstLayout="YES" id="TqZ-xg-Lmi">
+                                            <textField verticalHuggingPriority="750" id="TqZ-xg-Lmi">
                                                 <rect key="frame" x="701" y="28" width="140" height="21"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                 <textFieldCell key="cell" selectable="YES" editable="YES" state="on" borderStyle="bezel" placeholderString="Output Folder Name" drawsBackground="YES" usesSingleLineMode="YES" id="l1c-lr-1gC">
@@ -1405,6 +1407,11 @@ Gw
                                     <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
                                     <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 </box>
+                                <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" id="pJa-vf-OWW">
+                                    <rect key="frame" x="783" y="11" width="170" height="133"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" imageFrameStyle="grayBezel" id="hHQ-g4-EX1"/>
+                                </imageView>
                             </subviews>
                         </view>
                         <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>

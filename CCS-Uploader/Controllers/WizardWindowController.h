@@ -35,6 +35,8 @@ typedef NS_ENUM(NSUInteger, WizardStep) {
 @property ReviewViewController *reviewViewController;
 @property ScheduleViewController *scheduleViewController;
 
+@property (readonly) WizardStep wizardStep;
+
 @property NSString *effectiveUser, *effectivePass;
 @property NSInteger effectiveService;
 @property NSString *effectiveCoreDomain;

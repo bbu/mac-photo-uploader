@@ -18,7 +18,8 @@
 - (void)awakeFromNib
 {
     statusItem = [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
-    statusItem.image = [NSImage imageNamed:@"UploadIcon"];
+    //statusItem.image = [NSImage imageNamed:@"UploadIcon"];
+    [statusItem setTitle:@"CCS Uploader"];
     statusItem.menu = statusBarMenu;
     statusItem.highlightMode = YES;
 
@@ -88,6 +89,12 @@
     return NO;
 }
 
+- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
+{
+    [mainWindowController.transferManager save];
+    return NSTerminateNow;
+}
+
 - (IBAction)openPrefs:(id)sender
 {
     if (prefsWindowController == nil) {
@@ -114,7 +121,6 @@
     [alert beginSheetModalForWindow:mainWindowController.window
         completionHandler:^(NSModalResponse response) {
             if (response == NSModalResponseOK) {
-                [mainWindowController.transferManager save];
                 [NSApp terminate:nil];
             }
         }

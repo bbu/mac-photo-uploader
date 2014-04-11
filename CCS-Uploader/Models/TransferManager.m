@@ -25,6 +25,7 @@ typedef NS_ENUM(NSInteger, ImageTransferState) {
     kImageTransferStateSendingThumbs,
     kImageTransferStateFixingOrientation,
     kImageTransferStateSendingFullSize,
+    kImageTransferStateSendingFullSizeViaService,
     kImageTransferStatePostingFullSize,
 };
 
@@ -33,6 +34,7 @@ typedef NS_ENUM(NSInteger, ImageTransferState) {
 @property NSInteger slot;
 @property RollModel *roll;
 @property FrameModel *frame;
+@property NSString *pathToFullSizeImage;
 @property NSThread *imageProcessingThread;
 @property NSTask *ftpUploadTask;
 @property FullSizePostedService *fullSizePostedService;
@@ -365,29 +367,31 @@ static NSString *curlStatuses[] = {
     return NO;
 }
 
+- (NSString *)pathToFullSizeImage:(OrderModel *)orderModel roll:(RollModel *)roll frame:(FrameModel *)frame
+{
+    return [[[orderModel.rootDir stringByAppendingPathComponent:roll.number]
+        stringByAppendingPathComponent:frame.name] stringByAppendingPathExtension:frame.extension];
+}
+
 - (void)processImage:(ImageTransferContext *)imageContext
 {
     EventSettingsResult *eventSettings = currentlyRunningTransfer.context.eventSettings;
-    OrderModel *orderModel = currentlyRunningTransfer.context.orderModel;
     BOOL processed;
 
-    NSString *pathToFullSizeImage = [[[orderModel.rootDir stringByAppendingPathComponent:imageContext.roll.number]
-        stringByAppendingPathComponent:imageContext.frame.name] stringByAppendingPathExtension:imageContext.frame.extension];
-    
     if (imageContext.frame.orientation > 1) {
-        [ImageUtil resizeAndRotateImage:pathToFullSizeImage outputImageFilename:pathToFullSizeImage
+        [ImageUtil resizeAndRotateImage:imageContext.pathToFullSizeImage outputImageFilename:imageContext.pathToFullSizeImage
             resizeToMaxSide:0 rotate:kDontRotate horizontalWatermark:nil verticalWatermark:nil compressionQuality:0.85];
         
         CGSize newSize = CGSizeZero;
         NSUInteger orientation;
         
-        [ImageUtil getImageProperties:pathToFullSizeImage size:&newSize
+        [ImageUtil getImageProperties:imageContext.pathToFullSizeImage size:&newSize
             type:imageContext.frame.imageType orientation:&orientation errors:imageContext.frame.imageErrors];
         
         imageContext.frame.width = newSize.width;
         imageContext.frame.height = newSize.height;
         
-        NSDictionary *fileAttrs = [[NSFileManager defaultManager] attributesOfItemAtPath:pathToFullSizeImage error:nil];
+        NSDictionary *fileAttrs = [[NSFileManager defaultManager] attributesOfItemAtPath:imageContext.pathToFullSizeImage error:nil];
         
         if (fileAttrs) {
             imageContext.roll.totalFrameSize -= imageContext.frame.filesize;
@@ -397,8 +401,8 @@ static NSString *curlStatuses[] = {
         } else {
         }
         
-        imageContext.frame.fullsizeSent = NO;
-        imageContext.frame.thumbsSent = NO;
+        imageContext.frame.fullsizeSent = imageContext.frame.isSelectedFullsizeSent = imageContext.frame.isMissingFullsizeSent = NO;
+        imageContext.frame.thumbsSent = imageContext.frame.isSelectedThumbsSent = imageContext.frame.isMissingThumbsSent = NO;
         imageContext.frame.orientation = 1;
     }
     
@@ -414,7 +418,7 @@ static NSString *curlStatuses[] = {
         imageContext.pngHeight = -1;
         
         if (eventSettings.transferSettings.createThumbnail && eventSettings.thumbnailSettings) {
-            NSString *thumbnailFilename = [pathToFullSizeImage stringByAppendingFormat:@"_ccsthumb_%ld", imageContext.slot];
+            NSString *thumbnailFilename = [imageContext.pathToFullSizeImage stringByAppendingFormat:@"_ccsthumb_%ld", imageContext.slot];
             NSData *hWatermark = nil, *vWatermark = nil;
             
             if (eventSettings.watermarkSettings && eventSettings.transferSettings.thumbnailWatermarkID == eventSettings.watermarkSettings.watermarkID) {
@@ -422,7 +426,7 @@ static NSString *curlStatuses[] = {
                 vWatermark = eventSettings.watermarkSettings.vFileData;
             }
             
-            processed = [ImageUtil resizeAndRotateImage:pathToFullSizeImage outputImageFilename:thumbnailFilename
+            processed = [ImageUtil resizeAndRotateImage:imageContext.pathToFullSizeImage outputImageFilename:thumbnailFilename
                 resizeToMaxSide:eventSettings.thumbnailSettings.maxSide rotate:kDontRotate
                 horizontalWatermark:hWatermark verticalWatermark:vWatermark
                 compressionQuality:eventSettings.thumbnailSettings.quality / 100.];
@@ -435,9 +439,9 @@ static NSString *curlStatuses[] = {
         }
         
         if (eventSettings.transferSettings.createMediumRes && eventSettings.mediumResSettings) {
-            NSString *mediumResFilename = [pathToFullSizeImage stringByAppendingFormat:@"_ccsmedium_%ld", imageContext.slot];
+            NSString *mediumResFilename = [imageContext.pathToFullSizeImage stringByAppendingFormat:@"_ccsmedium_%ld", imageContext.slot];
 
-            processed = [ImageUtil resizeAndRotateImage:pathToFullSizeImage outputImageFilename:mediumResFilename
+            processed = [ImageUtil resizeAndRotateImage:imageContext.pathToFullSizeImage outputImageFilename:mediumResFilename
                 resizeToMaxSide:eventSettings.mediumResSettings.maxSide rotate:kDontRotate
                 horizontalWatermark:nil verticalWatermark:nil
                 compressionQuality:eventSettings.mediumResSettings.quality / 100.];
@@ -450,7 +454,7 @@ static NSString *curlStatuses[] = {
         }
         
         if (eventSettings.transferSettings.createPreview && eventSettings.previewSettings) {
-            NSString *previewFilename = [pathToFullSizeImage stringByAppendingFormat:@"_ccspreview_%ld", imageContext.slot];
+            NSString *previewFilename = [imageContext.pathToFullSizeImage stringByAppendingFormat:@"_ccspreview_%ld", imageContext.slot];
             NSData *hWatermark = nil, *vWatermark = nil;
 
             if (eventSettings.watermarkSettings && eventSettings.transferSettings.previewWatermarkID == eventSettings.watermarkSettings.watermarkID) {
@@ -458,7 +462,7 @@ static NSString *curlStatuses[] = {
                 vWatermark = eventSettings.watermarkSettings.vFileData;
             }
             
-            processed = [ImageUtil resizeAndRotateImage:pathToFullSizeImage outputImageFilename:previewFilename
+            processed = [ImageUtil resizeAndRotateImage:imageContext.pathToFullSizeImage outputImageFilename:previewFilename
                 resizeToMaxSide:eventSettings.previewSettings.maxSide rotate:kDontRotate
                 horizontalWatermark:hWatermark verticalWatermark:vWatermark
                 compressionQuality:eventSettings.previewSettings.quality / 100.];
@@ -477,10 +481,10 @@ static NSString *curlStatuses[] = {
             [[NSFileManager defaultManager] removeItemAtPath:previewFilename error:nil];
         }
         
-        if (eventSettings.pngSettings) {
-            NSString *pngFilename = [pathToFullSizeImage stringByAppendingFormat:@"_ccspng_%ld.png", imageContext.slot];
+        if (eventSettings.pngSettings && [imageContext.frame.imageType isEqualToString:@"public.png"]) {
+            NSString *pngFilename = [imageContext.pathToFullSizeImage stringByAppendingFormat:@"_ccspng_%ld.png", imageContext.slot];
             
-            processed = [ImageUtil resizeAndRotateImage:pathToFullSizeImage outputImageFilename:pngFilename
+            processed = [ImageUtil resizeAndRotateImage:imageContext.pathToFullSizeImage outputImageFilename:pngFilename
                 resizeToMaxSide:eventSettings.pngSettings.maxSide rotate:kDontRotate
                 horizontalWatermark:nil verticalWatermark:nil
                 compressionQuality:eventSettings.pngSettings.quality / 100.];
@@ -505,10 +509,6 @@ static NSString *curlStatuses[] = {
 - (NSArray *)curlParameters:(ImageTransferContext *)imageContext
 {
     RunningTransferContext *context = currentlyRunningTransfer.context;
-    OrderModel *orderModel = context.orderModel;
-    
-    NSString *pathToFullSizeImage = [[[orderModel.rootDir stringByAppendingPathComponent:imageContext.roll.number]
-        stringByAppendingPathComponent:imageContext.frame.name] stringByAppendingPathExtension:imageContext.frame.extension];
     
     imageContext.fileNameOnFtpServer = [NSString stringWithFormat:@"%@_%@_%@_%08lu.%@",
         currentlyRunningTransfer.orderNumber,
@@ -529,7 +529,7 @@ static NSString *curlStatuses[] = {
         context.verifyOrderResult.password
     ];
     
-    NSMutableArray *params = [@[@"-T", pathToFullSizeImage, ftpDestinationPath, @"--user", ftpCredentials, @"--silent"] mutableCopy];
+    NSMutableArray *params = [@[@"-T", imageContext.pathToFullSizeImage, ftpDestinationPath, @"--user", ftpCredentials, @"--silent"] mutableCopy];
 
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     NSNumber *retryDelay = [defaults objectForKey:kRetryDelay];
@@ -675,6 +675,48 @@ static NSString *curlStatuses[] = {
     return result;
 }
 
+- (NSInteger)secondsRemaining:(RunningTransferContext *)context fullSize:(BOOL)fullSize
+{
+    NSInteger secondsRemaining = 0;
+    NSInteger sent = fullSize ? context.sizeSent : context.imagesSent;
+    
+    if (sent) {
+        NSTimeInterval secondsElapsed = [[NSDate date] timeIntervalSinceDate:context.dateStarted];
+        NSInteger total = fullSize ? context.totalSize : context.totalCount;
+        
+        secondsRemaining = ((NSTimeInterval)secondsElapsed / (NSTimeInterval)sent) * (NSTimeInterval)(total - sent);
+    }
+    
+    return secondsRemaining;
+}
+
+- (void)updateProgressTitle:(RunningTransferContext *)context fullSize:(BOOL)fullSize
+{
+    if (fullSize) {
+        NSInteger secondsRemaining = [self secondsRemaining:context fullSize:YES];
+        
+        progressTitle.stringValue = [NSString stringWithFormat:@"%ld of %ld full-size images sent (%@ of %@)%@%@%@",
+            context.imagesSent,
+            context.totalCount,
+            [FileUtil humanFriendlyFilesize:context.sizeSent],
+            [FileUtil humanFriendlyFilesize:context.totalSize],
+            secondsRemaining ? @", about " : @"",
+            secondsRemaining ? [self secondsToHM:secondsRemaining] : @"",
+            secondsRemaining ? @" remaining" : @""
+        ];
+    } else {
+        NSInteger secondsRemaining = [self secondsRemaining:context fullSize:NO];
+        
+        progressTitle.stringValue = [NSString stringWithFormat:@"%ld of %ld thumbs sent%@%@%@",
+            context.imagesSent,
+            context.totalCount,
+            secondsRemaining ? @", about " : @"",
+            secondsRemaining ? [self secondsToHM:secondsRemaining] : @"",
+            secondsRemaining ? @" remaining" : @""
+        ];
+    }
+}
+
 - (void)processTransfers
 {
     if (!currentlyRunningTransfer) {
@@ -730,6 +772,7 @@ static NSString *curlStatuses[] = {
                             imageContext.roll = context.orderModel.rolls[context.pendingRollIndex];
                             imageContext.frame = imageContext.roll.frames[context.pendingFrameIndex++];
                             imageContext.state = kImageTransferStateGeneratingThumbs;
+                            imageContext.pathToFullSizeImage = [self pathToFullSizeImage:context.orderModel roll:imageContext.roll frame:imageContext.frame];
                             
                             imageContext.imageProcessingThread = [[NSThread alloc] initWithTarget:self
                                 selector:@selector(processImage:) object:imageContext];
@@ -743,11 +786,7 @@ static NSString *curlStatuses[] = {
                     case kImageTransferStateGeneratingThumbs: {
                         if (imageContext.imageProcessingThread.isFinished) {
                             imageContext.state = kImageTransferStateSendingThumbs;
-                            
-                            NSString *pathToFullSizeImage = [[[context.orderModel.rootDir stringByAppendingPathComponent:imageContext.roll.number]
-                                stringByAppendingPathComponent:imageContext.frame.name] stringByAppendingPathExtension:imageContext.frame.extension];
-                            
-                            startedUploadingImage(imageContext.slot, pathToFullSizeImage);
+                            startedUploadingImage(imageContext.slot, imageContext.pathToFullSizeImage);
                         }
                     } break;
                         
@@ -785,28 +824,12 @@ static NSString *curlStatuses[] = {
                                         
                                         context.imagesSent++;
                                         
-                                        NSInteger secondsRemaining = 0;
-                                        
-                                        if (context.imagesSent) {
-                                            NSTimeInterval secondsElapsed = [[NSDate date] timeIntervalSinceDate:context.dateStarted];
-                                            secondsRemaining =
-                                                ((NSTimeInterval)secondsElapsed / (NSTimeInterval)context.imagesSent) *
-                                                (NSTimeInterval)(context.totalCount - context.imagesSent);
-                                        }
-                                        
-                                        progressTitle.stringValue = [NSString stringWithFormat:@"%ld of %ld thumbs sent%@%@%@",
-                                            context.imagesSent,
-                                            context.totalCount,
-                                            secondsRemaining ? @", about " : @"",
-                                            secondsRemaining ? [self secondsToHM:secondsRemaining] : @"",
-                                            secondsRemaining ? @" remaining" : @""
-                                        ];
-                                        
                                         progressIndicator.doubleValue++;
+                                        [self updateProgressTitle:context fullSize:NO];
                                     } else {
                                         if (result.error) {
                                             [currentlyRunningTransfer.errors appendFormat:
-                                                @"%@/%@.%@: could not send thumbnails, an error occurred: %@\r",
+                                                @"%@/%@.%@: could not send thumbnails, an error occurred: %@\r\r",
                                                 imageContext.roll.number, imageContext.frame.name, imageContext.frame.extension,
                                                 result.error.localizedDescription];
                                         } else {
@@ -853,11 +876,11 @@ static NSString *curlStatuses[] = {
                         } else {
                             if (result.error) {
                                 [currentlyRunningTransfer.errors appendFormat:
-                                    @"Could not activate thumbs and previews, an error occurred: %@\r",
+                                    @"Could not activate thumbs and previews, an error occurred: %@\r\r",
                                     result.error.localizedDescription];
                             } else {
                                 [currentlyRunningTransfer.errors appendFormat:
-                                    @"Could not activate thumbs and previews, the server returned \"%@\" with a status of \"%@\"\r",
+                                    @"Could not activate thumbs and previews, the server returned \"%@\" with a status of \"%@\"\r\r",
                                     result.message, result.status];
                             }
                         }
@@ -896,6 +919,7 @@ static NSString *curlStatuses[] = {
                         if ([self nextPendingFrame]) {
                             imageContext.roll = context.orderModel.rolls[context.pendingRollIndex];
                             imageContext.frame = imageContext.roll.frames[context.pendingFrameIndex++];
+                            imageContext.pathToFullSizeImage = [self pathToFullSizeImage:context.orderModel roll:imageContext.roll frame:imageContext.frame];
 
                             if (imageContext.frame.orientation > 1) {
                                 imageContext.state = kImageTransferStateFixingOrientation;
@@ -905,16 +929,17 @@ static NSString *curlStatuses[] = {
                                 
                                 [imageContext.imageProcessingThread start];
                             } else {
-                                imageContext.state = kImageTransferStateSendingFullSize;
-                                imageContext.ftpUploadTask = [NSTask new];
-                                imageContext.ftpUploadTask.launchPath = @"/usr/bin/curl";
-                                imageContext.ftpUploadTask.arguments = [self curlParameters:imageContext];
-                                [imageContext.ftpUploadTask launch];
+                                if (imageContext.roll.greenScreen) {
+                                    imageContext.state = kImageTransferStateSendingFullSizeViaService;
+                                } else {
+                                    imageContext.state = kImageTransferStateSendingFullSize;
+                                    imageContext.ftpUploadTask = [NSTask new];
+                                    imageContext.ftpUploadTask.launchPath = @"/usr/bin/curl";
+                                    imageContext.ftpUploadTask.arguments = [self curlParameters:imageContext];
+                                    [imageContext.ftpUploadTask launch];
+                                }
                                 
-                                NSString *pathToFullSizeImage = [[[context.orderModel.rootDir stringByAppendingPathComponent:imageContext.roll.number]
-                                    stringByAppendingPathComponent:imageContext.frame.name] stringByAppendingPathExtension:imageContext.frame.extension];
-                                
-                                startedUploadingImage(imageContext.slot, pathToFullSizeImage);
+                                startedUploadingImage(imageContext.slot, imageContext.pathToFullSizeImage);
                             }
                         } else {
                             numIdleSlots++;
@@ -923,16 +948,17 @@ static NSString *curlStatuses[] = {
                     
                     case kImageTransferStateFixingOrientation: {
                         if (imageContext.imageProcessingThread.isFinished) {
-                            imageContext.state = kImageTransferStateSendingFullSize;
-                            imageContext.ftpUploadTask = [NSTask new];
-                            imageContext.ftpUploadTask.launchPath = @"/usr/bin/curl";
-                            imageContext.ftpUploadTask.arguments = [self curlParameters:imageContext];
-                            [imageContext.ftpUploadTask launch];
+                            if (imageContext.roll.greenScreen) {
+                                imageContext.state = kImageTransferStateSendingFullSizeViaService;
+                            } else {
+                                imageContext.state = kImageTransferStateSendingFullSize;
+                                imageContext.ftpUploadTask = [NSTask new];
+                                imageContext.ftpUploadTask.launchPath = @"/usr/bin/curl";
+                                imageContext.ftpUploadTask.arguments = [self curlParameters:imageContext];
+                                [imageContext.ftpUploadTask launch];
+                            }
                             
-                            NSString *pathToFullSizeImage = [[[context.orderModel.rootDir stringByAppendingPathComponent:imageContext.roll.number]
-                                stringByAppendingPathComponent:imageContext.frame.name] stringByAppendingPathExtension:imageContext.frame.extension];
-                            
-                            startedUploadingImage(imageContext.slot, pathToFullSizeImage);
+                            startedUploadingImage(imageContext.slot, imageContext.pathToFullSizeImage);
                         }
                     } break;
 
@@ -947,12 +973,70 @@ static NSString *curlStatuses[] = {
                                     curlStatuses[status] : nil;
                                 
                                 [currentlyRunningTransfer.errors appendFormat:
-                                    @"%@/%@.%@: could not upload full-size image, cURL returned %@ (%ld).\r",
+                                    @"%@/%@.%@: could not upload full-size image, cURL returned %@ (%ld).\r\r",
                                     imageContext.roll.number, imageContext.frame.name, imageContext.frame.extension, curlStatus, status];
                                 
                                 endedUploadingImage(imageContext.slot);
                                 imageContext.state = kImageTransferStateIdle;
                             }
+                        }
+                    } break;
+                        
+                    case kImageTransferStateSendingFullSizeViaService: {
+                        if (!imageContext.postImageDataService.started) {
+                            [imageContext.postImageDataService
+                                startPostImageData:context.eventRow.ccsAccount
+                                password:context.ccsPassword
+                                orderNumber:currentlyRunningTransfer.orderNumber
+                                roll:imageContext.roll.number
+                                frame:imageContext.frame.name
+                                extension:imageContext.frame.extension
+                                version:[FileUtil versionString]
+                                bypassPassword:NO
+                                fullsizeImage:[NSData dataWithContentsOfFile:imageContext.pathToFullSizeImage]
+                                previewImage:nil
+                                thumbnailImage:nil
+                                pngImage:nil
+                                mediumResImage:nil
+                                originalImageSize:-1
+                                originalWidth:-1
+                                originalHeight:-1
+                                previewWidth:-1
+                                previewHeight:-1
+                                pngWidth:-1
+                                pngHeight:-1
+                                photographer:imageContext.roll.photographer ? imageContext.roll.photographer : @"None"
+                                photoDateTime:imageContext.frame.lastModified
+                                createPreviewAndThumb:YES
+                                complete:^(PostImageDataResult *result) {
+                                    if (!result.error && [result.status isEqualToString:@"Successful"]) {
+                                        imageContext.frame.fullsizeSent = YES;
+                                        imageContext.frame.isSelectedFullsizeSent = YES;
+                                        imageContext.frame.isMissingFullsizeSent = YES;
+                                        
+                                        context.imagesSent++;
+                                        context.sizeSent += imageContext.frame.filesize;
+                                     
+                                        progressIndicator.doubleValue += imageContext.frame.filesize;
+                                        [self updateProgressTitle:context fullSize:YES];
+                                    } else {
+                                        if (result.error) {
+                                            [currentlyRunningTransfer.errors appendFormat:
+                                                @"%@/%@.%@: could not send full-size image, an error occurred: %@\r\r",
+                                                imageContext.roll.number, imageContext.frame.name, imageContext.frame.extension,
+                                                result.error.localizedDescription];
+                                        } else {
+                                            [currentlyRunningTransfer.errors appendFormat:
+                                                @"%@/%@.%@: could not send full-size image, the server returned \"%@\" with a status of \"%@\"\r\r",
+                                                imageContext.roll.number, imageContext.frame.name, imageContext.frame.extension,
+                                                result.message, result.status];
+                                        }
+                                    }
+                                 
+                                    endedUploadingImage(imageContext.slot);
+                                    imageContext.state = kImageTransferStateIdle;
+                                }
+                            ];
                         }
                     } break;
                         
@@ -977,34 +1061,17 @@ static NSString *curlStatuses[] = {
                                         context.imagesSent++;
                                         context.sizeSent += imageContext.frame.filesize;
 
-                                        NSInteger secondsRemaining = 0;
-                                        
-                                        if (context.sizeSent) {
-                                            NSTimeInterval secondsElapsed = [[NSDate date] timeIntervalSinceDate:context.dateStarted];
-                                            secondsRemaining =
-                                                ((NSTimeInterval)secondsElapsed / (NSTimeInterval)context.sizeSent) *
-                                                (NSTimeInterval)(context.totalSize - context.sizeSent);
-                                        }
-                                        
                                         progressIndicator.doubleValue += imageContext.frame.filesize;
-                                        progressTitle.stringValue = [NSString stringWithFormat:@"%ld of %ld full-size images sent (%@ of %@)%@%@%@",
-                                            context.imagesSent,
-                                            context.totalCount,
-                                            [FileUtil humanFriendlyFilesize:context.sizeSent],
-                                            [FileUtil humanFriendlyFilesize:context.totalSize],
-                                            secondsRemaining ? @", about " : @"",
-                                            secondsRemaining ? [self secondsToHM:secondsRemaining] : @"",
-                                            secondsRemaining ? @" remaining" : @""
-                                        ];
+                                        [self updateProgressTitle:context fullSize:YES];
                                     } else {
                                         if (result.error) {
                                             [currentlyRunningTransfer.errors appendFormat:
-                                                @"%@/%@.%@: could not post full-size image, an error occurred: %@\r",
+                                                @"%@/%@.%@: could not post full-size image, an error occurred: %@\r\r",
                                                 imageContext.roll.number, imageContext.frame.name, imageContext.frame.extension,
                                                 result.error.localizedDescription];
                                         } else {
                                             [currentlyRunningTransfer.errors appendFormat:
-                                                @"%@/%@.%@: could not post full-size image, the server returned \"%@\" with a status of \"%@\"\r",
+                                                @"%@/%@.%@: could not post full-size image, the server returned \"%@\" with a status of \"%@\"\r\r",
                                                 imageContext.roll.number, imageContext.frame.name, imageContext.frame.extension,
                                                 result.message, result.status];
                                         }
@@ -1047,11 +1114,11 @@ static NSString *curlStatuses[] = {
                         } else {
                             if (result.error) {
                                 [currentlyRunningTransfer.errors appendFormat:
-                                    @"Could not activate full-size images, an error occurred: %@\r",
+                                    @"Could not activate full-size images, an error occurred: %@\r\r",
                                     result.error.localizedDescription];
                             } else {
                                 [currentlyRunningTransfer.errors appendFormat:
-                                    @"Could not activate full-size images, the server returned \"%@\" with a status of \"%@\"\r",
+                                    @"Could not activate full-size images, the server returned \"%@\" with a status of \"%@\"\r\r",
                                     result.message, result.status];
                             }
                             
@@ -1074,11 +1141,11 @@ static NSString *curlStatuses[] = {
                     complete:^(ImportImagesResult *result) {
                         if (result.error) {
                             [currentlyRunningTransfer.errors appendFormat:
-                                @"Could not import full-size images into %@, an error occurred: %@\r",
+                                @"Could not import full-size images into %@, an error occurred: %@\r\r",
                                 currentlyRunningTransfer.isQuicPost ? @"QuicPost" : @"CORE", result.error.localizedDescription];
                         } else if (result.status != 1 && result.message.length) {
                             [currentlyRunningTransfer.errors appendFormat:
-                                @"Could not import full-size images into %@, the server returned \"%@\" with a status of %ld\r",
+                                @"Could not import full-size images into %@, the server returned \"%@\" with a status of %ld\r\r",
                                 currentlyRunningTransfer.isQuicPost ? @"QuicPost" : @"CORE", result.message, result.status];
                         }
                      

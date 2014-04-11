@@ -43,6 +43,7 @@
 
 @synthesize txtStepTitle, txtStepDescription;
 @synthesize btnCancel, btnBack, btnNext;
+@synthesize wizardStep;
 @synthesize effectiveUser, effectivePass;
 @synthesize effectiveService;
 @synthesize effectiveCoreDomain;
@@ -475,7 +476,7 @@
     }
 
     if (step == kWizardStepSchedule) {
-        btnNext.title = @"Push transfer";
+        btnNext.title = @"Push Transfer";
     } else {
         btnNext.title = @"Next →";
     }
