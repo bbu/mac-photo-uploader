@@ -43,7 +43,7 @@
     [super loadView];
     
     dpStartDate.dateValue = [NSDate dateWithTimeInterval:-60 * 60 * 24 * 30 sinceDate:[NSDate date]];
-    dpEndDate.dateValue = [NSDate dateWithTimeInterval:60 * 60 sinceDate:[NSDate date]];
+    dpEndDate.dateValue = [NSDate dateWithTimeInterval:4 * 60 * 60 sinceDate:[NSDate date]];
 }
 
 - (void)refreshIfEmpty
@@ -121,12 +121,6 @@
     [self view];
     
     [tblEvents deselectAll:nil];
-    
-    if (fromWizard) {
-        chkFilterDateRange.state = NSOffState;
-        [dpStartDate setEnabled:NO];
-        [dpEndDate setEnabled:NO];
-    }
     
     [listEventsService setEffectiveServiceRoot:wizardWindowController.effectiveService
         coreDomain:wizardWindowController.effectiveCoreDomain];

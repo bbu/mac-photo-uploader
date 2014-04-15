@@ -168,7 +168,7 @@
     ];
 }
 
-- (void)showEvent:(NSString *)orderNumber user:(NSString *)user pass:(NSString *)pass
+- (void)showEvent:(NSString *)orderNumber user:(NSString *)user pass:(NSString *)pass url:(NSString *)url
     source:(NSString *)source filename:(NSString *)filename
 {
     [super showWindow:nil];
@@ -181,18 +181,29 @@
     
     [self showStep:kWizardStepLoading];
     
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
     if ([source.lowercaseString isEqualToString:@"core"]) {
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-        
         effectiveService = kServiceRootCore;
-        effectiveCoreDomain = [defaults objectForKey:kCoreDomain];
+        effectiveUser = user;
+        effectivePass = pass;
+        effectiveCoreDomain = [NSString stringWithFormat:@"http://%@/CORE", url];
         
-        if (!effectiveCoreDomain) {
-            effectiveCoreDomain = kDefaultCoreDomain;
-        }
+        [defaults setObject:effectiveUser forKey:kCoreUser];
+        [defaults setObject:effectivePass forKey:kCorePass];
+        [defaults setObject:effectiveCoreDomain forKey:kCoreDomain];
+        [defaults setObject:[NSNumber numberWithBool:NO] forKey:kQuicPostSelected];
+        [defaults synchronize];
     } else if ([source.lowercaseString isEqualToString:@"quicpost"]) {
         effectiveService = kServiceRootQuicPost;
+        effectiveUser = user;
+        effectivePass = pass;
         effectiveCoreDomain = nil;
+
+        [defaults setObject:effectiveUser forKey:kQuicPostUser];
+        [defaults setObject:effectivePass forKey:kQuicPostPass];
+        [defaults setObject:[NSNumber numberWithBool:YES] forKey:kQuicPostSelected];
+        [defaults synchronize];
     } else {
         NSAlert *alert = [NSAlert alertWithMessageText:@"Not a CORE or a QuicPost event."
             defaultButton:@"OK" alternateButton:@"" otherButton:@"" informativeTextWithFormat:@""];
@@ -205,9 +216,6 @@
         
         return;
     }
-    
-    effectiveUser = user;
-    effectivePass = pass;
     
     [listEventService setEffectiveServiceRoot:effectiveService coreDomain:effectiveCoreDomain];
     [listEventService startListEvent:user password:pass orderNumber:orderNumber
@@ -242,6 +250,7 @@
     }
     
     if (wizardStep == kWizardStepBrowse || wizardStep == kWizardStepReview || wizardStep == kWizardStepSchedule) {
+        [browseViewController.preloader cancel];
         [browseViewController saveOrderModel];
     }
     
@@ -386,6 +395,7 @@
 
         case kWizardStepBrowse: {
             self.window.title = @"Uploader Wizard";
+            [browseViewController.preloader cancel];
             [browseViewController saveOrderModel];
             [mainWindowController.openedEvents removeObject:eventRow.orderNumber];
             eventRow = nil;
@@ -425,6 +435,7 @@
                 [alert beginSheetModalForWindow:self.window completionHandler:nil];
             } else {
                 //[browseViewController saveOrderModel];
+                [browseViewController.preloader cancel];
                 [reviewViewController reload];
                 [self showStep:kWizardStepReview];
             }

@@ -1,5 +1,6 @@
 #import <Cocoa/Cocoa.h>
 #import <Quartz/Quartz.h>
+#import "../../Models/Preloader.h"
 
 @class WizardWindowController, EventRow, OrderModel, FrameModel;
 
@@ -18,6 +19,7 @@
 - (void)saveOrderModel;
 
 @property (readonly) OrderModel *orderModel;
+@property (readonly) Preloader *preloader;
 @property (readonly) NSString *ccsPassword;
 
 @end

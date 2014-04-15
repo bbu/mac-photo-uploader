@@ -22,7 +22,7 @@
     NSString *rootDir;
     NSMutableArray *rolls;
     NSMutableArray *rollsToHide, *framesToHide;
-    BOOL autoCategorizeImages;
+    BOOL autoCategorizeImages, putImagesInCurrentlySelectedRoll, autoRenumberRolls, autoRenumberImages, createNewFolderAfter;
     BOOL newlyAdded;
     NSSet *allowedExtensions;
     
@@ -40,7 +40,7 @@
 @synthesize rolls;
 @synthesize rollsToHide, framesToHide;
 @synthesize newlyAdded;
-@synthesize autoCategorizeImages;
+@synthesize autoCategorizeImages, putImagesInCurrentlySelectedRoll, autoRenumberRolls, autoRenumberImages, createNewFolderAfter;
 
 - (id)initWithCoder:(NSCoder *)decoder
 {
@@ -51,6 +51,10 @@
         rootDir = [decoder decodeObjectForKey:@"rootDir"];
         rolls = [decoder decodeObjectForKey:@"rolls"];
         autoCategorizeImages = [decoder decodeBoolForKey:@"autoCategorizeImages"];
+        putImagesInCurrentlySelectedRoll = [decoder decodeBoolForKey:@"putImagesInCurrentlySelectedRoll"];
+        autoRenumberRolls = [decoder decodeBoolForKey:@"autoRenumberRolls"];
+        autoRenumberImages = [decoder decodeBoolForKey:@"autoRenumberImages"];
+        createNewFolderAfter = [decoder decodeBoolForKey:@"createNewFolderAfter"];
     }
     
     return self;
@@ -81,7 +85,12 @@
     if (unarchivedOrder) {
         rolls = unarchivedOrder.rolls ? unarchivedOrder.rolls : [NSMutableArray new];
         rootDir = unarchivedOrder.rootDir;
+        
         autoCategorizeImages = unarchivedOrder.autoCategorizeImages;
+        putImagesInCurrentlySelectedRoll = unarchivedOrder.putImagesInCurrentlySelectedRoll;
+        autoRenumberRolls = unarchivedOrder.autoRenumberRolls;
+        autoRenumberImages = unarchivedOrder.autoRenumberImages;
+        createNewFolderAfter = unarchivedOrder.createNewFolderAfter;
         
         if (!rootDir) {
             return FAIL(nil, @"Archived order '%@' does not specify a root directory!", pathToOrderFile);
@@ -90,6 +99,23 @@
         rolls = [NSMutableArray new];
         NSString *localFolder = [defaults objectForKey:kApplicationFolder];
         NSString *dirname = [eventRow.orderNumber stringByAppendingPathExtension:kEventFolderExtension];
+        
+        NSNumber *storedValue;
+
+        storedValue = [defaults objectForKey:kAutoCategorizeImagesByFolderName];
+        autoCategorizeImages = storedValue ? storedValue.boolValue : YES;
+        
+        storedValue = [defaults objectForKey:kPutImagesInCurrentlySelectedRoll];
+        putImagesInCurrentlySelectedRoll = storedValue ? storedValue.boolValue : NO;
+
+        storedValue = [defaults objectForKey:kAutoRenumberImages];
+        autoRenumberImages = storedValue ? storedValue.boolValue : YES;
+        
+        storedValue = [defaults objectForKey:kAutoRenumberRolls];
+        autoRenumberRolls = storedValue ? storedValue.boolValue : YES;
+        
+        storedValue = [defaults objectForKey:kCreateNewFolderAfter];
+        createNewFolderAfter = storedValue ? storedValue.boolValue : NO;
         
         if (localFolder) {
             rootDir = [localFolder stringByAppendingPathComponent:dirname];
@@ -128,7 +154,12 @@
     [encoder encodeObject:eventRow forKey:@"eventRow"];
     [encoder encodeObject:rootDir forKey:@"rootDir"];
     [encoder encodeObject:rolls forKey:@"rolls"];
+    
     [encoder encodeBool:autoCategorizeImages forKey:@"autoCategorizeImages"];
+    [encoder encodeBool:putImagesInCurrentlySelectedRoll forKey:@"putImagesInCurrentlySelectedRoll"];
+    [encoder encodeBool:autoRenumberRolls forKey:@"autoRenumberRolls"];
+    [encoder encodeBool:autoRenumberImages forKey:@"autoRenumberImages"];
+    [encoder encodeBool:createNewFolderAfter forKey:@"createNewFolderAfter"];
 }
 
 - (void)diffWithExistingFiles
@@ -393,7 +424,7 @@
 
 - (void)addNewImages:(NSArray *)URLs inRoll:(NSInteger)rollIndex framesPerRoll:(NSInteger)framesPerRoll
     autoNumberRolls:(BOOL)autoNumberRolls autoNumberFrames:(BOOL)autoNumberFrames photographer:(NSString *)photographer
-    statusField:(NSTextField *)statusField errors:(NSMutableString *)errors
+    usingPreloader:(BOOL)usingPreloader statusField:(NSTextField *)statusField errors:(NSMutableString *)errors
 {
     NSError *error = nil;
     NSString *tempDir = [rootDir stringByAppendingPathComponent:kTempFolderName];
@@ -487,6 +518,7 @@
             RollModel *newRoll = [RollModel new];
             
             newRoll.frames = [NSMutableArray new];
+            newRoll.wantsPreloaderForUnsent = usingPreloader;
             newRoll.imagesAutoRenamed = autoNumberFrames;
             newRoll.number = (autoNumberRolls || !derivedRollName) ?
                 [NSString stringWithFormat:@"%05ld", nextRollNumber] : derivedRollName;
@@ -552,6 +584,7 @@
         NSInteger framesInTargetRoll = 0;
         
         if (framesRemaining > 0) {
+            targetRoll.wantsPreloaderForUnsent = usingPreloader;
             targetRoll.imagesAutoRenamed = autoNumberFrames;
             targetRoll.imagesViewed = NO;
             
@@ -612,6 +645,7 @@
             RollModel *newRoll = [RollModel new];
             
             newRoll.frames = [NSMutableArray new];
+            newRoll.wantsPreloaderForUnsent = usingPreloader;
             newRoll.imagesAutoRenamed = autoNumberFrames;
             newRoll.number = (autoNumberRolls || !derivedRollName) ?
                 [NSString stringWithFormat:@"%05ld", nextRollNumber] : derivedRollName;
@@ -716,6 +750,12 @@
         
         if ([fileMgr moveItemAtPath:oldRollPath toPath:newRollPath error:error]) {
             targetRoll.number = validatedNewName;
+            
+            for (FrameModel *frame in targetRoll.frames) {
+                frame.thumbsSent = frame.isSelectedThumbsSent = frame.isMissingThumbsSent = NO;
+                frame.fullsizeSent = frame.isSelectedFullsizeSent = frame.isMissingFullsizeSent = NO;
+            }
+            
             return YES;
         }
     }
@@ -774,6 +814,24 @@
             counter++;
         }
     }
+}
+
+- (BOOL)addNewRoll:(NSString *)rollName error:(NSError **)error
+{
+    NSString *validatedName = [self validateName:rollName isRoll:YES];
+    
+    BOOL created = [fileMgr createDirectoryAtPath:[rootDir stringByAppendingPathComponent:validatedName]
+        withIntermediateDirectories:NO attributes:nil error:error];
+    
+    if (created) {
+        RollModel *newRoll = [RollModel new];
+        newRoll.number = validatedName;
+        newRoll.frames = [NSMutableArray new];
+        [rolls addObject:newRoll];
+        return YES;
+    }
+    
+    return NO;
 }
 
 - (NSInteger)deriveNextRollNumber

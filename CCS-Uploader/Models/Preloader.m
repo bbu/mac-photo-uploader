@@ -37,11 +37,19 @@ typedef NS_ENUM(NSInteger, PreloaderState) {
     kPreloaderStateBusy,
 };
 
+typedef NS_ENUM(NSInteger, PreloaderMode) {
+    kPreloaderModeUnsent = 0,
+    kPreloaderModeAll,
+};
+
 @interface Preloader () {
     PreloaderState state;
+    PreloaderMode mode;
     OrderModel *orderModel;
     EventSettingsResult *eventSettings;
+    NSString *ccsPassword;
     RollModel *currentRoll;
+    NSInteger currentRollIndex;
     NSInteger pendingFrameIndex;
     NSInteger thumbsSent, totalThumbs;
     NSMutableArray *thumbContexts;
@@ -50,17 +58,37 @@ typedef NS_ENUM(NSInteger, PreloaderState) {
 
 @implementation Preloader
 
-- (id)initWithOrderModel:(OrderModel *)order eventSettings:(EventSettingsResult *)settings
+@synthesize shouldStart, startedRoll, endedRoll, uploadedThumb;
+
+- (id)initWithOrderModel:(OrderModel *)order eventSettings:(EventSettingsResult *)settings ccsPassword:(NSString *)ccsPass
 {
     self = [super init];
     
     if (self) {
         orderModel = order;
         eventSettings = settings;
+        ccsPassword = ccsPass;
         state = kPreloaderStateIdle;
     }
     
     return self;
+}
+
+- (BOOL)conditionToSendThumbs:(FrameModel *)frame
+{
+    BOOL condition;
+    
+    switch (mode) {
+        case kPreloaderModeUnsent: {
+            condition = !frame.thumbsSent && !frame.imageErrors.length;
+        } break;
+            
+        case kPreloaderModeAll: {
+            condition = !frame.imageErrors.length;
+        } break;
+    }
+    
+    return condition;
 }
 
 - (BOOL)nextPendingFrame
@@ -68,9 +96,7 @@ typedef NS_ENUM(NSInteger, PreloaderState) {
     for (NSInteger i = pendingFrameIndex; i < currentRoll.frames.count; ++i) {
         FrameModel *frame = currentRoll.frames[i];
 
-        BOOL conditionToSend = !frame.thumbsSent && !frame.imageErrors.length;
-        
-        if (conditionToSend) {
+        if ([self conditionToSendThumbs:frame]) {
             pendingFrameIndex = i;
             return YES;
         }
@@ -79,13 +105,27 @@ typedef NS_ENUM(NSInteger, PreloaderState) {
     return NO;
 }
 
+- (BOOL)isBusy
+{
+    return state == kPreloaderStateBusy ? YES : NO;
+}
+
 - (void)processThumbs
 {
     switch (state) {
         case kPreloaderStateIdle: {
+            if (!shouldStart()) {
+                return;
+            }
+            
+            currentRollIndex = 0;
+            
             for (RollModel *roll in orderModel.rolls) {
-                if (roll.wantsPreloader) {
-                    roll.wantsPreloader = NO;
+                if (roll.wantsPreloaderForAll || roll.wantsPreloaderForUnsent) {
+                    mode = roll.wantsPreloaderForAll ? kPreloaderModeAll : kPreloaderModeUnsent;
+                    
+                    roll.wantsPreloaderForAll = NO;
+                    roll.wantsPreloaderForUnsent = NO;
 
                     NSNumber *simultaneousPreloaderUploads = [[NSUserDefaults standardUserDefaults] objectForKey:kSimultaneousPreloaderUploads];
                     NSInteger slotCount = 8;
@@ -94,15 +134,35 @@ typedef NS_ENUM(NSInteger, PreloaderState) {
                         slotCount = simultaneousPreloaderUploads.integerValue;
                     }
                     
+                    thumbContexts = [NSMutableArray new];
+                    
                     for (NSInteger i = 0; i < slotCount; ++i) {
                         ThumbContext *thumbContext = [ThumbContext new];
+                        thumbContext.slot = i;
+                        thumbContext.postImageDataService = [PostImageDataService new];
                         [thumbContexts addObject:thumbContext];
                     }
                     
-                    state = kPreloaderStateBusy;
-                    currentRoll = roll;
+                    thumbsSent = 0;
+                    totalThumbs = 0;
+                    pendingFrameIndex = 0;
+                    
+                    for (FrameModel *frame in roll.frames) {
+                        if ([self conditionToSendThumbs:frame]) {
+                            totalThumbs++;
+                        }
+                    }
+                    
+                    if (totalThumbs) {
+                        state = kPreloaderStateBusy;
+                        currentRoll = roll;
+                        startedRoll(currentRoll, currentRollIndex);
+                    }
+                    
                     break;
                 }
+                
+                currentRollIndex++;
             }
         } break;
             
@@ -115,9 +175,10 @@ typedef NS_ENUM(NSInteger, PreloaderState) {
                         if ([self nextPendingFrame]) {
                             thumbContext.state = kThumbStateGenerating;
                             thumbContext.frame = currentRoll.frames[pendingFrameIndex++];
-                            thumbContext.pathToFullSizeImage = @"";
-                            thumbContext.imageProcessingThread = [[NSThread alloc] initWithTarget:self selector:@selector(processImage:) object:thumbContext];
+                            thumbContext.pathToFullSizeImage = [[[orderModel.rootDir stringByAppendingPathComponent:currentRoll.number]
+                                stringByAppendingPathComponent:thumbContext.frame.name] stringByAppendingPathExtension:thumbContext.frame.extension];
                             
+                            thumbContext.imageProcessingThread = [[NSThread alloc] initWithTarget:self selector:@selector(processImage:) object:thumbContext];
                             
                             [thumbContext.imageProcessingThread start];
                         } else {
@@ -127,6 +188,7 @@ typedef NS_ENUM(NSInteger, PreloaderState) {
                         
                     case kThumbStateGenerating: {
                         if (thumbContext.imageProcessingThread.isFinished) {
+                            thumbContext.imageProcessingThread = nil;
                             thumbContext.state = kThumbStateSending;
                         }
                     } break;
@@ -135,7 +197,7 @@ typedef NS_ENUM(NSInteger, PreloaderState) {
                         if (!thumbContext.postImageDataService.started) {
                             [thumbContext.postImageDataService
                                 startPostImageData:orderModel.eventRow.ccsAccount
-                                password:@""
+                                password:ccsPassword
                                 orderNumber:orderModel.eventRow.orderNumber
                                 roll:currentRoll.number
                                 frame:thumbContext.frame.name
@@ -150,14 +212,24 @@ typedef NS_ENUM(NSInteger, PreloaderState) {
                                 originalImageSize:thumbContext.frame.filesize
                                 originalWidth:thumbContext.frame.width
                                 originalHeight:thumbContext.frame.height
-                                previewWidth:-1
-                                previewHeight:-1
-                                pngWidth:-1
-                                pngHeight:-1
+                                previewWidth:thumbContext.previewWidth
+                                previewHeight:thumbContext.previewHeight
+                                pngWidth:thumbContext.pngWidth
+                                pngHeight:thumbContext.pngHeight
                                 photographer:currentRoll.photographer
                                 photoDateTime:thumbContext.frame.lastModified
                                 createPreviewAndThumb:NO
                                 complete:^(PostImageDataResult *result) {
+                                    if (!result.error && [result.status isEqualToString:@"Successful"]) {
+                                        thumbContext.frame.thumbsSent = YES;
+                                        thumbContext.frame.isSelectedThumbsSent = YES;
+                                        thumbContext.frame.isMissingThumbsSent = YES;
+                                        thumbsSent++;
+                                        
+                                        NSString *status = [NSString stringWithFormat:@"%ld of %ld thumbs sent", thumbsSent, totalThumbs];
+                                        uploadedThumb(currentRoll, currentRollIndex, status);
+                                    }
+                                    
                                     thumbContext.state = kThumbStateIdle;
                                 }
                             ];
@@ -167,10 +239,33 @@ typedef NS_ENUM(NSInteger, PreloaderState) {
             }
             
             if (numIdle == thumbContexts.count) {
-                currentRoll = nil;
+                endedRoll(currentRoll, currentRollIndex);
                 state = kPreloaderStateIdle;
             }
         } break;
+    }
+}
+
+- (void)stop
+{
+    if (state == kPreloaderStateBusy) {
+        for (ThumbContext *thumbContext in thumbContexts) {
+            [thumbContext.imageProcessingThread cancel];
+            [thumbContext.postImageDataService cancel];
+        }
+        
+        endedRoll(currentRoll, currentRollIndex);
+        state = kPreloaderStateIdle;
+    }
+}
+
+- (void)cancel
+{
+    [self stop];
+    
+    for (RollModel *roll in orderModel.rolls) {
+        roll.wantsPreloaderForAll = NO;
+        roll.wantsPreloaderForUnsent = NO;
     }
 }
 

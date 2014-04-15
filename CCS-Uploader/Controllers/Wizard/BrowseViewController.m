@@ -4,6 +4,7 @@
 #import "../WizardWindowController.h"
 #import "../MainWindowController.h"
 #import "../../Models/OrderModel.h"
+#import "../../Models/Preloader.h"
 
 #import "../../Services/CheckOrderNumberService.h"
 #import "../../Services/EventSettingsService.h"
@@ -79,7 +80,7 @@
     IBOutlet NSTableView *tblRolls, *tblPhotographers;
     IBOutlet NSTextField *loadingTitle;
     IBOutlet NSProgressIndicator *loadingIndicator;
-    IBOutlet NSButton *btnBrowse, *btnGreenScreen, *btnPhotographers, *btnAdvancedOptions;
+    IBOutlet NSButton *btnBrowse, *btnNewFolder, *btnGreenScreen, *btnPhotographers, *btnAdvancedOptions;
     IBOutlet NSButton
         *chkAutoCategorizeImages,
         *chkPutImagesInCurrentlySelectedRoll,
@@ -87,7 +88,9 @@
         *chkAutoNumberFrames,
         *chkHonourFramesPerRoll;
 
-    IBOutlet NSPopover *advancedOptionsPopover, *viewRollPopover, *photographersPopover;
+    IBOutlet NSButton *btnNewFolderAdd;
+    IBOutlet NSTextField *txtNewFolderName;
+    IBOutlet NSPopover *advancedOptionsPopover, *viewRollPopover, *photographersPopover, *newFolderPopover;
     IBOutlet NSPanel *includeNewlyAddedImagesSheet, *errorsImportingImagesSheet, *greenScreenSheet;
     IBOutlet NSTextView *txtNewFiles, *txtImportErrors;
     IBOutlet NSButton *btnAddPhotographer;
@@ -136,6 +139,7 @@
     NSInteger framesPerRoll;
     BOOL usingPreloader;
     RollModel *rollModelShown;
+    Preloader *preloader;
     
     EventSettingsResult *eventSettings;
     NSMutableArray *uploadExtensions;
@@ -146,7 +150,7 @@
 
 @implementation BrowseViewController
 
-@synthesize orderModel;
+@synthesize orderModel, preloader;
 @synthesize ccsPassword;
 
 - (id)initWithWizardController:(WizardWindowController *)parent
@@ -173,6 +177,8 @@
         deleteChromaKeyRollService = [DeleteChromaKeyRollService new];
 
         imagesInBrowser = [NSMutableArray new];
+        
+        [NSTimer scheduledTimerWithTimeInterval:0.2 target:self selector:@selector(processThumbnails:) userInfo:nil repeats:YES];
     }
 
     return self;
@@ -197,6 +203,7 @@
         autoNumberRolls:((NSNumber *)params[@"autoNumberRolls"]).boolValue
         autoNumberFrames:((NSNumber *)params[@"autoNumberFrames"]).boolValue
         photographer:params[@"photographer"]
+        usingPreloader:usingPreloader
         statusField:loadingTitle
         errors:errors];
 
@@ -308,7 +315,7 @@
         @"Select image files or folders to upload. Any selected folders will be scanned recursively for image files.\r"
         @"Only RGB-colorspace images are accepted; Progressive JPEGs are not accepted";
 
-    [openPanel setFrame:NSMakeRect(0, 0, wizardWindowController.window.frame.size.width,
+    [openPanel setFrame:NSMakeRect(0, 0, wizardWindowController.window.frame.size.width - 18,
         wizardWindowController.window.frame.size.height) display:YES];
     
     if (defaultLocation) {
@@ -335,6 +342,7 @@
 - (void)disableControls:(NSString *)status
 {
     [btnBrowse setEnabled:NO];
+    [btnNewFolder setEnabled:NO];
     [btnGreenScreen setEnabled:NO];
     [btnPhotographers setEnabled:NO];
     [btnAdvancedOptions setEnabled:NO];
@@ -359,6 +367,7 @@
     [tblRolls becomeFirstResponder];
     
     [btnBrowse setEnabled:YES];
+    [btnNewFolder setEnabled:YES];
     [btnGreenScreen setEnabled:YES];
     [btnPhotographers setEnabled:YES];
     [btnAdvancedOptions setEnabled:YES];
@@ -1011,6 +1020,34 @@
     }
 }
 
+- (IBAction)newFolderClicked:(id)sender
+{
+    if (newFolderPopover.isShown) {
+        [newFolderPopover close];
+    } else {
+        [newFolderPopover showRelativeToRect:[sender superview].bounds ofView:sender preferredEdge:NSMaxYEdge];
+    }
+}
+
+- (IBAction)addNewFolderClicked:(id)sender
+{
+    if (!txtNewFolderName.stringValue.length) {
+        return;
+    }
+    
+    NSError *error = nil;
+
+    if ([orderModel addNewRoll:txtNewFolderName.stringValue error:&error]) {
+        [newFolderPopover close];
+        txtNewFolderName.stringValue = @"";
+        [self matchRollsWithGreenScreen];
+        [tblRolls reloadData];
+    } else {
+        NSAlert *alert = [NSAlert alertWithError:error];
+        [alert beginSheetModalForWindow:wizardWindowController.window completionHandler:nil];
+    }
+}
+
 - (IBAction)photographersClicked:(id)sender
 {
     if (photographersPopover.isShown) {
@@ -1398,6 +1435,11 @@
     }
     
     chkAutoCategorizeImages.state = orderModel.autoCategorizeImages ? NSOnState : NSOffState;
+    chkPutImagesInCurrentlySelectedRoll.state = orderModel.putImagesInCurrentlySelectedRoll ? NSOnState : NSOffState;
+    chkAutoNumberRolls.state = orderModel.autoRenumberRolls ? NSOnState : NSOffState;
+    chkAutoNumberFrames.state = orderModel.autoRenumberImages ? NSOnState : NSOffState;
+    chkHonourFramesPerRoll.state = orderModel.createNewFolderAfter ? NSOnState : NSOffState;
+    
     chkHonourFramesPerRoll.title = [NSString stringWithFormat:@"Create new folder after %ld images", framesPerRoll];
     [tblPhotographers reloadData];
     
@@ -1459,7 +1501,65 @@
     
     [self matchRollsWithGreenScreen];
     [tblRolls reloadData];
+    
+    preloader = [[Preloader alloc] initWithOrderModel:orderModel eventSettings:eventSettings ccsPassword:ccsPassword];
+    __weak NSTableView *weakTblRolls = tblRolls;
+    
+    preloader.shouldStart = ^BOOL(void) {
+        return weakTblRolls.isEnabled;
+    };
+    
+    preloader.startedRoll = ^(RollModel *roll, NSInteger rollIndex) {
+        NSTableCellView *cell = [weakTblRolls viewAtColumn:5 row:rollIndex makeIfNecessary:NO];
 
+        if (cell != nil) {
+            cell.textField.stringValue = @"Preparing to send thumbs...";
+            [((NSTextField *)cell.subviews[0]) setHidden:NO];
+            [((NSProgressIndicator *)cell.subviews[1]) setHidden:NO];
+            [((NSProgressIndicator *)cell.subviews[1]) startAnimation:nil];
+            
+            NSButton *bcell = [weakTblRolls viewAtColumn:7 row:rollIndex makeIfNecessary:0];
+            [bcell setHidden:YES];
+            
+            bcell = [weakTblRolls viewAtColumn:6 row:rollIndex makeIfNecessary:0];
+            bcell.title = @"Stop";
+        }
+    };
+
+    preloader.endedRoll = ^(RollModel *roll, NSInteger rollIndex) {
+        NSTableCellView *cell = [weakTblRolls viewAtColumn:5 row:rollIndex makeIfNecessary:NO];
+        
+        if (cell != nil) {
+            cell.textField.stringValue = @"";
+            [((NSTextField *)cell.subviews[0]) setHidden:YES];
+            [((NSProgressIndicator *)cell.subviews[1]) setHidden:YES];
+            [((NSProgressIndicator *)cell.subviews[1]) stopAnimation:nil];
+            
+            NSButton *bcell = [weakTblRolls viewAtColumn:7 row:rollIndex makeIfNecessary:0];
+            [bcell setHidden:NO];
+            
+            bcell = [weakTblRolls viewAtColumn:6 row:rollIndex makeIfNecessary:0];
+            bcell.title = @"View";
+        }
+    };
+    
+    preloader.uploadedThumb = ^(RollModel *roll, NSInteger rollIndex, NSString *status) {
+        NSTableCellView *cell = [weakTblRolls viewAtColumn:5 row:rollIndex makeIfNecessary:NO];
+        
+        if (cell != nil) {
+            [((NSTextField *)cell.subviews[0]) setHidden:NO];
+            [((NSProgressIndicator *)cell.subviews[1]) setHidden:NO];
+            [((NSProgressIndicator *)cell.subviews[1]) startAnimation:nil];
+            cell.textField.stringValue = status;
+            
+            NSButton *bcell = [weakTblRolls viewAtColumn:7 row:rollIndex makeIfNecessary:0];
+            [bcell setHidden:YES];
+            
+            bcell = [weakTblRolls viewAtColumn:6 row:rollIndex makeIfNecessary:0];
+            bcell.title = @"Stop";
+        }
+    };
+    
     wizardWindowController.txtStepTitle.stringValue = orderModel.eventRow.eventName;
     wizardWindowController.txtStepDescription.stringValue =
         [NSString stringWithFormat:@"Event Number: %@; Market: %@", orderModel.eventRow.orderNumber, orderModel.eventRow.market];
@@ -1467,9 +1567,81 @@
     [wizardWindowController showStep:kWizardStepBrowse];
 }
 
+- (void)rememberAdvancedOptions
+{
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
+    [defaults setObject:[NSNumber numberWithBool:orderModel.autoCategorizeImages] forKey:kAutoCategorizeImagesByFolderName];
+    [defaults setObject:[NSNumber numberWithBool:orderModel.putImagesInCurrentlySelectedRoll] forKey:kPutImagesInCurrentlySelectedRoll];
+    [defaults setObject:[NSNumber numberWithBool:orderModel.autoRenumberRolls] forKey:kAutoRenumberRolls];
+    [defaults setObject:[NSNumber numberWithBool:orderModel.autoRenumberImages] forKey:kAutoRenumberImages];
+    [defaults setObject:[NSNumber numberWithBool:orderModel.createNewFolderAfter] forKey:kCreateNewFolderAfter];
+    
+    [defaults synchronize];
+}
+
 - (IBAction)autoCategorizeClicked:(id)sender
 {
     orderModel.autoCategorizeImages = (chkAutoCategorizeImages.state == NSOnState ? YES : NO);
+    [self rememberAdvancedOptions];
+}
+
+- (IBAction)putImagesInCurrentlySelectedRollClicked:(id)sender
+{
+    orderModel.putImagesInCurrentlySelectedRoll = (chkPutImagesInCurrentlySelectedRoll.state == NSOnState ? YES : NO);
+    [self rememberAdvancedOptions];
+}
+
+- (IBAction)autoRenumberRollsClicked:(id)sender
+{
+    orderModel.autoRenumberRolls = (chkAutoNumberRolls.state == NSOnState ? YES : NO);
+    [self rememberAdvancedOptions];
+}
+
+- (IBAction)autoRenumberImagesClicked:(id)sender
+{
+    orderModel.autoRenumberImages = (chkAutoNumberFrames.state == NSOnState ? YES : NO);
+    [self rememberAdvancedOptions];
+}
+
+- (IBAction)createNewFolderAfterClicked:(id)sender
+{
+    orderModel.createNewFolderAfter = (chkHonourFramesPerRoll.state == NSOnState ? YES : NO);
+    [self rememberAdvancedOptions];
+}
+
+- (IBAction)runPreloaderForAllOnAllRolls:(id)sender
+{
+    for (RollModel *roll in orderModel.rolls) {
+        roll.wantsPreloaderForAll = YES;
+    }
+}
+
+- (IBAction)runPreloaderForAllOnSelectedRoll:(id)sender
+{
+    NSInteger rollIndex = tblRolls.clickedRow;
+    
+    if (rollIndex != -1) {
+        RollModel *roll = orderModel.rolls[rollIndex];
+        roll.wantsPreloaderForAll = YES;
+    }
+}
+
+- (IBAction)runPreloaderForUnsentOnAllRolls:(id)sender
+{
+    for (RollModel *roll in orderModel.rolls) {
+        roll.wantsPreloaderForUnsent = YES;
+    }
+}
+
+- (IBAction)runPreloaderForUnsentOnSelectedRoll:(id)sender
+{
+    NSInteger rollIndex = tblRolls.clickedRow;
+    
+    if (rollIndex != -1) {
+        RollModel *roll = orderModel.rolls[rollIndex];
+        roll.wantsPreloaderForUnsent = YES;
+    }
 }
 
 - (IBAction)ignoreNewFiles:(id)sender
@@ -1510,6 +1682,7 @@
             [alert beginSheetModalForWindow:wizardWindowController.window completionHandler:nil];
             textField.stringValue = oldName;
         } else {
+            [self matchRollsWithGreenScreen];
             [tblRolls reloadData];
             //[orderModel save];
         }
@@ -1560,6 +1733,14 @@
         return;
     }
     
+    if ([preloader isBusy]) {
+        NSAlert *alert = [NSAlert alertWithMessageText:@"Please wait for the preloader to finish in order to delete rolls."
+            defaultButton:@"OK" alternateButton:@"" otherButton:@"" informativeTextWithFormat:@""];
+        
+        [alert beginSheetModalForWindow:wizardWindowController.window completionHandler:nil];
+        return;
+    }
+    
     NSInteger row = [tblRolls rowForView:sender];
     
     NSAlert *alert = [NSAlert alertWithMessageText:@"Do you really want to delete this roll?"
@@ -1579,6 +1760,11 @@
 - (IBAction)clickedViewRoll:(id)sender
 {
     if (!tblRolls.isEnabled) {
+        return;
+    }
+    
+    if ([((NSButton *)sender).title isEqualToString:@"Stop"]) {
+        [preloader stop];
         return;
     }
     
@@ -1794,22 +1980,7 @@
 
 - (void)processThumbnails:(NSTimer *)timer
 {
-    if (wizardWindowController.wizardStep == kWizardStepBrowse) {
-        NSLog(@"tick");
-    }
-    
-    NSTableCellView *cell = [tblRolls viewAtColumn:5 row:0 makeIfNecessary:NO];
-
-    cell.textField.stringValue = @"1234 of 9999 thumbs sent";
-    [((NSProgressIndicator *)cell.subviews[1]) setHidden:NO];
-    [((NSTextField *)cell.subviews[0]) setHidden:NO];
-    [((NSProgressIndicator *)cell.subviews[1]) startAnimation:nil];
-    
-    NSButton *bcell = [tblRolls viewAtColumn:7 row:0 makeIfNecessary:0];
-    [bcell setHidden:YES];
-    
-    bcell = [tblRolls viewAtColumn:6 row:0 makeIfNecessary:0];
-    bcell.title = @"Stop";
+    [preloader processThumbs];
 }
 
 @end

@@ -18,6 +18,8 @@
                 <outlet property="btnConfirmGreenScreen" destination="orE-69-rv0" id="atF-Ag-MPt"/>
                 <outlet property="btnDeleteSelectedFrames" destination="GRS-Ng-0qk" id="c4i-qZ-TYP"/>
                 <outlet property="btnGreenScreen" destination="3tM-Sx-CYf" id="AgI-cM-ZBg"/>
+                <outlet property="btnNewFolder" destination="xbS-BB-s6Y" id="DN5-k3-6aL"/>
+                <outlet property="btnNewFolderAdd" destination="Hfj-3J-YBM" id="ia4-K0-uBE"/>
                 <outlet property="btnPhotographers" destination="4PM-wW-Wr1" id="g9W-Q7-Kcc"/>
                 <outlet property="btnRotationDegrees" destination="glx-9l-D8b" id="ArC-3P-BVm"/>
                 <outlet property="btnRotationDirection" destination="wkX-R8-wgd" id="Jnn-oE-cm7"/>
@@ -42,6 +44,7 @@
                 <outlet property="lblGreenScreenStatus" destination="KSg-we-llY" id="xVz-Yz-qZb"/>
                 <outlet property="loadingIndicator" destination="5CT-3c-Mnq" id="9i3-k3-k1C"/>
                 <outlet property="loadingTitle" destination="NS3-3q-xBI" id="elV-Vt-Ptd"/>
+                <outlet property="newFolderPopover" destination="1Fm-9Y-X65" id="ZIG-Sh-PcY"/>
                 <outlet property="photographersPopover" destination="H7P-Bz-PqB" id="q8p-J2-4Vr"/>
                 <outlet property="tblBackgrounds" destination="RjN-4C-63p" id="2Hm-Rh-xNd"/>
                 <outlet property="tblPhotographers" destination="TZN-G2-QJB" id="JQp-Wl-V2G"/>
@@ -51,6 +54,7 @@
                 <outlet property="txtHorzBackgroundRoll" destination="KYw-Id-6Gw" id="zJk-zc-0FM"/>
                 <outlet property="txtImportErrors" destination="ZZk-pA-zf8" id="Zsj-sH-0Lc"/>
                 <outlet property="txtNewFiles" destination="etA-Be-cCt" id="LaC-yF-YDb"/>
+                <outlet property="txtNewFolderName" destination="uLz-0B-XFP" id="FzS-Go-B7q"/>
                 <outlet property="txtOutputFolder" destination="TqZ-xg-Lmi" id="yXD-VT-d6a"/>
                 <outlet property="txtPhotographerName" destination="XzP-et-Czv" id="JU4-MA-Gwh"/>
                 <outlet property="txtVertBackgroundEventNumber" destination="14c-Sq-86i" id="M0S-Dz-WmU"/>
@@ -288,7 +292,7 @@
                                                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                         </textFieldCell>
                                                     </textField>
-                                                    <progressIndicator identifier="Progress" horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" id="PRw-Wv-gGw">
+                                                    <progressIndicator identifier="Progress" horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" id="PRw-Wv-gGw">
                                                         <rect key="frame" x="2" y="-2" width="16" height="16"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                     </progressIndicator>
@@ -384,7 +388,7 @@
                     </connections>
                 </button>
                 <button verticalHuggingPriority="750" id="3qT-86-83T">
-                    <rect key="frame" x="735" y="432" width="172" height="32"/>
+                    <rect key="frame" x="742" y="432" width="165" height="32"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="push" title="Advanced Options" bezelStyle="rounded" image="NSAdvanced" imagePosition="left" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="cHS-f3-jZR">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -395,7 +399,7 @@
                     </connections>
                 </button>
                 <button verticalHuggingPriority="750" id="4PM-wW-Wr1">
-                    <rect key="frame" x="587" y="432" width="148" height="32"/>
+                    <rect key="frame" x="600" y="432" width="142" height="32"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="push" title="Photographers" bezelStyle="rounded" image="NSUserGroup" imagePosition="left" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="OY8-wY-WEE">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -406,7 +410,7 @@
                     </connections>
                 </button>
                 <button verticalHuggingPriority="750" id="3tM-Sx-CYf">
-                    <rect key="frame" x="453" y="432" width="134" height="32"/>
+                    <rect key="frame" x="467" y="432" width="133" height="32"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="push" title="Green Screen" bezelStyle="rounded" image="NSStatusAvailable" imagePosition="left" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="BHs-sU-on4">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -423,7 +427,7 @@
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                 </progressIndicator>
                 <textField hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="750" id="NS3-3q-xBI">
-                    <rect key="frame" x="181" y="441" width="272" height="17"/>
+                    <rect key="frame" x="181" y="441" width="165" height="17"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Loading" id="P2M-oD-Emb">
                         <font key="font" metaFont="system"/>
@@ -431,6 +435,17 @@
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                 </textField>
+                <button verticalHuggingPriority="750" id="xbS-BB-s6Y">
+                    <rect key="frame" x="346" y="432" width="121" height="32"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <buttonCell key="cell" type="push" title="New Folder" bezelStyle="rounded" image="NSFolder" imagePosition="left" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="g7C-ri-WWH">
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="system"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="newFolderClicked:" target="-2" id="B0L-ZA-P42"/>
+                    </connections>
+                </button>
             </subviews>
         </customView>
         <customView id="Uko-gK-bVM">
@@ -455,6 +470,9 @@
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                         <font key="font" metaFont="system"/>
                     </buttonCell>
+                    <connections>
+                        <action selector="putImagesInCurrentlySelectedRollClicked:" target="-2" id="vN4-Vy-399"/>
+                    </connections>
                 </button>
                 <button id="gyN-Yg-Rzh">
                     <rect key="frame" x="18" y="62" width="228" height="18"/>
@@ -463,6 +481,9 @@
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                         <font key="font" metaFont="system"/>
                     </buttonCell>
+                    <connections>
+                        <action selector="autoRenumberRollsClicked:" target="-2" id="E7y-qw-tP7"/>
+                    </connections>
                 </button>
                 <button id="yi3-c7-3TE">
                     <rect key="frame" x="18" y="40" width="229" height="18"/>
@@ -471,6 +492,9 @@
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                         <font key="font" metaFont="system"/>
                     </buttonCell>
+                    <connections>
+                        <action selector="autoRenumberImagesClicked:" target="-2" id="QvV-4v-Yzq"/>
+                    </connections>
                 </button>
                 <button id="1nF-8n-3tE">
                     <rect key="frame" x="18" y="18" width="253" height="18"/>
@@ -479,6 +503,9 @@
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                         <font key="font" metaFont="system"/>
                     </buttonCell>
+                    <connections>
+                        <action selector="createNewFolderAfterClicked:" target="-2" id="kN0-93-EZ6"/>
+                    </connections>
                 </button>
             </subviews>
         </customView>
@@ -487,7 +514,7 @@
                 <outlet property="view" destination="Uko-gK-bVM" id="NqI-ar-HY9"/>
             </connections>
         </viewController>
-        <popover behavior="semitransient" id="Ev0-cL-VcC">
+        <popover id="Ev0-cL-VcC">
             <connections>
                 <outlet property="contentViewController" destination="UNq-tH-Zvr" id="vFf-fP-bir"/>
             </connections>
@@ -520,9 +547,15 @@
                         <items>
                             <menuItem title="All" id="fOI-pT-yh8">
                                 <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="runPreloaderForAllOnSelectedRoll:" target="-2" id="2WM-IS-xn3"/>
+                                </connections>
                             </menuItem>
                             <menuItem title="Unsent" id="mdK-b2-Tps">
                                 <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="runPreloaderForUnsentOnSelectedRoll:" target="-2" id="gpZ-lY-aZL"/>
+                                </connections>
                             </menuItem>
                         </items>
                     </menu>
@@ -533,9 +566,15 @@
                         <items>
                             <menuItem title="All" id="eVO-gK-EK6">
                                 <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="runPreloaderForAllOnAllRolls:" target="-2" id="sMd-Pf-iN7"/>
+                                </connections>
                             </menuItem>
                             <menuItem title="Unsent" id="NhE-qx-19p">
                                 <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="runPreloaderForUnsentOnAllRolls:" target="-2" id="yFT-Wx-Zt3"/>
+                                </connections>
                             </menuItem>
                         </items>
                     </menu>
@@ -853,7 +892,7 @@ DQ
                 <outlet property="view" destination="ad2-9Z-k4m" id="b8e-xW-RYE"/>
             </connections>
         </viewController>
-        <popover behavior="semitransient" id="H7P-Bz-PqB">
+        <popover behavior="t" id="H7P-Bz-PqB">
             <connections>
                 <outlet property="contentViewController" destination="3hb-zS-qi6" id="eNc-fU-laG"/>
             </connections>
@@ -1461,6 +1500,42 @@ Gw
                 </subviews>
             </view>
         </window>
+        <viewController id="jMi-Nd-zwu" userLabel="Popover View Controller">
+            <connections>
+                <outlet property="view" destination="Kyz-Cr-QcD" id="5vV-aW-jY8"/>
+            </connections>
+        </viewController>
+        <popover behavior="t" id="1Fm-9Y-X65">
+            <connections>
+                <outlet property="contentViewController" destination="jMi-Nd-zwu" id="A3m-qc-m9Z"/>
+            </connections>
+        </popover>
+        <customView id="Kyz-Cr-QcD">
+            <rect key="frame" x="0.0" y="0.0" width="264" height="61"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+            <subviews>
+                <textField verticalHuggingPriority="750" id="uLz-0B-XFP">
+                    <rect key="frame" x="20" y="20" width="184" height="21"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Folder Name" drawsBackground="YES" id="OVq-jf-a7O">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <button verticalHuggingPriority="750" id="Hfj-3J-YBM">
+                    <rect key="frame" x="206" y="13" width="44" height="32"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <buttonCell key="cell" type="push" title="Add" bezelStyle="rounded" image="NSAddTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="02v-Rg-uie">
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="system"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="addNewFolderClicked:" target="-2" id="K7e-Dx-six"/>
+                    </connections>
+                </button>
+            </subviews>
+        </customView>
     </objects>
     <resources>
         <image name="NSActionTemplate" width="14" height="14"/>

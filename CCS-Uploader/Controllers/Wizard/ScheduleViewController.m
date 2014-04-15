@@ -141,7 +141,7 @@
                 if (!frame.fullsizeSent) {
                     frame.isSelected = YES;
                     frame.isSelectedFullsizeSent = NO;
-                    frame.isSelectedThumbsSent = NO;
+                    //frame.isSelectedThumbsSent = NO;
                 } else {
                     frame.isSelected = NO;
                     frame.isSelectedFullsizeSent = NO;
@@ -373,12 +373,16 @@
     newTransfer1.orderNumber = newTransfer2.orderNumber = wizardWindowController.eventRow.orderNumber;
     newTransfer1.eventName = newTransfer2.eventName = wizardWindowController.eventRow.eventName;
     
-    [orderModel save];
-    
     switch (whichImagesRadios.selectedTag) {
-        case 1:
+        case 1: {
+            for (RollModel *roll in orderModel.rolls) {
+                for (FrameModel *frame in roll.frames) {
+                    frame.fullsizeSent = NO;
+                }
+            }
+            
             newTransfer1.mode = newTransfer2.mode = kTransferModeUnsent;
-            break;
+        } break;
             
         case 2:
             newTransfer1.mode = newTransfer2.mode = kTransferModeSelected;
@@ -388,6 +392,8 @@
             newTransfer1.mode = newTransfer2.mode = kTransferModeMissing;
             break;
     }
+    
+    [orderModel save];
     
     newTransfer1.datePushed = newTransfer2.datePushed = [NSDate date];
     newTransfer1.isQuicPost = newTransfer2.isQuicPost = wizardWindowController.effectiveService == kServiceRootQuicPost ? YES : NO;

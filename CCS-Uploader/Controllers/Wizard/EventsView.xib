@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="5053" systemVersion="13C64" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
-        <deployment version="1070" identifier="macosx"/>
+        <deployment version="1070" defaultVersion="1070" identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="5053"/>
     </dependencies>
     <objects>
@@ -218,7 +218,7 @@
                 <button id="g8O-bp-pwc">
                     <rect key="frame" x="18" y="48" width="355" height="25"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <buttonCell key="cell" type="check" title="Show events in a date range between:" bezelStyle="regularSquare" imagePosition="left" inset="2" id="QQv-So-gvY">
+                    <buttonCell key="cell" type="check" title="Show events in a date range between:" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="QQv-So-gvY">
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                         <font key="font" metaFont="system"/>
                     </buttonCell>
@@ -229,7 +229,7 @@
                 <datePicker verticalHuggingPriority="750" id="Quc-vU-kXQ">
                     <rect key="frame" x="107" y="20" width="115" height="27"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <datePickerCell key="cell" enabled="NO" borderStyle="bezel" alignment="left" id="CTZ-Ss-qBh">
+                    <datePickerCell key="cell" borderStyle="bezel" alignment="left" id="CTZ-Ss-qBh">
                         <font key="font" metaFont="system"/>
                         <date key="date" timeIntervalSinceReferenceDate="283996800">
                             <!--2010-01-01 00:00:00 +0000-->
@@ -241,7 +241,7 @@
                 <datePicker verticalHuggingPriority="750" id="Rfi-6a-0h9">
                     <rect key="frame" x="259" y="20" width="115" height="27"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <datePickerCell key="cell" enabled="NO" borderStyle="bezel" alignment="left" id="d69-9Q-Kke">
+                    <datePickerCell key="cell" borderStyle="bezel" alignment="left" id="d69-9Q-Kke">
                         <font key="font" metaFont="system"/>
                         <date key="date" timeIntervalSinceReferenceDate="283996800">
                             <!--2010-01-01 00:00:00 +0000-->

@@ -133,7 +133,7 @@ static NSString *transferStatuses[] = {
     WizardWindowController *wizardWindowController = [[WizardWindowController alloc] initWithMainWindowController:self];
 
     [wizardWindowController showEvent:params[@"OrderNumber"]
-        user:params[@"Email"] pass:params[@"Password"] source:params[@"Source"] filename:filename];
+        user:params[@"Email"] pass:params[@"Password"] url:params[@"URL"] source:params[@"Source"] filename:filename];
 }
 
 - (BOOL)tableView:(NSTableView *)tableView shouldSelectRow:(NSInteger)row

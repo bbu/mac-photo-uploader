@@ -23,7 +23,7 @@ typedef NS_ENUM(NSUInteger, WizardStep) {
 - (id)initWithMainWindowController:(MainWindowController *)parent;
 - (void)showStep:(WizardStep)step;
 - (void)openEvent:(NSString *)orderNumber isQuicPost:(BOOL)isQuicPost;
-- (void)showEvent:(NSString *)orderNumber user:(NSString *)user pass:(NSString *)pass
+- (void)showEvent:(NSString *)orderNumber user:(NSString *)user pass:(NSString *)pass url:(NSString *)url
     source:(NSString *)source filename:(NSString *)filename;
 
 @property (readonly) NSTextField *txtStepTitle, *txtStepDescription;

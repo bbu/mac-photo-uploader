@@ -12,6 +12,12 @@
 #define kCorePass @"corePass"
 #define kCoreDomain @"coreDomain"
 
+#define kAutoCategorizeImagesByFolderName @"autoCategorizeImagesByFolderName"
+#define kPutImagesInCurrentlySelectedRoll @"putImagesInCurrentlySelectedRoll"
+#define kAutoRenumberRolls @"autoRenumberRolls"
+#define kAutoRenumberImages @"autoRenumberImages"
+#define kCreateNewFolderAfter @"createNewFolderAfter"
+
 #define kSimultaneousThumbUploads @"simultaneousThumbUploads"
 #define kRetryDelay @"retryDelay"
 #define kNumRetries @"numRetries"

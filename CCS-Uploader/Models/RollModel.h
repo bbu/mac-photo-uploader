@@ -7,5 +7,5 @@
 @property BOOL greenScreen;
 @property NSMutableArray *frames;
 @property BOOL imagesAutoRenamed, imagesViewed;
-@property BOOL framesHaveErrors, preloaderRunning, wantsPreloader, needsDelete, newlyAdded;
+@property BOOL framesHaveErrors, preloaderRunning, wantsPreloaderForAll, wantsPreloaderForUnsent, needsDelete, newlyAdded;
 @end
