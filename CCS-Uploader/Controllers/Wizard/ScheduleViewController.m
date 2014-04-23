@@ -94,6 +94,25 @@
     [[scheduleFullsizeRadios cellAtRow:2 column:0] setEnabled:YES];
     
     [whichImagesRadios selectCellWithTag:1];
+    
+    OrderModel *orderModel = wizardWindowController.browseViewController.orderModel;
+    NSInteger numSent = 0, numUnsent = 0;
+    
+    for (RollModel *roll in orderModel.rolls) {
+        for (FrameModel *frame in roll.frames) {
+            if (frame.fullsizeSent) {
+                numSent++;
+            } else {
+                numUnsent++;
+            }
+        }
+    }
+    
+    if (numSent) {
+        [[whichImagesRadios cellAtRow:0 column:0] setTitle:[NSString stringWithFormat:@"All Images (excluding %ld already sent)", numSent]];
+    } else {
+        [[whichImagesRadios cellAtRow:0 column:0] setTitle:@"All Images"];
+    }
 }
 
 - (IBAction)scheduleThumbsChanged:(id)sender
@@ -128,6 +147,21 @@
     } else {
         [[scheduleThumbsRadios cellAtRow:2 column:0] setEnabled:YES];
     }
+}
+
+- (IBAction)selectAllImagesInAllRolls:(id)sender
+{
+    OrderModel *orderModel = wizardWindowController.browseViewController.orderModel;
+
+    for (RollModel *roll in orderModel.rolls) {
+        for (FrameModel *frame in roll.frames) {
+            frame.isSelected = YES;
+            frame.isSelectedThumbsSent = NO;
+            frame.isSelectedFullsizeSent = NO;
+        }
+    }
+    
+    [selectedImagesBrowser selectAll:nil];
 }
 
 - (IBAction)whichImagesChanged:(id)sender
@@ -374,15 +408,9 @@
     newTransfer1.eventName = newTransfer2.eventName = wizardWindowController.eventRow.eventName;
     
     switch (whichImagesRadios.selectedTag) {
-        case 1: {
-            for (RollModel *roll in orderModel.rolls) {
-                for (FrameModel *frame in roll.frames) {
-                    frame.fullsizeSent = NO;
-                }
-            }
-            
+        case 1:
             newTransfer1.mode = newTransfer2.mode = kTransferModeUnsent;
-        } break;
+            break;
             
         case 2:
             newTransfer1.mode = newTransfer2.mode = kTransferModeSelected;

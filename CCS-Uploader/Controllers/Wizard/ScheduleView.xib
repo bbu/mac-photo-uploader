@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="5053" systemVersion="13C64" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="5056" systemVersion="13C64" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment version="1070" defaultVersion="1070" identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="5053"/>
-        <plugIn identifier="com.apple.imagekit.ibplugin" version="5053"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="5056"/>
+        <plugIn identifier="com.apple.imagekit.ibplugin" version="5056"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="ScheduleViewController">
@@ -199,7 +199,7 @@ AQABAAEAAQAB//+dkAEA//+PgAAE//+dkAEI//+dkAEMUERUAFBTVABQV1QAUFBUAAAAAAEAAAABA
                                 <rect key="frame" x="18" y="14" width="580" height="81"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                <size key="cellSize" width="210" height="18"/>
+                                <size key="cellSize" width="300" height="18"/>
                                 <size key="intercellSpacing" width="4" height="13"/>
                                 <buttonCell key="prototype" type="radio" title="Radio" imagePosition="left" alignment="left" inset="2" id="220">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -440,15 +440,32 @@ DQ
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
+                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="3gi-ER-oe0">
+                        <rect key="frame" x="14" y="13" width="280" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="268" id="hqs-Mg-9ip"/>
+                        </constraints>
+                        <buttonCell key="cell" type="push" title="Select All Images in All Rolls" bezelStyle="rounded" image="NSIconViewTemplate" imagePosition="left" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="RpH-Pq-fCg">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="selectAllImagesInAllRolls:" target="-2" id="kTr-bj-xLv"/>
+                        </connections>
+                    </button>
                 </subviews>
                 <constraints>
+                    <constraint firstAttribute="bottom" secondItem="3gi-ER-oe0" secondAttribute="bottom" constant="20" id="18d-U6-3G6"/>
                     <constraint firstItem="265" firstAttribute="top" secondItem="R3Z-6D-CyR" secondAttribute="bottom" constant="6" id="1q4-6t-8M3"/>
                     <constraint firstItem="265" firstAttribute="top" secondItem="58s-tG-OfZ" secondAttribute="bottom" constant="6" id="3rL-hd-xsP"/>
                     <constraint firstItem="265" firstAttribute="top" secondItem="242" secondAttribute="top" constant="47" id="5QK-zG-FCE"/>
                     <constraint firstAttribute="trailing" secondItem="265" secondAttribute="trailing" constant="20" id="6I0-mK-W1w"/>
+                    <constraint firstItem="3gi-ER-oe0" firstAttribute="leading" secondItem="242" secondAttribute="leading" constant="20" id="8aC-n5-cpo"/>
                     <constraint firstAttribute="bottom" secondItem="269" secondAttribute="bottom" constant="20" id="BEd-hV-fsB"/>
                     <constraint firstItem="282" firstAttribute="top" secondItem="242" secondAttribute="top" constant="20" id="Ilf-u4-1Ry"/>
                     <constraint firstAttribute="trailing" secondItem="58s-tG-OfZ" secondAttribute="trailing" constant="20" id="JfZ-th-ESP"/>
+                    <constraint firstItem="3gi-ER-oe0" firstAttribute="top" secondItem="282" secondAttribute="bottom" constant="20" id="Kzk-8c-ike"/>
                     <constraint firstItem="265" firstAttribute="top" secondItem="V5c-kA-8Fb" secondAttribute="bottom" constant="8" id="LKr-hN-qTB"/>
                     <constraint firstItem="R3Z-6D-CyR" firstAttribute="top" secondItem="242" secondAttribute="top" constant="20" id="NF1-Pt-tfn"/>
                     <constraint firstItem="58s-tG-OfZ" firstAttribute="top" secondItem="242" secondAttribute="top" constant="20" id="Q9d-S2-JjE"/>

@@ -288,12 +288,12 @@ static NSString *transferStatuses[] = {
         ^(VersionResult *result) {
             if (!result.error && !result.errorOccurred && result.upgradeAvailable) {
                 NSAlert *alert;
-                
+
                 if (result.upgradeRequired) {
                     alert = [NSAlert alertWithMessageText:result.message
                         defaultButton:[NSString stringWithFormat:@"Update to %@", result.latestVersion]
-                        alternateButton:@"Release History"
-                        otherButton:@"Visit Website"
+                        alternateButton:@""
+                        otherButton:@""
                         informativeTextWithFormat:@"%@", result.latestNotes ? result.latestNotes : @""];
                 } else {
                     alert = [NSAlert alertWithMessageText:@""
