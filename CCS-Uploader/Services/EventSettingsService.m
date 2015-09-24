@@ -135,7 +135,7 @@
     if ([elementName isEqualToString:@"WatermarkID"]) {
         eventSettingsResult.watermarkSettings.watermarkID = [numberFormatter numberFromString:lastValue].integerValue;
     } else if ([elementName isEqualToString:@"Description"]) {
-        eventSettingsResult.watermarkSettings.description = [lastValue copy];
+        eventSettingsResult.watermarkSettings.desc = [lastValue copy];
     } else if ([elementName isEqualToString:@"HFile"]) {
         eventSettingsResult.watermarkSettings.hFile = [lastValue copy];
     } else if ([elementName isEqualToString:@"VFile"]) {

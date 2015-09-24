@@ -21,7 +21,7 @@
 
 @interface EventSettingsWatermarkRow : NSObject
 @property NSInteger watermarkID;
-@property NSString *description;
+@property NSString *desc;
 @property NSString *hFile, *vFile;
 @property NSData *hFileData, *vFileData;
 @end
