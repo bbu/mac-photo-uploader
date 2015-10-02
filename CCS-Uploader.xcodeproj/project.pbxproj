@@ -486,7 +486,7 @@
 		2B74BEF51883D50B00D0B78B /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0500;
+				LastUpgradeCheck = 0700;
 				TargetAttributes = {
 					2B74BEFC1883D50B00D0B78B = {
 						DevelopmentTeam = 5VTR7J89FT;
@@ -647,6 +647,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "3rd Party Mac Developer Application: Panaton Inc. (5VTR7J89FT)";
 				COPY_PHASE_STRIP = NO;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
@@ -713,6 +714,7 @@
 				GCC_PREFIX_HEADER = "CCS-Uploader/CCS-Uploader-Prefix.pch";
 				INFOPLIST_FILE = "CCS-Uploader/CCS-Uploader-Info.plist";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				PRODUCT_BUNDLE_IDENTIFIER = "SirmaSolutions.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				SDKROOT = macosx;
@@ -731,6 +733,7 @@
 				GCC_PREFIX_HEADER = "CCS-Uploader/CCS-Uploader-Prefix.pch";
 				INFOPLIST_FILE = "CCS-Uploader/CCS-Uploader-Info.plist";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				PRODUCT_BUNDLE_IDENTIFIER = "SirmaSolutions.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				SDKROOT = macosx;
